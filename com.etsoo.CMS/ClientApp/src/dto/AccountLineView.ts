@@ -1,0 +1,25 @@
+export type AccountLineView = {
+  id: number;
+  kind: string;
+  isCollection: boolean;
+  user: string;
+  subject: string;
+  title: string;
+  amount: number;
+  entityStatus: number;
+  creation: Date;
+  estimatedDate?: Date;
+  happenDate?: Date;
+  repeat?: number;
+  reference?: string;
+  companyAccount?: string;
+  externalAccount?: string;
+  selfLine?: boolean;
+  leader?: string;
+  accountant?: string;
+  accountBank?: string;
+  accountNumber?: string;
+  externalAccountName?: string;
+  externalAccountBank?: string;
+  externalAccountNumber?: string;
+};

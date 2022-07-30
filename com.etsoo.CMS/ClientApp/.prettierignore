@@ -1,0 +1,6 @@
+.github
+node_modules
+lib/
+disk/
+build/
+package-lock.json
