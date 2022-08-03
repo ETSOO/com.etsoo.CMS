@@ -8,12 +8,9 @@ import {
   MenuItem
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
-import { BridgeCloseButton, SelectEx, UserAvatar } from '@etsoo/react';
-import { ExtendUtils } from '@etsoo/shared';
+import { BridgeCloseButton, RLink, UserAvatar } from '@etsoo/react';
+import LockIcon from '@mui/icons-material/Lock';
 import { app } from '../../app/MyApp';
-
-const maxOrganizationItems = 16;
 
 interface UserMenuProps {
   organization: number | undefined;
@@ -27,7 +24,12 @@ export function UserMenu(props: UserMenuProps) {
   const { organization, name, avatar, smDown } = props;
 
   // Labels
-  const labels = app.getLabels('smartERP', 'switchOrganization', 'signout');
+  const labels = app.getLabels(
+    'changePassword',
+    'smartERP',
+    'switchOrganization',
+    'signout'
+  );
 
   // User menu anchor
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement>();
@@ -55,28 +57,6 @@ export function UserMenu(props: UserMenuProps) {
 
   return (
     <React.Fragment>
-      {!smDown && (
-        <SelectEx
-          search
-          autoAddBlankItem={false}
-          title={labels.switchOrganization}
-          sx={{ width: 280, marginRight: 1 }}
-          value={organization}
-          loadData={async () => {
-            await ExtendUtils.sleep(200);
-            return await app.orgList(
-              maxOrganizationItems,
-              app.settings.serviceId
-            );
-          }}
-          onItemClick={(event, id) => {
-            event.stopPropagation();
-            event.preventDefault();
-
-            app.switchOrg(id as number, app.settings.serviceId);
-          }}
-        />
-      )}
       <IconButton
         edge="end"
         aria-haspopup="true"
@@ -136,11 +116,11 @@ export function UserMenu(props: UserMenuProps) {
         onClick={handleMenuClose}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => app.loadSmartERP()}>
+        <MenuItem component={RLink} href="/home/user/changepassword">
           <ListItemIcon>
-            <HomeWorkIcon fontSize="small" />
+            <LockIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>{labels.smartERP}</ListItemText>
+          <ListItemText>{labels.changePassword}</ListItemText>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleSignout}>

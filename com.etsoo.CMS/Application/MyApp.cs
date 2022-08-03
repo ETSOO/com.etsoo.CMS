@@ -1,4 +1,6 @@
-﻿using com.etsoo.ServiceApp.Application;
+﻿using com.etsoo.CoreFramework.User;
+using com.etsoo.ServiceApp.Application;
+using Dapper;
 
 namespace com.etsoo.CMS.Application
 {
@@ -17,6 +19,17 @@ namespace com.etsoo.CMS.Application
         /// <param name="modelValidated">Model DataAnnotations are validated or not</param>
         public MyApp(IServiceCollection services, IConfigurationSection configurationSection, bool modelValidated = false) : base(services, configurationSection, null, modelValidated)
         {
+        }
+
+        /// <summary>
+        /// Override add system parameters
+        /// 重写添加系统参数
+        /// </summary>
+        /// <param name="user">Current user</param>
+        /// <param name="parameters">Parameers</param>
+        public override void AddSystemParameters(IServiceUser user, DynamicParameters parameters)
+        {
+            parameters.Add(Constants.CurrentUserField, user.Id);
         }
 
         /// <summary>
