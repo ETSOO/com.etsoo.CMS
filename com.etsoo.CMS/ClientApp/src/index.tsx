@@ -10,22 +10,13 @@ import {
   ThemeProvider
 } from '@mui/material';
 import * as locales from '@mui/material/locale';
-import Api from './Api';
 import { HRouter } from '@etsoo/react';
 import { Route, Routes } from 'react-router-dom';
 import Dashboard from './main/home/Dashboard';
-import Settings from './main/system/Settings';
-import Subjects from './main/system/Subjects';
-import SubjectHistory from './main/system/SubjectHistory';
-import SubjectReport from './main/system/SubjectReport';
-import Reports from './main/system/Reports';
-import CompanyAccounts from './main/account/CompanyAccounts';
-import AddAccount from './main/account/AddAccount';
-import AccountHistory from './main/account/AccountHistory';
-import AccountLines from './main/account/AccountLines';
-import AddLine from './main/account/AddLine';
-import ViewLine from './main/account/ViewLine';
 import Home from './main/home/Home';
+
+// Lazy load components
+const ChangePassword = React.lazy(() => import('./main/user/ChangePassword'));
 
 // Culture provider
 const CultureStateProvider = app.cultureState.provider;
@@ -99,33 +90,11 @@ function MyRouter() {
       <HRouter basename={app.settings.homepage} history={app.history}>
         <Routes>
           <Route path="*" element={<App />} />
-          <Route path="/api" element={<Api />} />
 
           <Route path="/home" element={<Home />}>
             <Route index element={<Dashboard />} />
 
-            <Route path="system/settings" element={<Settings />} />
-            <Route path="system/subjects" element={<Subjects />} />
-            <Route
-              path="system/subjects/history/:id"
-              element={<SubjectHistory />}
-            />
-            <Route
-              path="system/subjects/report/:id"
-              element={<SubjectReport />}
-            />
-            <Route path="system/reports" element={<Reports />} />
-
-            <Route path="account/company" element={<CompanyAccounts />} />
-            <Route path="account/company/add/*" element={<AddAccount />} />
-            <Route
-              path="account/company/history/:id"
-              element={<AccountHistory />}
-            />
-
-            <Route path="account/lines" element={<AccountLines />} />
-            <Route path="account/lines/add/*" element={<AddLine />} />
-            <Route path="account/lines/view/:id" element={<ViewLine />} />
+            <Route path="user/changepassword" element={<ChangePassword />} />
           </Route>
         </Routes>
       </HRouter>

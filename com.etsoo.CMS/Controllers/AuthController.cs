@@ -3,11 +3,10 @@ using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.UserAgentParser;
+using com.etsoo.ServiceApp.Application;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 
 namespace com.etsoo.CMS.Controllers
 {
@@ -19,12 +18,6 @@ namespace com.etsoo.CMS.Controllers
         // Service
         readonly AuthService service;
 
-        // Accessor
-        readonly IHttpContextAccessor httpContextAccessor;
-
-        // User agent
-        readonly string? userAgent;
-
         /// <summary>
         /// Constructor
         /// 构造函数
@@ -33,10 +26,8 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
         public AuthController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger)
-            : base(app)
+            : base(app, httpContextAccessor)
         {
-            this.httpContextAccessor = httpContextAccessor;
-            userAgent = httpContextAccessor.HttpContext?.Request.Headers[HeaderNames.UserAgent].ToString();
             service = new AuthService(app, logger);
         }
 
@@ -49,29 +40,13 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Login")]
         public async Task Login(LoginRQ model)
         {
-            // IP address
-            var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
-            if (ip == null)
+            // Check device
+            if (!CheckDevice(service, model.DeviceId, out var checkResult, out var cd))
             {
-                await WriteResultAsync(ApplicationErrors.NoValidData.AsResult("IP"));
+                await WriteResultAsync(checkResult);
                 return;
             }
-
-            var parseResult = ParseUserAgent(userAgent, out UAParser parser);
-            if (!parseResult.Ok)
-            {
-                await WriteResultAsync(parseResult);
-                return;
-            }
-
-            // Get device core
-            var device = parser.ToShortName();
-            var deviceCore = service.DecryptDeviceCore(model.DeviceId, device);
-            if (string.IsNullOrEmpty(deviceCore))
-            {
-                await WriteResultAsync(ApplicationErrors.NoValidData.AsResult("Device"));
-                return;
-            }
+            var deviceCore = cd.Value.DeviceCore;
 
             // Decrypt
             var id = service.DecryptDeviceData(model.Id, deviceCore);
@@ -89,10 +64,72 @@ namespace com.etsoo.CMS.Controllers
             }
 
             // Data
-            var data = new LoginDto(id, pwd, ip);
+            var data = new LoginDto(id, pwd, cd.Value.Ip, deviceCore, model.Region, model.Timezone);
 
             // Login
             var (result, token) = await service.LoginAsync(data);
+
+            // Pass the token through header
+            if (token != null)
+                WriteHeader(Constants.RefreshTokenHeaderName, token);
+
+            // Output
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Refresh token
+        /// 刷新令牌
+        /// </summary>
+        /// <param name="model">Data model</param>
+        /// <returns>Task</returns>
+        [HttpPut("RefreshToken")]
+        public async Task RefreshToken(RefreshTokenRQ model)
+        {
+            // Check device
+            if (!CheckDevice(service, model.DeviceId, out var checkResult, out var cd))
+            {
+                await WriteResultAsync(checkResult);
+                return;
+            }
+            var deviceCore = cd.Value.DeviceCore;
+
+            // Token
+            string? token;
+            if (!Request.Headers.TryGetValue(Constants.RefreshTokenHeaderName, out var value) || string.IsNullOrEmpty((token = value.ToString())))
+            {
+                await WriteResultAsync(ApplicationErrors.NoValidData.AsResult());
+                return;
+            }
+
+            // Decrypt
+            token = service.DecryptDeviceData(token, deviceCore);
+            if (string.IsNullOrEmpty(token))
+            {
+                await WriteResultAsync(ApplicationErrors.NoValidData.AsResult("Token"));
+                return;
+            }
+
+            string? pwd = null;
+            if (!string.IsNullOrEmpty(model.Pwd))
+            {
+                pwd = service.DecryptDeviceData(model.Pwd, deviceCore);
+                if (string.IsNullOrEmpty(pwd))
+                {
+                    await WriteResultAsync(ApplicationErrors.NoValidData.AsResult("Pwd"));
+                    return;
+                }
+            }
+
+            // Result & refresh token
+            var (result, refreshToken) = await service.RefreshTokenAsync(token, new RefreshTokenDto(deviceCore, cd.Value.Ip, pwd, model.Timezone));
+
+            // Pass the token through header
+            if (refreshToken != null)
+                WriteHeader(Constants.RefreshTokenHeaderName, refreshToken);
+
+            // Output
+            await WriteResultAsync(result);
         }
 
         /// <summary>
@@ -104,15 +141,15 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("WebInitCall")]
         public async Task WebInitCall(InitCallRQ rq)
         {
-            var result = ParseUserAgent(userAgent, out string identifier);
-            if (!result.Ok)
+            // Device check
+            if (!CheckDevice(out var checkResult, out var cd))
             {
-                await WriteResultAsync(result);
+                await WriteResultAsync(checkResult);
                 return;
             }
 
             // Result
-            var initResult = await service.WebInitCallAsync(rq, identifier);
+            var initResult = await service.WebInitCallAsync(rq, cd.Value.Parser.ToShortName());
 
             await WriteResultAsync(initResult);
         }

@@ -11,16 +11,11 @@ import {
   useTheme
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
-import SettingsIcon from '@mui/icons-material/Settings';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import CategoryIcon from '@mui/icons-material/Category';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import React from 'react';
 import { CSSProperties } from 'react';
 import { UserRole } from '@etsoo/appscript';
 import { app } from '../../app/MyApp';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { RLink } from '@etsoo/react';
 
 export const DrawerHeader = styled('div')(({ theme }) => ({
@@ -59,15 +54,7 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
     const { mdUp, width } = props;
 
     // Labels
-    const labels = app.getLabels(
-      'menuHome',
-      'serviceGeneralJournal',
-      'settings',
-      'reports',
-      'records',
-      'subjects',
-      'accounts'
-    );
+    const labels = app.getLabels('etsoo', 'menuHome', 'appName');
 
     // Location
     // Reload when location changes
@@ -136,18 +123,20 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
         }}
       >
         <DrawerHeader>
-          <Avatar
-            alt="ETSOO"
-            src={process.env.PUBLIC_URL + '/logo192.png'}
-            variant="square"
-            sx={{ marginLeft: -0.5, marginRight: 2, marginBottom: 1 }}
-          />
-          <Typography
-            noWrap
-            component="div"
-            title={labels.serviceGeneralJournal}
+          <a
+            href="https://www.etsoo.com"
+            title={labels.etsoo}
+            target="_blank"
+            rel="noreferrer"
           >
-            {labels.serviceGeneralJournal}
+            <Avatar
+              src={process.env.PUBLIC_URL + '/logo192.png'}
+              variant="square"
+              sx={{ marginLeft: -0.5, marginRight: 2, marginBottom: 1 }}
+            />
+          </a>
+          <Typography noWrap component="div" title={labels.appName}>
+            {labels.appName}
           </Typography>
         </DrawerHeader>
         <Divider />
@@ -158,42 +147,6 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
             </ListItemIcon>
             <ListItemText primary={labels.menuHome} />
           </ListItem>
-          <ListItem button {...getMenuItem('/home/account/lines*')}>
-            <ListItemIcon>
-              <FormatListBulletedIcon />
-            </ListItemIcon>
-            <ListItemText primary={labels.records} />
-          </ListItem>
-          {financePermission && (
-            <React.Fragment>
-              <ListItem button {...getMenuItem('/home/system/reports')}>
-                <ListItemIcon>
-                  <BarChartIcon />
-                </ListItemIcon>
-                <ListItemText primary={labels.reports} />
-              </ListItem>
-              <ListItem button {...getMenuItem('/home/system/subjects*')}>
-                <ListItemIcon>
-                  <CategoryIcon />
-                </ListItemIcon>
-                <ListItemText primary={labels.subjects} />
-              </ListItem>
-            </React.Fragment>
-          )}
-          <ListItem button {...getMenuItem('/home/account/company*')}>
-            <ListItemIcon>
-              <AccountBalanceIcon />
-            </ListItemIcon>
-            <ListItemText primary={labels.accounts} />
-          </ListItem>
-          {app.hasPermission(UserRole.Founder) && (
-            <ListItem button {...getMenuItem('/home/system/settings')}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary={labels.settings} />
-            </ListItem>
-          )}
         </List>
       </Drawer>
     );

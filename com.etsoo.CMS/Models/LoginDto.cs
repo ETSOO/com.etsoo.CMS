@@ -9,5 +9,8 @@ namespace com.etsoo.CMS.Models
     /// <param name="Id">User id</param>
     /// <param name="Pwd">Password</param>
     /// <param name="Ip">IP address</param>
-    public record LoginDto(string Id, string Pwd, IPAddress Ip);
+    /// <param name="Device">Device</param>
+    /// <param name="Region">Country or region</param>
+    /// <param name="Timezone">Timezone</param>
+    public record LoginDto(string Id, string Pwd, IPAddress Ip, string Device, string Region, string? Timezone);
 }

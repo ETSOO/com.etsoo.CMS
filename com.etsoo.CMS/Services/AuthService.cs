@@ -1,10 +1,14 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CoreFramework.Application;
-using com.etsoo.CoreFramework.Business;
 using com.etsoo.CoreFramework.Models;
+using com.etsoo.CoreFramework.User;
+using com.etsoo.ServiceApp.Application;
+using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
+using System.Globalization;
 
 namespace com.etsoo.CMS.Services
 {
@@ -12,7 +16,7 @@ namespace com.etsoo.CMS.Services
     /// Authorization service
     /// 授权服务
     /// </summary>
-    public class AuthService : CommonService<AuthRepo>
+    public class AuthService : SqliteService<AuthRepo>
     {
         /// <summary>
         /// Constructor
@@ -31,6 +35,36 @@ namespace com.etsoo.CMS.Services
             return await App.HashPasswordAsync(id + password);
         }
 
+        private async Task<string> FormatLoginResultAsync(IActionResult result, IServiceUser user, string device)
+        {
+            // Expiry seconds
+            result.Data[Constants.SecondsName] = App.AuthService.AccessTokenMinutes * 60;
+
+            // Refresh token
+            var token = new RefreshToken(user.Id, user.Organization, user.ClientIp, user.Region, user.DeviceId, null);
+
+            // Access token
+            result.Data[Constants.TokenName] = App.AuthService.CreateAccessToken(user);
+
+            // Refresh token
+            var refreshToken = App.AuthService.CreateRefreshToken(token);
+
+            // Hash token
+            var hashedToken = await App.HashPasswordAsync(refreshToken);
+
+            // Update
+            await Repo.UpdateTokenAsync(user.Id, device, hashedToken);
+
+            // Return
+            return refreshToken;
+        }
+
+        /// <summary>
+        /// User login
+        /// 用户登录
+        /// </summary>
+        /// <param name="data">Login data</param>
+        /// <returns>Result</returns>
         public async ValueTask<(IActionResult Result, string? RefreshToken)> LoginAsync(LoginDto data)
         {
             // Hashed password
@@ -55,26 +89,12 @@ namespace com.etsoo.CMS.Services
                         return (LogException(ex), null);
                     }
                 }
-
-                if (user == null)
-                {
-                    // User not found error
-                    return (ApplicationErrors.NoUserFound.AsResult(), null);
-                }
             }
 
-            // Frozen time check first
-            if (user.FrozenTime != null && DateTime.UtcNow <= user.FrozenTime)
+            // User check
+            if (!ServiceUtils.CheckUser(user, out var checkResult))
             {
-                var frozenResult = ApplicationErrors.DeviceFrozen.AsResult();
-                frozenResult.Data.Add("FrozenTime", user.FrozenTime);
-                return (frozenResult, null);
-            }
-
-            // Status check
-            if (user.Status >= EntityStatus.Inactivated)
-            {
-                return (ApplicationErrors.AccountDisabled.AsResult(), null);
+                return (checkResult, null);
             }
 
             // Successful login
@@ -84,6 +104,8 @@ namespace com.etsoo.CMS.Services
             if (!user.Password.Equals(hashedPassword))
             {
                 success = false;
+
+                await Repo.AddLoginFailureAsync(user.Id, user.Failure);
             }
             else
             {
@@ -91,9 +113,121 @@ namespace com.etsoo.CMS.Services
             }
 
             // Add audit
-            await AddAudit(user.Id, data.Ip);
+            await Repo.AddAuditAsync(AuditKind.Login, user.Id, "Login", new { data.Device, Success = success }, data.Ip, success ? AuditFlag.Normal : AuditFlag.Warning);
 
-            return (null, null);
+            if (success)
+            {
+                // Current culture
+                var ci = CultureInfo.CurrentCulture;
+
+                // Create token user from result data
+                var token = new ServiceUser(user.Role, user.Id, data.Ip, ci, data.Region);
+
+                // Success result
+                var result = ActionResult.Success;
+
+                // Update refresh token and format result
+                var refreshToken = await FormatLoginResultAsync(result, token, data.Device);
+
+                // Return
+                return (result, refreshToken);
+            }
+            else
+            {
+                return (ApplicationErrors.NoPasswordMatch.AsResult(), null);
+            }
+        }
+
+        /// <summary>
+        /// Refresh token (Related with Login, make sure the logic is consistent)
+        /// 刷新令牌 (和登录相关，确保逻辑一致)
+        /// </summary>
+        /// <param name="token">Refresh token</param>
+        /// <param name="model">Model</param>
+        /// <returns>Result</returns>
+        public async ValueTask<(IActionResult, string?)> RefreshTokenAsync(string token, RefreshTokenDto model)
+        {
+            try
+            {
+                // Validate the token first
+                // Expired then password should be valid
+                var (claims, expired, _, _) = App.AuthService.ValidateToken(token);
+                var refreshToken = RefreshToken.Create(claims);
+                if (refreshToken == null || (expired && string.IsNullOrEmpty(model.Pwd)))
+                {
+                    return (ApplicationErrors.TokenExpired.AsResult(), null);
+                }
+
+                // Token IP should be the same
+                if (!refreshToken.ClientIp.Equals(model.Ip))
+                {
+                    return (ApplicationErrors.IPAddressChanged.AsResult(), null);
+                }
+
+                // View the user's refresh token for matching
+                var userId = refreshToken.Id;
+                var tokenResult = await Repo.GetDeviceTokenAsync(userId, model.Device);
+                if (tokenResult == null)
+                {
+                    return (ApplicationErrors.NoDeviceMatch.AsResult(), null);
+                }
+
+                var (deviceToken, user) = tokenResult.Value;
+
+                // Has password or not
+                if (!string.IsNullOrEmpty(model.Pwd))
+                {
+                    // Hashed password
+                    var hashedPassword = await HashPasswordAsync(user.Id, model.Pwd);
+
+                    // Password match
+                    if (!user.Password.Equals(hashedPassword))
+                    {
+                        await Repo.AddLoginFailureAsync(user.Id, user.Failure);
+
+                        // Add audit
+                        await Repo.AddAuditAsync(AuditKind.TokenLogin, user.Id, "Token Login", new { model.Device, Success = false }, model.Ip, AuditFlag.Warning);
+
+                        return (ApplicationErrors.NoPasswordMatch.AsResult(), null);
+                    }
+                }
+
+                // Token match
+                var hashedToken = await App.HashPasswordAsync(token);
+                if (hashedToken != deviceToken.Token)
+                {
+                    return (ApplicationErrors.TokenExpired.AsResult("NoMatch"), null);
+                }
+
+                // User check
+                if (!ServiceUtils.CheckUser(user, out var checkResult))
+                {
+                    return (checkResult, null);
+                }
+
+                // Current culture
+                var ci = CultureInfo.CurrentCulture;
+
+                // Service user
+                var serviceUser = new ServiceUser(user.Role, userId, model.Ip, ci, refreshToken.Region, refreshToken.Organization, null, refreshToken.DeviceId);
+
+                // Add audit
+                await Repo.AddAuditAsync(AuditKind.TokenLogin, userId, "Token Login", new { model.Device, Success = true }, model.Ip, AuditFlag.Normal);
+
+                // Success result
+                var result = ActionResult.Success;
+
+                // Update refresh token and format result
+                var newToken = await FormatLoginResultAsync(result, serviceUser, model.Device);
+
+                // Return
+                return (result, newToken);
+            }
+            catch (Exception ex)
+            {
+                // Return action result
+                return (LogException(ex), null);
+            }
         }
 
         /// <summary>
