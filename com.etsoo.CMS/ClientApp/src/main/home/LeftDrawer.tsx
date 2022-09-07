@@ -3,20 +3,24 @@ import {
   Divider,
   Drawer,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   styled,
-  Typography,
-  useTheme
+  Typography
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
+import ArticleIcon from '@mui/icons-material/Article';
+import TabIcon from '@mui/icons-material/Tab';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import SettingsIcon from '@mui/icons-material/Settings';
+import GroupIcon from '@mui/icons-material/Group';
 import React from 'react';
 import { CSSProperties } from 'react';
 import { UserRole } from '@etsoo/appscript';
 import { app } from '../../app/MyApp';
-import { Link, useLocation } from 'react-router-dom';
-import { RLink } from '@etsoo/react';
+import { useLocation } from 'react-router-dom';
+import { MUGlobal } from '@etsoo/materialui';
 
 export const DrawerHeader = styled('div')(({ theme }) => ({
   // necessary for content to be below app bar
@@ -54,31 +58,23 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
     const { mdUp, width } = props;
 
     // Labels
-    const labels = app.getLabels('etsoo', 'menuHome', 'appName');
+    const labels = app.getLabels(
+      'etsoo',
+      'menuHome',
+      'appName',
+      'articles',
+      'tabs',
+      'configs',
+      'plugins',
+      'users'
+    );
 
     // Location
     // Reload when location changes
     const location = useLocation();
 
-    const theme = useTheme();
-
-    // Menu properties
     const getMenuItem = (href: string) => {
-      const path = location.pathname;
-      const asterisk = href.endsWith('*');
-      if (asterisk) href = href.slice(0, -1);
-      const selected = asterisk ? path.startsWith(href) : href === path;
-
-      return {
-        component: RLink,
-        selected,
-        href,
-        sx: {
-          ...(selected && {
-            '.MuiListItemIcon-root': { color: theme.palette.primary.main }
-          })
-        }
-      };
+      return MUGlobal.getMenuItem(location.pathname, href);
     };
 
     // Menu open/close state
@@ -93,8 +89,7 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
     }));
 
     // Permissions
-    const financePermission = app.hasPermission([
-      UserRole.Finance,
+    const adminPermission = app.hasPermission([
       UserRole.Admin,
       UserRole.Founder
     ]);
@@ -141,12 +136,44 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
         </DrawerHeader>
         <Divider />
         <List onClick={mdUp ? undefined : handleDrawerClose}>
-          <ListItem button {...getMenuItem('/home/')}>
+          <ListItemButton {...getMenuItem('/home/')}>
             <ListItemIcon>
               <HomeIcon />
             </ListItemIcon>
             <ListItemText primary={labels.menuHome} />
-          </ListItem>
+          </ListItemButton>
+          <ListItemButton {...getMenuItem('/home/article/all')}>
+            <ListItemIcon>
+              <ArticleIcon />
+            </ListItemIcon>
+            <ListItemText primary={labels.articles} />
+          </ListItemButton>
+          <ListItemButton {...getMenuItem('/home/tab/all')}>
+            <ListItemIcon>
+              <TabIcon />
+            </ListItemIcon>
+            <ListItemText primary={labels.tabs} />
+          </ListItemButton>
+          <ListItemButton {...getMenuItem('/home/config/all')}>
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary={labels.configs} />
+          </ListItemButton>
+          <ListItemButton {...getMenuItem('/home/plugin/all')}>
+            <ListItemIcon>
+              <ExtensionIcon />
+            </ListItemIcon>
+            <ListItemText primary={labels.plugins} />
+          </ListItemButton>
+          {adminPermission && (
+            <ListItemButton {...getMenuItem('/home/user/all')}>
+              <ListItemIcon>
+                <GroupIcon />
+              </ListItemIcon>
+              <ListItemText primary={labels.users} />
+            </ListItemButton>
+          )}
         </List>
       </Drawer>
     );

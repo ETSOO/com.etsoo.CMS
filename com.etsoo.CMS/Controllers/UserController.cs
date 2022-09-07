@@ -1,6 +1,8 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.RQ.User;
 using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Application;
+using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Web;
@@ -66,10 +68,80 @@ namespace com.etsoo.CMS.Controllers
             var dto = new ChangePasswordDto(oldPassword, password);
 
             // Action result
-            var changeResult = await service.ChangePasswordAsync(dto, cd.Value.Ip);
+            var changeResult = await service.ChangePasswordAsync(dto, Ip);
 
             // Output
             await WriteResultAsync(changeResult);
+        }
+
+        /// <summary>
+        /// Create user
+        /// 创建用户
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPut("Create")]
+        public async Task Create(UserCreateRQ rq)
+        {
+            var result = await service.CreateAsync(rq, Ip);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Delete user
+        /// 删除用户
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Task</returns>
+        [HttpDelete("Delete/{id}")]
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        public async Task Delete(string id)
+        {
+            var result = await service.DeleteAsync(id);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Query history user
+        /// 查询操作历史用户
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPost("History")]
+        public async Task History(UserHistoryQueryRQ rq)
+        {
+            await service.HistoryAsync(rq, Response);
+        }
+
+        /// <summary>
+        /// Query user
+        /// 查询用户
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns></returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPost("Query")]
+        public async Task Query(UserQueryRQ rq)
+        {
+            await service.QueryAsync(rq, Response);
+        }
+
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPut("ResetPassword")]
+        public async Task ResetPassword(UserResetPasswordRQ rq)
+        {
+            // Check device
+            if (!CheckDevice(service, rq.DeviceId, out var checkResult, out var cd))
+            {
+                await WriteResultAsync(checkResult);
+                return;
+            }
+            var deviceCore = cd.Value.DeviceCore;
+
+            var result = await service.ResetPasswordAsync(rq.Id, deviceCore, Ip);
+            await WriteResultAsync(result);
         }
 
         /// <summary>
@@ -91,6 +163,33 @@ namespace com.etsoo.CMS.Controllers
 
             await service.SignoutAsync(deviceCore);
             return true;
+        }
+
+        /// <summary>
+        /// Update user
+        /// 更新用户
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPut("Update")]
+        public async Task Update(UserUpdateRQ rq)
+        {
+            var result = await service.UpdateAsync(rq, Ip);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Read for updae
+        /// 更新浏览
+        /// </summary>
+        /// <param name="id">User id</param>
+        /// <returns>Task</returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpGet("UpdateRead/{id}")]
+        public async Task UpdateRead(string id)
+        {
+            await service.UpdateReadAsync(id, Response);
         }
     }
 }

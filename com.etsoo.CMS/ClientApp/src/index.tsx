@@ -14,9 +14,20 @@ import { HRouter } from '@etsoo/react';
 import { Route, Routes } from 'react-router-dom';
 import Dashboard from './main/home/Dashboard';
 import Home from './main/home/Home';
+import AllArticles from './main/article/AllArticles';
+import AddArticle from './main/article/AddArticle';
 
 // Lazy load components
+const AllTabs = React.lazy(() => import('./main/tab/AllTabs'));
+const AddTab = React.lazy(() => import('./main/tab/AddTab'));
+
 const ChangePassword = React.lazy(() => import('./main/user/ChangePassword'));
+const AllUsers = React.lazy(() => import('./main/user/AllUsers'));
+const AddUser = React.lazy(() => import('./main/user/AddUser'));
+const UserHistory = React.lazy(() => import('./main/user/UserHistory'));
+
+const Settings = React.lazy(() => import('./main/website/Settings'));
+const Plugins = React.lazy(() => import('./main/website/Plugins'));
 
 // Culture provider
 const CultureStateProvider = app.cultureState.provider;
@@ -94,7 +105,22 @@ function MyRouter() {
           <Route path="/home" element={<Home />}>
             <Route index element={<Dashboard />} />
 
+            <Route path="article/all" element={<AllArticles />} />
+            <Route path="article/add" element={<AddArticle />} />
+            <Route path="article/edit/:id" element={<AddArticle />} />
+
+            <Route path="tab/all" element={<AllTabs />} />
+            <Route path="tab/add" element={<AddTab />} />
+            <Route path="tab/edit/:id" element={<AddTab />} />
+
             <Route path="user/changepassword" element={<ChangePassword />} />
+            <Route path="user/all" element={<AllUsers />} />
+            <Route path="user/edit/:id" element={<AddUser />} />
+            <Route path="user/add" element={<AddUser />} />
+            <Route path="user/history/:id" element={<UserHistory />} />
+
+            <Route path="config/all" element={<Settings />} />
+            <Route path="plugin/all" element={<Plugins />} />
           </Route>
         </Routes>
       </HRouter>

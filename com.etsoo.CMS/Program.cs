@@ -50,6 +50,13 @@ if (Cultures == null || Cultures.Length == 0)
 // Add as singleton to enhance performance
 services.AddSingleton<IMyApp>(serviceApp);
 
+// HttpClient
+var translationApi = configuration.GetValue<string>("EtsooWebsite:TranslationApi");
+services.AddHttpClient("Translation", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(translationApi);
+});
+
 // Storage
 var storageSection = serviceApp.Section.GetSection("Storage");
 if (storageSection.Exists())
