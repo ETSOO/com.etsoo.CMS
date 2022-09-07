@@ -7,29 +7,37 @@ import {
   ExternalSettings,
   IApiPayload,
   LoginRQ,
-  DynamicActionResult
+  DynamicActionResult,
+  UserRole,
+  IActionResult
 } from '@etsoo/appscript';
 import {
   CommonApp,
-  CoreConstants,
-  INotificationReact,
   IServiceAppSettings,
   MUGlobal,
   ServiceLoginResult,
   TextFieldEx,
   TextFieldExMethods,
   VBox
-} from '@etsoo/react';
+} from '@etsoo/materialui';
 import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
 import zhCNResources from '../i18n/zh-CN.json';
 import zhHKResources from '../i18n/zh-HK.json';
 import enUSResources from '../i18n/en-US.json';
 import React from 'react';
+import { AuditKind } from '../dto/AuditKind';
+import {
+  CoreConstants,
+  INotificationReact,
+  NotificationMessageType
+} from '@etsoo/react';
+import { TabLayout } from '../dto/TabLayout';
 
 /**
  * Service App
  */
 class MyServiceApp extends CommonApp {
+  private triedCount = 0;
   private loginDialog?: INotificationReact;
 
   private formatTitle(result: DynamicActionResult): [boolean, string] {
@@ -45,6 +53,55 @@ class MyServiceApp extends CommonApp {
     }
 
     return [disabled, title];
+  }
+
+  formatUrl(url: string) {
+    url = url.toLowerCase().replace(/[^0-9a-z_]+/g, '');
+    return url;
+  }
+
+  getLocalRoles() {
+    return this.getRoles(UserRole.User | UserRole.Admin);
+  }
+
+  getAuditKinds() {
+    return this.getEnumList(AuditKind, 'ak');
+  }
+
+  getTabLayouts() {
+    return this.getEnumList(TabLayout, 'layout');
+  }
+
+  async translate(text: string) {
+    return this.api.post<string>(
+      'Article/Translate',
+      { text },
+      { showLoading: false }
+    );
+  }
+
+  /**
+   * Reset user password
+   * @param id User id
+   * @param callback Callback
+   */
+  async resetPassword(id: string, callback?: () => void) {
+    const result = await this.api.put<IActionResult<{ password: string }>>(
+      'User/ResetPassword/',
+      { deviceId: this.deviceId, id }
+    );
+    if (result == null) return;
+
+    if (result.ok && result.data) {
+      var title =
+        this.get<string>('newPassword') +
+        ': ' +
+        this.decrypt(result.data.password);
+      this.notifier.alert(title, callback, NotificationMessageType.Info);
+      return;
+    }
+
+    this.alertResult(result);
   }
 
   /**
@@ -69,7 +126,9 @@ class MyServiceApp extends CommonApp {
     const passwordRef = React.createRef<HTMLInputElement>();
     const mRef = React.createRef<TextFieldExMethods>();
 
-    var loginCallback = async (form?: HTMLFormElement) => {
+    var loginCallback = async (
+      form?: HTMLFormElement
+    ): Promise<boolean | void> => {
       if (form == null) {
         return false;
       }
@@ -137,6 +196,13 @@ class MyServiceApp extends CommonApp {
         setTimeout(() => this.loginDialog?.dismiss(), 0);
 
         return true;
+      } else if (result.type === 'DbConnectionFailed') {
+        // Database created, try login again.
+        // Avoid repeated trying
+        if (this.triedCount === 0) {
+          this.triedCount++;
+          return await loginCallback(form);
+        }
       }
 
       if (app.checkDeviceResult(result)) {

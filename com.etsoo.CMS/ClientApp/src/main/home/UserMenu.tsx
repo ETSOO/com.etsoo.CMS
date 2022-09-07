@@ -8,12 +8,11 @@ import {
   MenuItem
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { BridgeCloseButton, RLink, UserAvatar } from '@etsoo/react';
+import { BridgeCloseButton, RLink, UserAvatar } from '@etsoo/materialui';
 import LockIcon from '@mui/icons-material/Lock';
 import { app } from '../../app/MyApp';
 
 interface UserMenuProps {
-  organization: number | undefined;
   name: string;
   avatar: string | undefined;
   smDown: boolean;
@@ -21,7 +20,7 @@ interface UserMenuProps {
 
 export function UserMenu(props: UserMenuProps) {
   // Destruct
-  const { organization, name, avatar, smDown } = props;
+  const { name, avatar } = props;
 
   // Labels
   const labels = app.getLabels(

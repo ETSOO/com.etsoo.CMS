@@ -8,6 +8,7 @@ using com.etsoo.CoreFramework.User;
 using com.etsoo.ServiceApp.Application;
 using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
+using com.etsoo.Utils.String;
 using System.Globalization;
 
 namespace com.etsoo.CMS.Services
@@ -39,6 +40,12 @@ namespace com.etsoo.CMS.Services
         {
             // Expiry seconds
             result.Data[Constants.SecondsName] = App.AuthService.AccessTokenMinutes * 60;
+
+            // Role
+            result.Data["Role"] = user.RoleValue;
+
+            // Name
+            result.Data["Name"] = StringUtils.HideData(user.Id);
 
             // Refresh token
             var token = new RefreshToken(user.Id, user.Organization, user.ClientIp, user.Region, user.DeviceId, null);
@@ -113,7 +120,7 @@ namespace com.etsoo.CMS.Services
             }
 
             // Add audit
-            await Repo.AddAuditAsync(AuditKind.Login, user.Id, "Login", new { data.Device, Success = success }, data.Ip, success ? AuditFlag.Normal : AuditFlag.Warning);
+            await Repo.AddAuditAsync(AuditKind.Login, user.Id, success ? "Login" : "Login Failed", new { data.Device, Success = success }, data.Ip, success ? AuditFlag.Normal : AuditFlag.Warning);
 
             if (success)
             {

@@ -64,7 +64,7 @@ namespace com.etsoo.CMS.Controllers
             }
 
             // Data
-            var data = new LoginDto(id, pwd, cd.Value.Ip, deviceCore, model.Region, model.Timezone);
+            var data = new LoginDto(id, pwd, Ip, deviceCore, model.Region, model.Timezone);
 
             // Login
             var (result, token) = await service.LoginAsync(data);
@@ -122,7 +122,7 @@ namespace com.etsoo.CMS.Controllers
             }
 
             // Result & refresh token
-            var (result, refreshToken) = await service.RefreshTokenAsync(token, new RefreshTokenDto(deviceCore, cd.Value.Ip, pwd, model.Timezone));
+            var (result, refreshToken) = await service.RefreshTokenAsync(token, new RefreshTokenDto(deviceCore, Ip, pwd, model.Timezone));
 
             // Pass the token through header
             if (refreshToken != null)
@@ -142,14 +142,14 @@ namespace com.etsoo.CMS.Controllers
         public async Task WebInitCall(InitCallRQ rq)
         {
             // Device check
-            if (!CheckDevice(out var checkResult, out var cd))
+            if (!CheckDevice(out var checkResult, out var parser))
             {
                 await WriteResultAsync(checkResult);
                 return;
             }
 
             // Result
-            var initResult = await service.WebInitCallAsync(rq, cd.Value.Parser.ToShortName());
+            var initResult = await service.WebInitCallAsync(rq, parser.ToShortName());
 
             await WriteResultAsync(initResult);
         }

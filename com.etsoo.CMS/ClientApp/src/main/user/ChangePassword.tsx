@@ -1,5 +1,5 @@
 import { IActionResult } from '@etsoo/appscript';
-import { CommonPage, TextFieldEx, VBox } from '@etsoo/react';
+import { CommonPage, TextFieldEx, VBox } from '@etsoo/materialui';
 import { DomUtils } from '@etsoo/shared';
 import { Button } from '@mui/material';
 import { useFormik } from 'formik';

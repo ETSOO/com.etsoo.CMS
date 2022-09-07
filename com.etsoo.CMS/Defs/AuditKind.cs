@@ -9,6 +9,16 @@
         Init,
         Login,
         TokenLogin,
-        ChangePassword
+        ChangePassword,
+        CreateUser,
+        UpdateUser,
+        ResetUserPassword,
+        UpdateWebsiteSettings,
+        CreateService,
+        UpdateService,
+        CreateTab,
+        UpdateTab,
+        CreateArticle,
+        UpdateArticle
     }
 }

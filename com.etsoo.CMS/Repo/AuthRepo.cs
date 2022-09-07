@@ -1,4 +1,5 @@
 ﻿using com.etsoo.CMS.Models;
+using com.etsoo.Database;
 using com.etsoo.ServiceApp.Application;
 using Dapper;
 using System.Net;
@@ -37,7 +38,20 @@ namespace com.etsoo.CMS.Repo
                 frozenTime = DateTime.UtcNow.AddMinutes(15 * (failure / 6));
             }
 
-            var command = CreateCommand("UPDATE users SET failure = @failure, frozenTime = @frozenTime WHERE id = @id", new DynamicParameters(new { id, failure, frozenTime = frozenTime.HasValue ? frozenTime.Value.ToString("s") : null }));
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+            parameters.Add(nameof(failure), failure);
+
+            if (frozenTime.HasValue)
+            {
+                parameters.Add(nameof(frozenTime), frozenTime.Value.ToString("s"));
+            }
+            else
+            {
+                parameters.Add(nameof(frozenTime), null);
+            }
+
+            var command = CreateCommand($"UPDATE users SET failure = @{nameof(failure)}, frozenTime = @{nameof(frozenTime)} WHERE id = @{nameof(id)}", parameters);
             await QueryAsAsync<DbUser>(command);
         }
 
@@ -50,8 +64,11 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Device token and user</returns>
         public async Task<(DbDevice Device, DbUser User)?> GetDeviceTokenAsync(string id, string device)
         {
-            var parameters = new DynamicParameters(new { id, device });
-            var command = CreateCommand("SELECT d.token, d.creation, u.id, u.password, u.role, u.status, u.frozenTime FROM devices AS d INNER JOIN users AS u ON d.user = u.id WHERE d.user = @id AND d.device = @device", parameters);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+            parameters.Add(nameof(device), device.ToDbString(true, 128));
+
+            var command = CreateCommand($"SELECT d.token, d.creation, u.id, u.password, u.role, u.status, u.frozenTime FROM devices AS d INNER JOIN users AS u ON d.user = u.id WHERE d.user = @{nameof(id)} AND d.device = @{nameof(device)}", parameters);
             return (await App.DB.WithConnection((connection) =>
             {
                 return connection.QueryAsync<DbDevice, DbUser, (DbDevice, DbUser)>(command, (d, u) => (d, u), "id");
@@ -66,9 +83,12 @@ namespace com.etsoo.CMS.Repo
         /// <returns>User data and is setup needed</returns>
         public async Task<(DbUser?, bool)> GetUserAsync(string id)
         {
+            var parameters = new DbParameters();
+            parameters.Add("id", id.ToDbString(true, 128));
+
             try
             {
-                var command = CreateCommand("SELECT id, password, role, status, failure, frozenTime FROM users WHERE id = @id", new DynamicParameters(new { id }));
+                var command = CreateCommand($"SELECT id, password, role, status, failure, frozenTime FROM users WHERE id = @{nameof(id)}", parameters);
                 return (await QueryAsAsync<DbUser>(command), false);
             }
             catch
@@ -97,7 +117,7 @@ namespace com.etsoo.CMS.Repo
         {
             // Create schema
             // https://www.sqlite.org/lang_createtable.html
-            var command = CreateCommand(@"
+            var command = CreateCommand(@$"
                 /*
                     users table
                 */
@@ -108,10 +128,13 @@ namespace com.etsoo.CMS.Repo
                     status INTEGER NOT NULL,
                     failure INTEGER,
                     frozenTime TEXT,
+                    creation TEXT NOT NULL,
                     refreshTime TEXT
                 ) WITHOUT ROWID;
 
-                INSERT INTO users (id, password, role, status) VALUES (@id, @password, 8192, 0);
+                CREATE INDEX IF NOT EXISTS index_users_refreshTime ON users (refreshTime);
+
+                INSERT INTO users (id, password, role, status, creation) VALUES (@{nameof(id)}, @{nameof(password)}, 8192, 0, DATETIME('now'));
 
                 /*
                     device token table
@@ -134,24 +157,27 @@ namespace com.etsoo.CMS.Repo
                     title TEXT NOT NULL,
                     content TEXT,
                     creation TEXT NOT NULL,
-                    author TEXT,
+                    author TEXT NOT NULL,
+                    target TEXT NOT NULL,
                     ip TEXT NOT NULL,
                     flag INTEGER DEFAULT 0,
 
                     FOREIGN KEY (author) REFERENCES users (id)
                 );
 
-                CREATE INDEX IF NOT EXISTS index_audits_kind ON audits (kind);
+                CREATE INDEX IF NOT EXISTS index_audits_author ON audits (author);
+                CREATE INDEX IF NOT EXISTS index_audits_kind_target ON audits (kind, target);
 
-                INSERT INTO audits (kind, title, creation, author, ip) VALUES (0, 'Initialize the website', DATETIME('now'), @id, @ip);
+                INSERT INTO audits (kind, title, creation, author, target, ip) VALUES (0, 'Initialize the website', DATETIME('now'), @{nameof(id)}, @{nameof(id)}, @{nameof(ip)});
 
                 /*
                     website table
                 */
                 CREATE TABLE IF NOT EXISTS website (
+                    domain TEXT NOT NULL,
                     title TEXT NOT NULL,
-                    keywords TEXT NOT NULL,
-                    description TEXT NOT NULL
+                    keywords TEXT,
+                    description TEXT
                 );
 
                 /*
@@ -161,7 +187,8 @@ namespace com.etsoo.CMS.Repo
                     id TEXT PRIMARY KEY,
                     app TEXT NOT NULL,
                     secret TEXT,
-                    status INTEGER NOT NULL
+                    status INTEGER NOT NULL,
+                    refreshTime TEXT NOT NULL
                 ) WITHOUT ROWID;
 
                 /*
@@ -169,37 +196,52 @@ namespace com.etsoo.CMS.Repo
                 */
                 CREATE TABLE IF NOT EXISTS tabs (
                     id INTEGER PRIMARY KEY,
+                    parent INTEGER,
                     name TEXT NOT NULL,
                     url TEXT NOT NULL,
+                    refreshTime TEXT NOT NULL,
                     status INTEGER NOT NULL,
-                    orderIndex INTEGER NOT NULL
+                    layout INTEGER NOT NULL,
+                    orderIndex INTEGER NOT NULL,
+                    articles INTEGER NOT NULL,
+
+                    FOREIGN KEY (parent) REFERENCES tabs (id)
                 );
 
-                CREATE INDEX IF NOT EXISTS index_tabs_orderIndex ON tabs (orderIndex);
+                CREATE INDEX IF NOT EXISTS index_tabs_parent ON tabs (parent, orderIndex);
+                CREATE INDEX IF NOT EXISTS index_tabs_url ON tabs (url);
 
                 /*
                     articles table
                 */
                 CREATE TABLE IF NOT EXISTS articles (
+                    id INTEGER PRIMARY KEY,
                     title TEXT NOT NULL,
+                    subtitle TEXT,
+                    keywords TEXT,
+                    description TEXT,
                     url TEXT NOT NULL,
                     content TEXT NOT NULL,
+                    logo TEXT,
                     tab1 INTEGER NOT NULL,
                     tab2 INTEGER,
                     tab3 INTEGER,
+                    weight INTEGER NOT NULL,
+                    year INTERGER NOT NULL,
                     creation TEXT NOT NULL,
                     release TEXT NOT NULL,
+                    refreshTime TEXT NOT NULL,
                     author TEXT NOT NULL,
                     status INTEGER NOT NULL,
+                    orderIndex INTEGER NOT NULL,
 
                     FOREIGN KEY (author) REFERENCES users (id)
                 );
 
-                CREATE INDEX IF NOT EXISTS index_articles_release ON articles (release);
+                CREATE INDEX IF NOT EXISTS index_articles_primary ON articles (tab1, tab2, tab3, orderIndex, release, weight, status);
                 CREATE INDEX IF NOT EXISTS index_articles_author ON articles (author);
-                CREATE INDEX IF NOT EXISTS index_articles_status ON articles (status);
-                CREATE INDEX IF NOT EXISTS index_articles_tabs ON articles (tab1, tab2, tab3);
-            ", new DynamicParameters(new { id, password, ip = ip.ToString() }));
+                CREATE INDEX IF NOT EXISTS index_articles_url ON articles (url, year);
+            ", new DbParameters(new { id, password, ip = ip.ToString() }));
 
             await ExecuteAsync(command);
         }
@@ -214,17 +256,19 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Task</returns>
         public async Task UpdateTokenAsync(string id, string device, string token)
         {
-            var command = CreateCommand(@"INSERT INTO devices (user, device, token, creation) VALUES (@id, @device, @token, @now)
-                ON CONFLICT DO UPDATE SET token = @token, creation = @now;
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+            parameters.Add(nameof(device), device.ToDbString(true, 128));
+            parameters.Add(nameof(token), token.ToDbString(true, 256));
+
+            var now = DateTime.UtcNow.ToString("s");
+            parameters.Add(nameof(now), now);
+
+            var command = CreateCommand(@$"INSERT INTO devices (user, device, token, creation) VALUES (@{nameof(id)}, @{nameof(device)}, @{nameof(token)}, @{nameof(now)})
+                ON CONFLICT DO UPDATE SET token = @{nameof(token)}, creation = @{nameof(now)};
                 
-                UPDATE users SET failure = 0, refreshTime = @now WHERE id = @id
-            ", new DynamicParameters(new
-            {
-                id,
-                device,
-                token,
-                now = DateTime.UtcNow.ToString("s")
-            }));
+                UPDATE users SET failure = 0, refreshTime = @{nameof(now)} WHERE id = @{nameof(id)}
+            ", parameters);
             await ExecuteAsync(command);
         }
     }

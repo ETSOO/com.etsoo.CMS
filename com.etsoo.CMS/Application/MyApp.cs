@@ -1,6 +1,6 @@
 ﻿using com.etsoo.CoreFramework.User;
+using com.etsoo.Database;
 using com.etsoo.ServiceApp.Application;
-using Dapper;
 
 namespace com.etsoo.CMS.Application
 {
@@ -27,7 +27,7 @@ namespace com.etsoo.CMS.Application
         /// </summary>
         /// <param name="user">Current user</param>
         /// <param name="parameters">Parameers</param>
-        public override void AddSystemParameters(IServiceUser user, DynamicParameters parameters)
+        public override void AddSystemParameters(IServiceUser user, IDbParameters parameters)
         {
             parameters.Add(Constants.CurrentUserField, user.Id);
         }

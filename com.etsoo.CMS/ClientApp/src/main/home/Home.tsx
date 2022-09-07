@@ -67,12 +67,7 @@ function Home() {
             </PageContext.Consumer>
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <UserMenu
-            organization={state.organization}
-            name={state.name}
-            avatar={state.avatar}
-            smDown={smDown}
-          />
+          <UserMenu name={state.name} avatar={state.avatar} smDown={smDown} />
         </Toolbar>
       </AppBar>
       <Box sx={{ display: 'flex' }}>

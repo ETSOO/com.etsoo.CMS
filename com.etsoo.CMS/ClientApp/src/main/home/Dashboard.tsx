@@ -1,5 +1,5 @@
 import React from 'react';
-import { CommonPage, MUGlobal } from '@etsoo/react';
+import { CommonPage, MUGlobal } from '@etsoo/materialui';
 import { app } from '../../app/MyApp';
 import { useNavigate } from 'react-router-dom';
 
