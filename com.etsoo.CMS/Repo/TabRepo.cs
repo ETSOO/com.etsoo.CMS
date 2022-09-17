@@ -1,6 +1,7 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CoreFramework.Application;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Database;
 using com.etsoo.Utils;
@@ -34,6 +35,8 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Action result</returns>
         public async Task<ActionDataResult<int>> CreateAsync(TabCreateRQ model)
         {
+            model.Url = model.Url.TrimEnd('/');
+
             var parameters = FormatParameters(model);
 
             AddSystemParameters(parameters);
@@ -53,7 +56,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<ActionResult> DeleteAsync(int id)
+        public async ValueTask<ActionResult> DeleteAsync(int id)
         {
             var parameters = new DbParameters();
             parameters.Add(nameof(id), id);
@@ -71,6 +74,37 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// List
+        /// 列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        public async Task ListAsync(TiplistRQ<int> rq, HttpResponse response)
+        {
+            var parameters = rq.AsParameters(App);
+
+            AddSystemParameters(parameters);
+
+            var fields = "id, name";
+            var json = "id, name AS label".ToJsonCommand();
+
+            var items = new List<string>();
+            if (rq.Id != null) items.Add($"id = @{nameof(rq.Id)}");
+            if (rq.ExcludedIds != null) items.Add($"NOT EXISTS (SELECT * FROM json_each(${nameof(rq.ExcludedIds)}) t WHERE t.value = tabs.id)");
+            if (!string.IsNullOrEmpty(rq.Keyword)) items.Add($"name LIKE '%' || @{nameof(rq.Keyword)} || '%'");
+
+            var conditions = App.DB.JoinConditions(items);
+
+            var limit = App.DB.QueryLimit(rq.Items ?? 16, 0);
+
+            // Sub-select, otherwise 'order by' fails
+            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM tabs {conditions} ORDER BY orderIndex ASC, name ASC {limit})", parameters);
+
+            await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
         /// Query tab
         /// 查询栏目
         /// </summary>
@@ -83,7 +117,7 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var fields = "id, parent, name, articles";
+            var fields = "id, parent, name, url, articles";
             var json = fields.ToJsonCommand();
 
             var items = new List<string>();
@@ -139,7 +173,7 @@ namespace com.etsoo.CMS.Repo
             var json = $"id, parent, name, url, layout, articles, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM tabs WHERE id = @{nameof(id)}", parameters);
 
-            await ReadJsonToStreamAsync(command, response, false);
+            await ReadJsonToStreamAsync(command, response);
         }
 
         /// <summary>
@@ -158,7 +192,7 @@ namespace com.etsoo.CMS.Repo
 
             var command = CreateCommand($"WITH ctx(id) AS (SELECT @{nameof(id)} UNION ALL SELECT t.parent FROM tabs AS t INNER JOIN ctx ON t.id = ctx.id WHERE t.parent IS NOT NULL) SELECT json_group_array(id) FROM ctx", parameters);
 
-            await ReadJsonToStreamAsync(command, response, false);
+            await ReadJsonToStreamAsync(command, response);
         }
     }
 }

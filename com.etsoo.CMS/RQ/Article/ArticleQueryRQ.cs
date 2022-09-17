@@ -11,6 +11,12 @@ namespace com.etsoo.CMS.RQ.Article
     public partial record ArticleQueryRQ : QueryRQ<int>
     {
         /// <summary>
+        /// Title
+        /// 标题
+        /// </summary>
+        public string? Title { get; init; }
+
+        /// <summary>
         /// Tab
         /// 栏目
         /// </summary>

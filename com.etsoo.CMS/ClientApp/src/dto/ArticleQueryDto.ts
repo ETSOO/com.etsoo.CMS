@@ -1,4 +1,6 @@
-export type ArticleQueryDto = {
+import { ArticleLink } from './ArticleLink';
+
+export type ArticleQueryDto = ArticleLink & {
   /**
    * Id
    */
@@ -7,7 +9,7 @@ export type ArticleQueryDto = {
   /**
    * Creation date
    */
-  creation: Date;
+  creation: Date | string;
 
   /**
    * Is the author
@@ -20,7 +22,17 @@ export type ArticleQueryDto = {
   title: string;
 
   /**
-   * Tab
+   * Tab name 1
    */
-  tab: string;
+  tabName1: string;
+
+  /**
+   * Tab name 2
+   */
+  tabName2?: string;
+
+  /**
+   * Tab name 3
+   */
+  tabName3?: string;
 };

@@ -10,6 +10,11 @@ export type TabDto = {
   name: string;
 
   /**
+   * Url
+   */
+  url: string;
+
+  /**
    * Level
    */
   level?: number;

@@ -3,6 +3,7 @@ using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Business;
 using com.etsoo.Utils.Actions;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace com.etsoo.CMS.Services
 {
@@ -44,6 +45,19 @@ namespace com.etsoo.CMS.Services
 
             result = null;
             return true;
+        }
+
+        /// <summary>
+        /// Format keywords
+        /// 格式化关键词
+        /// </summary>
+        /// <param name="keywords">Keywords</param>
+        /// <returns>Result</returns>
+        public static string FormatKeywords(string keywords)
+        {
+            // Unify the format
+            var items = new Regex(@"\s*[;；,，]+\s*", RegexOptions.Multiline).Split(keywords);
+            return string.Join(", ", items);
         }
     }
 }

@@ -10,7 +10,9 @@ import {
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { BridgeCloseButton, RLink, UserAvatar } from '@etsoo/materialui';
 import LockIcon from '@mui/icons-material/Lock';
+import UpgradeIcon from '@mui/icons-material/Upgrade';
 import { app } from '../../app/MyApp';
+import { IActionResult, UserRole } from '@etsoo/appscript';
 
 interface UserMenuProps {
   name: string;
@@ -27,8 +29,13 @@ export function UserMenu(props: UserMenuProps) {
     'changePassword',
     'smartERP',
     'switchOrganization',
-    'signout'
+    'signout',
+    'upgradeSystem',
+    'operationSucceeded'
   );
+
+  // Permissions
+  const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
 
   // User menu anchor
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement>();
@@ -52,6 +59,18 @@ export function UserMenu(props: UserMenuProps) {
 
     // Sign out
     app.signout();
+  };
+
+  // Upgrade system
+  const upgradeSystem = () => {
+    app.api.put<IActionResult>('Website/UpgradeSystem').then((result) => {
+      if (result == null) return;
+      if (result.ok) {
+        app.notifier.succeed(labels.operationSucceeded);
+        return;
+      }
+      app.alertResult(result);
+    });
   };
 
   return (
@@ -121,6 +140,15 @@ export function UserMenu(props: UserMenuProps) {
           </ListItemIcon>
           <ListItemText>{labels.changePassword}</ListItemText>
         </MenuItem>
+        {adminPermission && [
+          <Divider key="dividerUpgrade" />,
+          <MenuItem key="upgradeSystem" onClick={upgradeSystem}>
+            <ListItemIcon>
+              <UpgradeIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{labels.upgradeSystem}</ListItemText>
+          </MenuItem>
+        ]}
         <Divider />
         <MenuItem onClick={handleSignout}>
           <ListItemIcon>

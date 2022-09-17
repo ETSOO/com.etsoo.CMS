@@ -34,6 +34,20 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Create or update resource
+        /// 创建或更新资源
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        [HttpPut("CreateOrUpdateResource")]
+        public async Task CreateOrUpdateResource(ResourceCreateRQ rq)
+        {
+            var result = await service.CreateOrUpdateResourceAsync(rq, Ip);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
         /// Create plugin service
         /// 创建插件服务
         /// </summary>
@@ -67,6 +81,29 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Dashboard data
+        /// 仪表盘数据
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpGet("Dashboard")]
+        public async Task Dashboard()
+        {
+            await service.DashboardAsync(Response);
+        }
+
+        /// <summary>
+        /// Initialize website
+        /// 初始化网站
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpPost("Initialize")]
+        public async Task Initialize(InitializeRQ rq)
+        {
+            var result = await service.InitializeAsync(rq);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
         /// Read settings
         /// 读取设置
         /// </summary>
@@ -75,6 +112,18 @@ namespace com.etsoo.CMS.Controllers
         public async Task ReadSettings()
         {
             await service.ReadSettingsAsync(Response);
+        }
+
+        /// <summary>
+        /// Query resources
+        /// 查询资源
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        [HttpPost("QueryResources")]
+        public async Task QueryResources()
+        {
+            await service.QueryResourcesAsync(Response);
         }
 
         /// <summary>
@@ -133,6 +182,18 @@ namespace com.etsoo.CMS.Controllers
             }
 
             var result = await service.UpdateServiceAsync(rq, Ip);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Upgrade system
+        /// 升级系统
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpPut("UpgradeSystem")]
+        public async Task UpgradeSystem()
+        {
+            var result = await service.UpgradeSystemAsync();
             await WriteResultAsync(result);
         }
     }

@@ -15,6 +15,7 @@ import TabIcon from '@mui/icons-material/Tab';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import SettingsIcon from '@mui/icons-material/Settings';
 import GroupIcon from '@mui/icons-material/Group';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import React from 'react';
 import { CSSProperties } from 'react';
 import { UserRole } from '@etsoo/appscript';
@@ -66,7 +67,8 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
       'tabs',
       'configs',
       'plugins',
-      'users'
+      'users',
+      'resources'
     );
 
     // Location
@@ -153,6 +155,12 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
               <TabIcon />
             </ListItemIcon>
             <ListItemText primary={labels.tabs} />
+          </ListItemButton>
+          <ListItemButton {...getMenuItem('/home/resource/all')}>
+            <ListItemIcon>
+              <ListAltIcon />
+            </ListItemIcon>
+            <ListItemText primary={labels.resources} />
           </ListItemButton>
           <ListItemButton {...getMenuItem('/home/config/all')}>
             <ListItemIcon>

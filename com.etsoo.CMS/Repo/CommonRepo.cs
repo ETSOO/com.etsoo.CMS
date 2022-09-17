@@ -55,7 +55,7 @@ namespace com.etsoo.CMS.Repo
             parameters.Add(nameof(flag), (byte)flag);
             parameters.Add(nameof(target), target.ToDbString(true, 128));
 
-            var now = DateTime.UtcNow.ToString("s").ToDbString(true, 128);
+            var now = DateTime.UtcNow.ToString("u").ToDbString(true, 128);
             parameters.Add(nameof(now), now);
 
             var command = CreateCommand($"INSERT INTO audits (kind, title, content, creation, author, target, ip, flag) VALUES (@{nameof(kind)}, @{nameof(title)}, @{nameof(content)}, @{nameof(now)}, @{nameof(id)}, @{nameof(target)}, @{nameof(ip)}, @{nameof(flag)})",

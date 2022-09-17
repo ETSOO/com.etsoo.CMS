@@ -220,7 +220,7 @@ namespace com.etsoo.CMS.Repo
             var json = $"id, role, refreshTime, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM users WHERE id = @{nameof(id)}", parameters);
 
-            await ReadJsonToStreamAsync(command, response, false);
+            await ReadJsonToStreamAsync(command, response);
         }
     }
 }

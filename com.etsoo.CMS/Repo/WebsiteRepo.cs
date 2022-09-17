@@ -1,10 +1,12 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Website;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Database;
 using com.etsoo.Utils.Actions;
+using System.Reflection;
 
 namespace com.etsoo.CMS.Repo
 {
@@ -52,6 +54,25 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Create or update resource
+        /// 创建或更新资源
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <returns>Action result</returns>
+        public async Task<ActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ model)
+        {
+            var parameters = FormatParameters(model);
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($@"INSERT OR REPLACE INTO resources (id, value) VALUES (@{nameof(model.Id)}, @{nameof(model.Value)})", parameters);
+
+            await ExecuteAsync(command);
+
+            return ActionResult.Success;
+        }
+
+        /// <summary>
         /// Create service
         /// 创建服务
         /// </summary>
@@ -72,6 +93,42 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Dashboard data
+        /// 仪表盘数据
+        /// </summary>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        public async Task DashboardAsync(HttpResponse response)
+        {
+            var parameters = new DbParameters();
+
+            AddSystemParameters(parameters);
+
+            var site = $"domain, version".ToJsonCommand(true);
+            var article = $"id, title, refreshTime, author".ToJsonCommand();
+            var audits = $"rowid, title, creation, author".ToJsonCommand();
+            var command = CreateCommand(@$"SELECT {site} FROM website;
+                SELECT {article} FROM (SELECT * FROM articles ORDER BY refreshTime DESC LIMIT 6);
+                SELECT {audits} FROM (SELECT rowid, * FROM audits WHERE author = {SysUserField} AND kind <> {(byte)AuditKind.TokenLogin} ORDER BY rowid DESC LIMIT 4)", parameters);
+
+            await ReadJsonToStreamAsync(command, response, new[] { "site", "articles", "audits" });
+        }
+
+        /// <summary>
+        /// Initialize website
+        /// 初始化网站
+        /// </summary>
+        /// <param name="rq">Reqeust data</param>
+        /// <returns>Task</returns>
+        public async Task<ActionResult> InitializeAsync(InitializeRQ rq)
+        {
+            var parameters = FormatParameters(rq);
+            var command = CreateCommand($"INSERT INTO website (domain, title) SELECT @{nameof(rq.Domain)}, @{nameof(rq.Title)} WHERE NOT EXISTS (SELECT * FROM website)", parameters);
+            await ExecuteAsync(command);
+            return ActionResult.Success;
+        }
+
+        /// <summary>
         /// Read settings
         /// 读取设置
         /// </summary>
@@ -82,7 +139,7 @@ namespace com.etsoo.CMS.Repo
             var json = $"domain, title, keywords, description".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM website LIMIT 1");
 
-            await ReadJsonToStreamAsync(command, response, false);
+            await ReadJsonToStreamAsync(command, response);
         }
 
         /// <summary>
@@ -107,7 +164,58 @@ namespace com.etsoo.CMS.Repo
             var json = $"id, app, refreshTime, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand();
             var command = CreateCommand($"SELECT {json} FROM services");
 
-            await ReadJsonToStreamAsync(command, response, false);
+            await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
+        /// Query resources
+        /// 查询资源
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        public async Task QueryResourcesAsync(HttpResponse response)
+        {
+            var json = $"id, value".ToJsonCommand();
+            var command = CreateCommand($"SELECT {json} FROM resources");
+
+            await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
+        /// Upgrade system
+        /// 升级系统
+        /// </summary>
+        /// <returns>Task</returns>
+        public async Task<IActionResult> UpgradeSystemAsync()
+        {
+            // New version
+            var newVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3);
+            if (string.IsNullOrEmpty(newVersion))
+            {
+                return ApplicationErrors.NoValidData.AsResult("version");
+            }
+
+            // Current version
+            var version = await ExecuteScalarAsync<string>(CreateCommand("SELECT version FROM website"));
+
+            // Same versions
+            if (newVersion.Equals(version))
+            {
+                return ActionResult.Success;
+            }
+
+            // Actions
+            var parameters = new DbParameters();
+
+            AddSystemParameters(parameters);
+
+            // Update version
+            var updateParameters = new DbParameters();
+            updateParameters.Add(nameof(newVersion), newVersion);
+            var command = CreateCommand($"UPDATE website SET version = @{nameof(newVersion)}", updateParameters);
+            await QueryAsAsync<DbWebsite>(command);
+
+            return ActionResult.Success;
         }
     }
 }

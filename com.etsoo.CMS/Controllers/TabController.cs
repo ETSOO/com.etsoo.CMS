@@ -2,6 +2,7 @@
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Authentication;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
@@ -58,6 +59,18 @@ namespace com.etsoo.CMS.Controllers
         {
             var result = await service.DeleteAsync(id);
             await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Tab list
+        /// 栏目列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [HttpPost("List")]
+        public async Task List(TiplistRQ<int> rq)
+        {
+            await service.ListAsync(rq, Response);
         }
 
         /// <summary>

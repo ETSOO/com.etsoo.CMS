@@ -3,15 +3,17 @@ import {
   ResponsivePage,
   SearchField,
   IconButtonLink,
-  MobileListItemRenderer
+  MobileListItemRenderer,
+  Tiplist
 } from '@etsoo/materialui';
-import { BoxProps, Fab } from '@mui/material';
+import { BoxProps, Fab, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PageviewIcon from '@mui/icons-material/Pageview';
+import PublicIcon from '@mui/icons-material/Public';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DomUtils } from '@etsoo/shared';
+import { DataTypes, DomUtils } from '@etsoo/shared';
 import { app } from '../../app/MyApp';
 import {
   GridCellRendererProps,
@@ -19,6 +21,7 @@ import {
   ScrollerListForwardRef
 } from '@etsoo/react';
 import { ArticleQueryDto } from '../../dto/ArticleQueryDto';
+import { UserRole } from '@etsoo/appscript';
 
 function AllArticles() {
   // Route
@@ -34,11 +37,16 @@ function AllArticles() {
     'add',
     'edit',
     'view',
-    'articleTitle'
+    'articleTitle',
+    'viewWebsite',
+    'tab'
   );
 
   // Refs
   const ref = React.useRef<ScrollerListForwardRef<ArticleQueryDto>>();
+
+  // Permissions
+  const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
 
   // Load data
   const reloadData = async () => {
@@ -71,8 +79,26 @@ function AllArticles() {
           </React.Fragment>
         )
       }}
-      fieldTemplate={{ role: 'number' }}
-      fields={[<SearchField label={labels.id} name="id" defaultValue={id} />]}
+      fieldTemplate={{ tab: 'number', id: 'number' }}
+      fields={[
+        <SearchField label={labels.articleTitle} name="title" />,
+        <Tiplist
+          label={labels.tab}
+          name="tab"
+          search
+          loadData={async (keyword, id) => {
+            return await app.api.post<DataTypes.IdLabelItem[]>(
+              'Tab/List',
+              {
+                id,
+                keyword
+              },
+              { defaultValue: [], showLoading: false }
+            );
+          }}
+        />,
+        <SearchField label={labels.id} name="id" defaultValue={id} />
+      ]}
       loadData={async (data) => {
         return await app.api.post<ArticleQueryDto[]>('Article/Query', data, {
           defaultValue: [],
@@ -94,6 +120,12 @@ function AllArticles() {
           sortable: false
         },
         {
+          field: 'tabName1',
+          header: labels.tab,
+          width: 240,
+          sortable: false
+        },
+        {
           width: 156,
           header: labels.actions,
           cellRenderer: ({
@@ -103,13 +135,13 @@ function AllArticles() {
             if (data == null) return undefined;
 
             cellProps.sx = {
-              paddingTop: '9px!important',
-              paddingBottom: '9px!important'
+              paddingTop: '6px!important',
+              paddingBottom: '6px!important'
             };
 
             return (
               <React.Fragment>
-                {!data.isSelf && (
+                {(adminPermission || data.isSelf) && (
                   <IconButtonLink
                     title={labels.edit}
                     href={`/home/article/edit/${data.id}`}
@@ -119,10 +151,17 @@ function AllArticles() {
                 )}
                 <IconButtonLink
                   title={labels.view}
-                  href={`/home/articles/view/${data.id}`}
+                  href={`/home/article/view/${data.id}`}
                 >
                   <PageviewIcon />
                 </IconButtonLink>
+                <IconButton
+                  title={labels.viewWebsite}
+                  target="_blank"
+                  href={`${app.formatLink(data)}`}
+                >
+                  <PublicIcon />
+                </IconButton>
               </React.Fragment>
             );
           }

@@ -33,7 +33,7 @@ namespace com.etsoo.CMS.RQ.Tab
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Url { get; init; } = default!;
+        public string Url { get; set; } = default!;
 
         /// <summary>
         /// Enabled or not

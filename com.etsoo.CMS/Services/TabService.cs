@@ -56,6 +56,18 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// List
+        /// 列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        public async Task ListAsync(TiplistRQ<int> rq, HttpResponse response)
+        {
+            await Repo.ListAsync(rq, response);
+        }
+
+        /// <summary>
         /// Query tab
         /// 查询栏目
         /// </summary>
@@ -87,7 +99,12 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<IActionResult> UpdateAsync(TabUpdateRQ rq, IPAddress ip)
         {
-            var refreshTime = DateTime.UtcNow.ToString("s");
+            if (!string.IsNullOrEmpty(rq.Url))
+            {
+                rq.Url = rq.Url.TrimEnd('/');
+            }
+
+            var refreshTime = DateTime.UtcNow.ToString("u");
             var parameters = new Dictionary<string, object>
             {
                 [nameof(refreshTime)] = refreshTime

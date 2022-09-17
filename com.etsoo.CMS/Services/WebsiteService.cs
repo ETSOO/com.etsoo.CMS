@@ -10,7 +10,6 @@ using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.String;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace com.etsoo.CMS.Services
 {
@@ -33,6 +32,22 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Create or update resource
+        /// 创建或更新资源
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Action result</returns>
+        public async Task<ActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ rq, IPAddress ip)
+        {
+            var result = await Repo.CreateOrUpdateResourceAsync(rq);
+
+            await Repo.AddAuditAsync(AuditKind.CreateResource, rq.Id, $"Create or update resource {rq.Id}", ip, result, rq);
+
+            return result;
+        }
+
+        /// <summary>
         /// Create service
         /// 创建服务
         /// </summary>
@@ -51,6 +66,28 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Dashboard data
+        /// 仪表盘数据
+        /// </summary>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        public async Task DashboardAsync(HttpResponse response)
+        {
+            await Repo.DashboardAsync(response);
+        }
+
+        /// <summary>
+        /// Initialize website
+        /// 初始化网站
+        /// </summary>
+        /// <param name="rq">Reqeust data</param>
+        /// <returns>Task</returns>
+        public async Task<IActionResult> InitializeAsync(InitializeRQ rq)
+        {
+            return await Repo.InitializeAsync(rq);
+        }
+
+        /// <summary>
         /// Read settings
         /// 读取设置
         /// </summary>
@@ -59,6 +96,17 @@ namespace com.etsoo.CMS.Services
         public async Task ReadSettingsAsync(HttpResponse response)
         {
             await Repo.ReadSettingsAsync(response);
+        }
+
+        /// <summary>
+        /// Query resources
+        /// 查询资源
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Task</returns>
+        public async Task QueryResourcesAsync(HttpResponse response)
+        {
+            await Repo.QueryResourcesAsync(response);
         }
 
         /// <summary>
@@ -81,11 +129,14 @@ namespace com.etsoo.CMS.Services
         /// <returns></returns>
         public async Task<IActionResult> UpdateSettingsAsync(WebsiteUpdateSettingsRQ rq, IPAddress ip)
         {
+            if (!string.IsNullOrEmpty(rq.Domain))
+            {
+                rq.Domain = rq.Domain.TrimEnd('/');
+            }
+
             if (!string.IsNullOrEmpty(rq.Keywords))
             {
-                // Unify the format
-                var items = new Regex(@"\s*[;；,，]+\s*", RegexOptions.Multiline).Split(rq.Keywords);
-                rq.Keywords = string.Join(", ", items);
+                rq.Keywords = ServiceUtils.FormatKeywords(rq.Keywords);
             }
 
             // View website
@@ -124,7 +175,7 @@ namespace com.etsoo.CMS.Services
         {
             var parameters = new Dictionary<string, object>
             {
-                ["RefreshTime"] = DateTime.UtcNow.ToString("s")
+                ["RefreshTime"] = DateTime.UtcNow.ToString("u")
             };
             var (result, _) = await Repo.InlineUpdateAsync(rq, new QuickUpdateConfigs(new[] { "app", "secret", "status AS enabled=IIF(@Enabled, 0, 200)" })
             {
@@ -137,6 +188,16 @@ namespace com.etsoo.CMS.Services
             await Repo.AddAuditAsync(AuditKind.UpdateService, rq.Id, $"Update service {rq.Id}", ip, result, rq);
 
             return result;
+        }
+
+        /// <summary>
+        /// Upgrade system
+        /// 升级系统
+        /// </summary>
+        /// <returns>Task</returns>
+        public async Task<IActionResult> UpgradeSystemAsync()
+        {
+            return await Repo.UpgradeSystemAsync();
         }
     }
 }

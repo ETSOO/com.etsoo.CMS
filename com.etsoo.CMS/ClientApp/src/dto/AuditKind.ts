@@ -8,5 +8,14 @@ export enum AuditKind {
   TokenLogin,
   ChangePassword,
   CreateUser,
-  UpdateUser
+  UpdateUser,
+  ResetUserPassword,
+  UpdateWebsiteSettings,
+  CreateService,
+  UpdateService,
+  CreateTab,
+  UpdateTab,
+  CreateArticle,
+  UpdateArticle,
+  CreateResource
 }
