@@ -20,6 +20,7 @@ import AddArticle from './main/article/AddArticle';
 // Lazy load components
 const AllTabs = React.lazy(() => import('./main/tab/AllTabs'));
 const AddTab = React.lazy(() => import('./main/tab/AddTab'));
+const ViewArticle = React.lazy(() => import('./main/article/ViewArticle'));
 
 const ChangePassword = React.lazy(() => import('./main/user/ChangePassword'));
 const AllUsers = React.lazy(() => import('./main/user/AllUsers'));
@@ -28,6 +29,8 @@ const UserHistory = React.lazy(() => import('./main/user/UserHistory'));
 
 const Settings = React.lazy(() => import('./main/website/Settings'));
 const Plugins = React.lazy(() => import('./main/website/Plugins'));
+const Resources = React.lazy(() => import('./main/website/Resources'));
+const OnlineDrive = React.lazy(() => import('./main/website/OnlineDrive'));
 
 // Culture provider
 const CultureStateProvider = app.cultureState.provider;
@@ -108,6 +111,7 @@ function MyRouter() {
             <Route path="article/all" element={<AllArticles />} />
             <Route path="article/add" element={<AddArticle />} />
             <Route path="article/edit/:id" element={<AddArticle />} />
+            <Route path="article/view/:id" element={<ViewArticle />} />
 
             <Route path="tab/all" element={<AllTabs />} />
             <Route path="tab/add" element={<AddTab />} />
@@ -119,6 +123,8 @@ function MyRouter() {
             <Route path="user/add" element={<AddUser />} />
             <Route path="user/history/:id" element={<UserHistory />} />
 
+            <Route path="resource/all" element={<Resources />} />
+            <Route path="resource/onlinedrive" element={<OnlineDrive />} />
             <Route path="config/all" element={<Settings />} />
             <Route path="plugin/all" element={<Plugins />} />
           </Route>

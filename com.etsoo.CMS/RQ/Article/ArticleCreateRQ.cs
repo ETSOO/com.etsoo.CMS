@@ -1,4 +1,5 @@
-﻿using com.etsoo.SourceGenerators.Attributes;
+﻿using com.etsoo.CoreFramework.Business;
+using com.etsoo.SourceGenerators.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Article
@@ -41,7 +42,7 @@ namespace com.etsoo.CMS.RQ.Article
         /// </summary>
         [Property(Length = 256)]
         [StringLength(256)]
-        public string? Keywords { get; init; }
+        public string? Keywords { get; set; }
 
         /// <summary>
         /// Description
@@ -58,7 +59,7 @@ namespace com.etsoo.CMS.RQ.Article
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Url { get; init; } = default!;
+        public string Url { get; set; } = default!;
 
         /// <summary>
         /// Content
@@ -84,5 +85,17 @@ namespace com.etsoo.CMS.RQ.Article
         /// 权重
         /// </summary>
         public int Weight { get; init; } = 0;
+
+        /// <summary>
+        /// Slideshow photo
+        /// 幻灯片照片
+        /// </summary>
+        public string? Slideshow { get; init; }
+
+        /// <summary>
+        /// Status
+        /// 状态
+        /// </summary>
+        public EntityStatus? Status { get; init; }
     }
 }

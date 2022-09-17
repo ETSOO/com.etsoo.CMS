@@ -44,7 +44,7 @@ namespace com.etsoo.CMS.Repo
 
             if (frozenTime.HasValue)
             {
-                parameters.Add(nameof(frozenTime), frozenTime.Value.ToString("s"));
+                parameters.Add(nameof(frozenTime), frozenTime.Value.ToString("u"));
             }
             else
             {
@@ -177,8 +177,17 @@ namespace com.etsoo.CMS.Repo
                     domain TEXT NOT NULL,
                     title TEXT NOT NULL,
                     keywords TEXT,
-                    description TEXT
+                    description TEXT,
+                    version TEXT
                 );
+
+                /*
+                    resources table
+                */
+                CREATE TABLE IF NOT EXISTS resources (
+                    id TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                ) WITHOUT ROWID;
 
                 /*
                     services table
@@ -234,6 +243,7 @@ namespace com.etsoo.CMS.Repo
                     author TEXT NOT NULL,
                     status INTEGER NOT NULL,
                     orderIndex INTEGER NOT NULL,
+                    slideshow TEXT,
 
                     FOREIGN KEY (author) REFERENCES users (id)
                 );
@@ -261,7 +271,7 @@ namespace com.etsoo.CMS.Repo
             parameters.Add(nameof(device), device.ToDbString(true, 128));
             parameters.Add(nameof(token), token.ToDbString(true, 256));
 
-            var now = DateTime.UtcNow.ToString("s");
+            var now = DateTime.UtcNow.ToString("u");
             parameters.Add(nameof(now), now);
 
             var command = CreateCommand(@$"INSERT INTO devices (user, device, token, creation) VALUES (@{nameof(id)}, @{nameof(device)}, @{nameof(token)}, @{nameof(now)})

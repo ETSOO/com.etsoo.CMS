@@ -1,3 +1,5 @@
+import { EntityStatus } from '@etsoo/appscript';
+
 export type ArticleUpdateDto = {
   /**
    * Id
@@ -40,7 +42,22 @@ export type ArticleUpdateDto = {
   url?: string;
 
   /**
+   * Logo
+   */
+  logo?: string;
+
+  /**
+   * Slideshow
+   */
+  slideshow?: string;
+
+  /**
    * Release datetime
    */
-  release: Date;
+  release: Date | string;
+
+  /**
+   * Status
+   */
+  status: EntityStatus;
 };

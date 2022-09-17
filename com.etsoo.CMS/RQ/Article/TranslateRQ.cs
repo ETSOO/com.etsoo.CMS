@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using com.etsoo.SourceGenerators.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Article
 {
@@ -6,6 +7,7 @@ namespace com.etsoo.CMS.RQ.Article
     /// Translate request data
     /// 翻译请求数据
     /// </summary>
+    [AutoToParameters]
     public partial record TranslateRQ
     {
         [Required]

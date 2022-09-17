@@ -10,6 +10,7 @@ import { app } from '../../app/MyApp';
 import { TabUpdateDto } from '../../dto/TabUpdateDto';
 import { TabSelector } from '../../components/TabSelector';
 import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
+import { TabDto } from '../../dto/TabDto';
 
 function AddTab() {
   // Route
@@ -18,6 +19,7 @@ function AddTab() {
 
   const { parent } = useSearchParamsEx({ parent: 'number' });
   const [parents, setParents] = React.useState<number[]>();
+  const currentTab = React.useRef<TabDto>();
 
   // Is editing
   const isEditing = id != null;
@@ -97,13 +99,15 @@ function AddTab() {
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (!isEditing || formik.values.url === '') {
       const name = event.target.value;
-      app.translate(name).then((result) => {
-        if (result == null) return;
-        const url = app.formatUrl(result);
-        formik.setFieldValue(
-          'url',
-          '/' + (url === 'home' || url === 'fontpage' ? '' : url)
-        );
+      app.formatUrl(name).then((url) => {
+        if (url == null) return;
+
+        if (currentTab.current == null) {
+          if (url === 'home' || url === 'fontpage') url = '';
+          formik.setFieldValue('url', '/' + url);
+        } else {
+          formik.setFieldValue('url', currentTab.current.url + '/' + url);
+        }
       });
     }
   };
@@ -181,6 +185,7 @@ function AddTab() {
           label={labels.parentTab}
           values={parents}
           onChange={(value) => formik.setFieldValue('parent', value)}
+          onItemChange={(option) => (currentTab.current = option)}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -217,12 +222,7 @@ function AddTab() {
           label={labels.tabLayout}
           idValue={formik.values.layout}
           inputRequired
-          inputOnChange={(event) => {
-            formik.handleChange(event);
-            if (event.target.value === '1') {
-              formik.setFieldValue('url', '#');
-            }
-          }}
+          inputOnChange={(event) => formik.handleChange(event)}
         />
       </Grid>
       <Grid item xs={12} sm={6}>

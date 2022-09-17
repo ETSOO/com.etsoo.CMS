@@ -170,8 +170,8 @@ function AllUsers() {
             if (data == null) return undefined;
 
             cellProps.sx = {
-              paddingTop: '9px!important',
-              paddingBottom: '9px!important'
+              paddingTop: '6px!important',
+              paddingBottom: '6px!important'
             };
 
             return (

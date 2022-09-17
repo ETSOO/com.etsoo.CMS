@@ -1,4 +1,5 @@
-﻿using com.etsoo.CoreFramework.Models;
+﻿using com.etsoo.CoreFramework.Business;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.SourceGenerators.Attributes;
 using System.ComponentModel.DataAnnotations;
 
@@ -56,7 +57,7 @@ namespace com.etsoo.CMS.RQ.Article
         /// </summary>
         [Property(Length = 128)]
         [StringLength(128)]
-        public string? Url { get; init; } = default!;
+        public string? Url { get; set; } = default!;
 
         /// <summary>
         /// Content
@@ -81,5 +82,17 @@ namespace com.etsoo.CMS.RQ.Article
         /// 权重
         /// </summary>
         public int? Weight { get; init; }
+
+        /// <summary>
+        /// Slideshow photo
+        /// 幻灯片照片
+        /// </summary>
+        public string? Slideshow { get; init; }
+
+        /// <summary>
+        /// Status
+        /// 状态
+        /// </summary>
+        public EntityStatus? Status { get; init; }
     }
 }

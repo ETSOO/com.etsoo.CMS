@@ -18,7 +18,7 @@ namespace com.etsoo.CMS.RQ.Website
         /// </summary>
         [Property(Length = 128)]
         [StringLength(128)]
-        public string? Domain { get; init; }
+        public string? Domain { get; set; }
 
         /// <summary>
         /// Title

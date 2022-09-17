@@ -1,4 +1,4 @@
-import { EditPage, InputField } from '@etsoo/materialui';
+import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
 import { Grid } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
@@ -10,7 +10,7 @@ import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
 import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
 import { ArticleUpdateDto } from '../../dto/ArticleUpdateDto';
-import { EOEditorEx } from '@etsoo/reacteditor';
+import { EOEditorElement, EOEditorEx } from '@etsoo/reacteditor';
 
 function AddTab() {
   // Route
@@ -19,6 +19,7 @@ function AddTab() {
 
   const { tab } = useSearchParamsEx({ tab: 'number' });
   const [tabs, setTabs] = React.useState<number[]>();
+  const editorRef = React.useRef<EOEditorElement>(null);
 
   // Is editing
   const isEditing = id != null;
@@ -36,13 +37,17 @@ function AddTab() {
     'articleKeywords',
     'articleDescription',
     'articleUrl',
-    'articleRelease'
+    'articleRelease',
+    'articleLogo',
+    'slideshowLogo',
+    'entityStatus'
   );
 
   // Form validation schema
   const validationSchema = Yup.object({
     title: Yup.string().required(),
-    url: Yup.string().required()
+    url: Yup.string().required(),
+    release: Yup.date().required()
   });
 
   // Edit data
@@ -50,6 +55,7 @@ function AddTab() {
     id,
     title: '',
     content: '',
+    status: 0,
     release: new Date()
   });
 
@@ -62,13 +68,11 @@ function AddTab() {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Request data
-      const rq = { ...values };
-
-      if (rq.tab1 == null) {
+      if (!editorRef.current?.value) {
+        editorRef.current?.editorWindow.focus();
+        return;
       }
-
-      // Correct for types safety
-      Utils.correctTypes(rq, {});
+      const rq = { ...values, content: editorRef.current?.value };
 
       if (isEditing) {
         // Changed fields
@@ -88,6 +92,7 @@ function AddTab() {
       if (result == null) return;
 
       if (result.ok) {
+        editorRef.current?.clearBackup();
         navigate(app.transformUrl(`/home/article/all`));
         return;
       }
@@ -99,10 +104,8 @@ function AddTab() {
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (!isEditing || formik.values.url === '') {
       const title = event.target.value;
-      app.translate(title).then((result) => {
-        if (result == null) return;
-        const url = app.formatUrl(result);
-        formik.setFieldValue('url', url);
+      app.formatUrl(title).then((url) => {
+        if (url != null) formik.setFieldValue('url', url);
       });
     }
   };
@@ -110,12 +113,16 @@ function AddTab() {
   // Load data
   const loadData = async () => {
     if (id == null) return;
-    app.api.get<ArticleUpdateDto>('Tab/UpdateRead/' + id).then((data) => {
-      if (data == null) return;
-      setData(data);
+    app.api
+      .get<ArticleUpdateDto>('Article/UpdateRead/' + id, undefined, {
+        dateFields: ['release']
+      })
+      .then((data) => {
+        if (data == null) return;
+        setData(data);
 
-      if (data.tab1 != null) ancestorRead(data.tab1);
-    });
+        if (data.tab1 != null) ancestorRead(data.tab1);
+      });
   };
 
   const ancestorRead = (tab: number) => {
@@ -221,8 +228,19 @@ function AddTab() {
       </Grid>
       <Grid item xs={12} sm={12}>
         <EOEditorEx
+          ref={editorRef}
           content={formik.values.content ?? ''}
-          onBackup={(content) => formik.setFieldValue('content', content)}
+          backupKey={`article-${isEditing}`}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <InputField
+          fullWidth
+          name="logo"
+          inputProps={{ maxLength: 256 }}
+          label={labels.articleLogo}
+          value={formik.values.logo ?? ''}
+          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -247,6 +265,25 @@ function AddTab() {
           onChange={formik.handleChange}
         />
       </Grid>
+      <Grid item xs={12} sm={12}>
+        <InputField
+          fullWidth
+          name="slideshow"
+          inputProps={{ maxLength: 256 }}
+          label={labels.slideshowLogo}
+          value={formik.values.slideshow ?? ''}
+          onChange={formik.handleChange}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <ComboBox
+          name="status"
+          options={app.getStatusList()}
+          label={labels.entityStatus}
+          idValue={formik.values.status ?? 0}
+          inputOnChange={formik.handleChange}
+        />
+      </Grid>
       <Grid item xs={12} sm={6}>
         <InputField
           fullWidth
@@ -254,12 +291,10 @@ function AddTab() {
           name="release"
           type="datetime-local"
           label={labels.articleRelease}
-          defaultValue={DateUtils.formatForInput(formik.values.release, true)}
+          value={DateUtils.formatForInput(formik.values.release, true)}
           onChange={formik.handleChange}
           error={formik.touched.release && Boolean(formik.errors.release)}
-          helperText={
-            formik.touched.release && new String(formik.errors.release)
-          }
+          helperText={formik.touched.release && formik.errors.release}
         />
       </Grid>
     </EditPage>

@@ -32,7 +32,7 @@ namespace com.etsoo.CMS.RQ.Tab
         /// </summary>
         [Property(Length = 128)]
         [StringLength(128)]
-        public string? Url { get; init; }
+        public string? Url { get; set; }
 
         /// <summary>
         /// Enabled or not

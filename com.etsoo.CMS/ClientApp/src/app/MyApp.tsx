@@ -32,6 +32,7 @@ import {
   NotificationMessageType
 } from '@etsoo/react';
 import { TabLayout } from '../dto/TabLayout';
+import { ArticleLink } from '../dto/ArticleLink';
 
 /**
  * Service App
@@ -39,6 +40,25 @@ import { TabLayout } from '../dto/TabLayout';
 class MyServiceApp extends CommonApp {
   private triedCount = 0;
   private loginDialog?: INotificationReact;
+
+  /**
+   * Site domain
+   */
+  domain?: string;
+
+  /**
+   * Format article URL
+   * 格式化文章链接
+   * @param item Article link item
+   * @returns Result
+   */
+  formatLink(item: ArticleLink) {
+    console.log(item);
+    const { url, year, tabLayout, tabUrl } = item;
+    if (tabLayout === 0) return `${this.domain}${tabUrl}`;
+    if (tabLayout === 1) return '#';
+    return `${this.domain}${tabUrl}/${year}/${url}`;
+  }
 
   private formatTitle(result: DynamicActionResult): [boolean, string] {
     let disabled: boolean = false;
@@ -55,9 +75,18 @@ class MyServiceApp extends CommonApp {
     return [disabled, title];
   }
 
-  formatUrl(url: string) {
-    url = url.toLowerCase().replace(/[^0-9a-z_]+/g, '');
+  trimChars(url: string) {
+    url = url.toLowerCase().replace(/[^0-9a-z_\-]+/g, '');
     return url;
+  }
+
+  async formatUrl(url: string) {
+    if (url.trim() === '') return undefined;
+    if (/^[\x00-\x7F]+$/.test(url)) return this.trimChars(url);
+
+    const t = await this.translate(url);
+    if (t == null) return undefined;
+    return this.trimChars(t);
   }
 
   getLocalRoles() {

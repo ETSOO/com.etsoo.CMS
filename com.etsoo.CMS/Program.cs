@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using com.etsoo.CMS.Application;
+using com.etsoo.DI;
 using com.etsoo.ServiceApp.Application;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Storage;
@@ -35,6 +36,8 @@ services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateL
 services.AddInMemoryRateLimiting();
 services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
+services.AddSingleton<IFireAndForgetService, FireAndForgetService>();
+
 // Service app
 var serviceApp = new MyApp(services, configuration.GetSection("EtsooWebsite"), true);
 
@@ -55,6 +58,14 @@ var translationApi = configuration.GetValue<string>("EtsooWebsite:TranslationApi
 services.AddHttpClient("Translation", httpClient =>
 {
     httpClient.BaseAddress = new Uri(translationApi);
+});
+
+// Next.js revalidation
+var nextApi = configuration.GetValue<string>("EtsooWebsite:NextRevalidationUrl");
+var nextToken = configuration.GetValue<string>("EtsooWebsite:NextRevalidationToken");
+services.AddHttpClient("NextApi", httpClient =>
+{
+    httpClient.BaseAddress = new Uri($"{nextApi}/api/revalidate");
 });
 
 // Storage
