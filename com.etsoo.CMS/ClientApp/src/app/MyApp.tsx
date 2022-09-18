@@ -53,7 +53,6 @@ class MyServiceApp extends CommonApp {
    * @returns Result
    */
   formatLink(item: ArticleLink) {
-    console.log(item);
     const { url, year, tabLayout, tabUrl } = item;
     if (tabLayout === 0) return `${this.domain}${tabUrl}`;
     if (tabLayout === 1) return '#';

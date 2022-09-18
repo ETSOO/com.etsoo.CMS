@@ -220,6 +220,7 @@ if (RequestLogging)
     app.UseSerilogRequestLogging();
 }
 
+app.UseStaticFiles();
 app.UseRouting();
 
 // Enable CORS (Cross-Origin Requests)
