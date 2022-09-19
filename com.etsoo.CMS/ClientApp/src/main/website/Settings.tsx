@@ -69,7 +69,7 @@ function Settings() {
       if (result == null) return;
 
       app.notifier.succeed(labels.operationSucceeded, undefined, () => {
-        navigate(app.transformUrl('/home/'));
+        navigate('./../../');
       });
     }
   });

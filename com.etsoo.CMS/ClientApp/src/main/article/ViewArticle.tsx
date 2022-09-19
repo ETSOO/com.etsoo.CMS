@@ -12,7 +12,7 @@ function ViewArticle() {
   const { id } = useParamsEx({ id: 'number' });
 
   // Labels
-  const labels = app.getLabels('tab', 'edit');
+  const labels = app.getLabels('tab', 'edit', 'articleView');
 
   React.useEffect(() => {
     // Page title
@@ -60,7 +60,7 @@ function ViewArticle() {
         <React.Fragment>
           <ButtonLink
             variant="outlined"
-            href={`/home/article/edit/${data.id}`}
+            href={`./../../edit/${data.id}`}
             startIcon={<EditIcon />}
           >
             {labels.edit}
@@ -69,7 +69,12 @@ function ViewArticle() {
       )}
     >
       {(data) => (
-        <iframe src={app.formatLink(data)} width="100%" height="480px" />
+        <iframe
+          src={app.formatLink(data)}
+          width="100%"
+          height="480px"
+          title={labels.articleView}
+        />
       )}
     </ViewPage>
   );

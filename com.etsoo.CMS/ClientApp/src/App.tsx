@@ -6,6 +6,7 @@ import { app } from './app/MyApp';
 function App() {
   // Route
   const navigate = useNavigate();
+
   const [search] = useSearchParams();
 
   // Queries
@@ -29,7 +30,7 @@ function App() {
 
     app.tryLogin(undefined, true).then((result) => {
       if (result) {
-        navigate('/home/');
+        navigate('./home/');
         return;
       }
     });

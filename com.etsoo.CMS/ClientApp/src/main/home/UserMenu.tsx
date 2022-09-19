@@ -8,11 +8,12 @@ import {
   MenuItem
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { BridgeCloseButton, RLink, UserAvatar } from '@etsoo/materialui';
+import { BridgeCloseButton, UserAvatar } from '@etsoo/materialui';
 import LockIcon from '@mui/icons-material/Lock';
 import UpgradeIcon from '@mui/icons-material/Upgrade';
 import { app } from '../../app/MyApp';
 import { IActionResult, UserRole } from '@etsoo/appscript';
+import { useNavigate } from 'react-router-dom';
 
 interface UserMenuProps {
   name: string;
@@ -23,6 +24,9 @@ interface UserMenuProps {
 export function UserMenu(props: UserMenuProps) {
   // Destruct
   const { name, avatar } = props;
+
+  // Route
+  const navigate = useNavigate();
 
   // Labels
   const labels = app.getLabels(
@@ -134,7 +138,7 @@ export function UserMenu(props: UserMenuProps) {
         onClick={handleMenuClose}
         onClose={handleMenuClose}
       >
-        <MenuItem component={RLink} href="/home/user/changepassword">
+        <MenuItem onClick={() => navigate('./user/changepassword')}>
           <ListItemIcon>
             <LockIcon fontSize="small" />
           </ListItemIcon>

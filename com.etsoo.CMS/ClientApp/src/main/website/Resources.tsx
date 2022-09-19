@@ -147,9 +147,7 @@ function Resources() {
             <Button
               color="primary"
               variant="outlined"
-              onClick={() =>
-                navigate(app.transformUrl('/home/resource/onlinedrive'))
-              }
+              onClick={() => navigate('./../onlinedrive')}
               startIcon={<AddToDriveIcon />}
             >
               {labels.onlineDrive}

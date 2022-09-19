@@ -6,7 +6,7 @@ import {
   MobileListItemRenderer,
   Tiplist
 } from '@etsoo/materialui';
-import { BoxProps, Fab, IconButton } from '@mui/material';
+import { BoxProps, Fab, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PageviewIcon from '@mui/icons-material/Pageview';
@@ -72,7 +72,7 @@ function AllArticles() {
               title={labels.add}
               size="medium"
               color="primary"
-              onClick={() => navigate(app.transformUrl('/home/article/add'))}
+              onClick={() => navigate('./../add')}
             >
               <AddIcon />
             </Fab>
@@ -144,21 +144,21 @@ function AllArticles() {
                 {(adminPermission || data.isSelf) && (
                   <IconButtonLink
                     title={labels.edit}
-                    href={`/home/article/edit/${data.id}`}
+                    href={`./../edit/${data.id}`}
                   >
                     <EditIcon />
                   </IconButtonLink>
                 )}
                 <IconButtonLink
                   title={labels.view}
-                  href={`/home/article/view/${data.id}`}
+                  href={`./../view/${data.id}`}
                 >
                   <PageviewIcon />
                 </IconButtonLink>
                 <IconButton
                   title={labels.viewWebsite}
                   target="_blank"
-                  href={`${app.formatLink(data)}`}
+                  href={app.formatLink(data)}
                 >
                   <PublicIcon />
                 </IconButton>
@@ -167,7 +167,7 @@ function AllArticles() {
           }
         }
       ]}
-      itemSize={[86, margin]}
+      itemSize={[96, margin]}
       innerItemRenderer={(props) =>
         MobileListItemRenderer(props, (data) => {
           return [
@@ -177,15 +177,22 @@ function AllArticles() {
               {
                 label: labels.edit,
                 icon: <EditIcon />,
-                action: `/home/article/edit/${data.id}`
+                action: `./../edit/${data.id}`
               },
               {
                 label: labels.view,
                 icon: <PageviewIcon />,
-                action: `/home/article/view/${data.id}`
+                action: `./../view/${data.id}`
+              },
+              {
+                label: labels.viewWebsite,
+                icon: <PublicIcon />,
+                action: app.formatLink(data)
               }
             ],
-            <React.Fragment></React.Fragment>
+            <React.Fragment>
+              <Typography>{data.tabName1}</Typography>
+            </React.Fragment>
           ];
         })
       }

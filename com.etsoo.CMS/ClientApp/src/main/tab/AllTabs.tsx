@@ -91,12 +91,12 @@ function AllTabs() {
     }
   };
 
-  const queryTabs = async (parent?: number) => {
+  const queryTabs = React.useCallback(async (parent?: number) => {
     const rq: TabQueryRQ = { currentPage: 0, batchSize: 100, parent };
     const data = await app.api.post<TabDto[]>('Tab/Query', rq);
     if (data == null || !isMounted.current) return;
     updateTabs(data);
-  };
+  }, []);
 
   React.useEffect(() => {
     if (defaultParent != null) setParent(defaultParent);
@@ -105,7 +105,9 @@ function AllTabs() {
   React.useEffect(() => {
     // First level
     queryTabs();
+  }, [queryTabs]);
 
+  React.useEffect(() => {
     // Page title
     app.setPageKey('tabs');
 
@@ -145,7 +147,7 @@ function AllTabs() {
           });
       }
     }
-  }, [defaultParent]);
+  }, [defaultParent, queryTabs, tabs]);
 
   return (
     <CommonPage>
@@ -221,7 +223,7 @@ function AllTabs() {
                     >
                       <IconButtonLink
                         title={labels.edit}
-                        href={`/home/tab/edit/${item.id}`}
+                        href={`./../edit/${item.id}`}
                         disabled={!adminPermission}
                         size="small"
                       >
@@ -259,11 +261,7 @@ function AllTabs() {
             <Button
               color="primary"
               variant="outlined"
-              onClick={() =>
-                navigate(
-                  app.transformUrl(`/home/tab/add/?parent=${parent ?? ''}`)
-                )
-              }
+              onClick={() => navigate(`./../add/?parent=${parent ?? ''}`)}
               startIcon={<AddIcon />}
             >
               {labels.add}

@@ -201,7 +201,7 @@ namespace com.etsoo.CMS.Services
 
                 // Token match
                 var hashedToken = await App.HashPasswordAsync(token);
-                if (hashedToken != deviceToken.Token)
+                if (hashedToken == null || hashedToken != deviceToken.Token)
                 {
                     return (ApplicationErrors.TokenExpired.AsResult("NoMatch"), null);
                 }

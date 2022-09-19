@@ -75,13 +75,13 @@ class MyServiceApp extends CommonApp {
   }
 
   trimChars(url: string) {
-    url = url.toLowerCase().replace(/[^0-9a-z_\-]+/g, '');
+    url = url.toLowerCase().replace(/[^0-9a-z_-]+/g, '');
     return url;
   }
 
   async formatUrl(url: string) {
     if (url.trim() === '') return undefined;
-    if (/^[\x00-\x7F]+$/.test(url)) return this.trimChars(url);
+    if (/^[\x20-\x7F]+$/.test(url)) return this.trimChars(url);
 
     const t = await this.translate(url);
     if (t == null) return undefined;
@@ -218,7 +218,8 @@ class MyServiceApp extends CommonApp {
         // Keep
         this.storage.setData(CoreConstants.FieldLoginKeep, keep);
 
-        app.history.push('/home/');
+        // Replace all pages
+        app.navigate(app.addRootUrl('/home/'));
 
         // Delay
         setTimeout(() => this.loginDialog?.dismiss(), 0);

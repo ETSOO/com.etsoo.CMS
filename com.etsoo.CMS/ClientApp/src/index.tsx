@@ -10,12 +10,12 @@ import {
   ThemeProvider
 } from '@mui/material';
 import * as locales from '@mui/material/locale';
-import { HRouter } from '@etsoo/react';
-import { Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './main/home/Dashboard';
 import Home from './main/home/Home';
 import AllArticles from './main/article/AllArticles';
 import AddArticle from './main/article/AddArticle';
+import { BridgeUtils } from '@etsoo/appscript';
 
 // Lazy load components
 const AllTabs = React.lazy(() => import('./main/tab/AllTabs'));
@@ -78,6 +78,36 @@ const theme = createTheme({
   }
 });
 
+const routers = (
+  <Routes>
+    <Route path="*" element={<App />} />
+
+    <Route path="/home" element={<Home />}>
+      <Route index element={<Dashboard />} />
+
+      <Route path="article/all" element={<AllArticles />} />
+      <Route path="article/add" element={<AddArticle />} />
+      <Route path="article/edit/:id" element={<AddArticle />} />
+      <Route path="article/view/:id" element={<ViewArticle />} />
+
+      <Route path="tab/all" element={<AllTabs />} />
+      <Route path="tab/add" element={<AddTab />} />
+      <Route path="tab/edit/:id" element={<AddTab />} />
+
+      <Route path="user/changepassword" element={<ChangePassword />} />
+      <Route path="user/all" element={<AllUsers />} />
+      <Route path="user/edit/:id" element={<AddUser />} />
+      <Route path="user/add" element={<AddUser />} />
+      <Route path="user/history/:id" element={<UserHistory />} />
+
+      <Route path="resource/all" element={<Resources />} />
+      <Route path="resource/onlinedrive" element={<OnlineDrive />} />
+      <Route path="config/all" element={<Settings />} />
+      <Route path="plugin/all" element={<Plugins />} />
+    </Route>
+  </Routes>
+);
+
 function MyRouter() {
   // Init state
   const [init, setInit] = React.useState(false);
@@ -98,38 +128,24 @@ function MyRouter() {
     });
   }, []);
 
+  const basename = app.settings.homepage;
+
   return init ? (
     // Need new solution for flicker
     <React.Suspense fallback={<LinearProgress />}>
-      <HRouter basename={app.settings.homepage} history={app.history}>
-        <Routes>
-          <Route path="*" element={<App />} />
-
-          <Route path="/home" element={<Home />}>
-            <Route index element={<Dashboard />} />
-
-            <Route path="article/all" element={<AllArticles />} />
-            <Route path="article/add" element={<AddArticle />} />
-            <Route path="article/edit/:id" element={<AddArticle />} />
-            <Route path="article/view/:id" element={<ViewArticle />} />
-
-            <Route path="tab/all" element={<AllTabs />} />
-            <Route path="tab/add" element={<AddTab />} />
-            <Route path="tab/edit/:id" element={<AddTab />} />
-
-            <Route path="user/changepassword" element={<ChangePassword />} />
-            <Route path="user/all" element={<AllUsers />} />
-            <Route path="user/edit/:id" element={<AddUser />} />
-            <Route path="user/add" element={<AddUser />} />
-            <Route path="user/history/:id" element={<UserHistory />} />
-
-            <Route path="resource/all" element={<Resources />} />
-            <Route path="resource/onlinedrive" element={<OnlineDrive />} />
-            <Route path="config/all" element={<Settings />} />
-            <Route path="plugin/all" element={<Plugins />} />
-          </Route>
-        </Routes>
-      </HRouter>
+      {BridgeUtils.host == null ? (
+        <BrowserRouter basename={basename}>{routers}</BrowserRouter>
+      ) : (
+        <MemoryRouter
+          basename={basename}
+          initialEntries={(() => {
+            const startUrl = BridgeUtils.host.getStartUrl();
+            return startUrl == null ? undefined : [startUrl];
+          })()}
+        >
+          {routers}
+        </MemoryRouter>
+      )}
     </React.Suspense>
   ) : (
     <React.Fragment />

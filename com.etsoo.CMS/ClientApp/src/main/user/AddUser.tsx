@@ -78,11 +78,11 @@ function AddUser() {
 
       if (result.ok) {
         if (isEditing) {
-          navigate(app.transformUrl('/home/user/all'));
+          navigate('./../../all');
         } else {
           // Reset password
           app.resetPassword(rq.id!, () => {
-            navigate(app.transformUrl('/home/user/all'));
+            navigate('./../all');
           });
         }
         return;
@@ -108,7 +108,7 @@ function AddUser() {
     return () => {
       app.pageExit();
     };
-  }, []);
+  }, [isEditing]);
 
   return (
     <EditPage
@@ -130,7 +130,7 @@ function AddUser() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    navigate!(app.transformUrl('/home/user/all'));
+                    navigate('./../../all');
                     return;
                   }
 

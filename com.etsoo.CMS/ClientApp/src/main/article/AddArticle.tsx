@@ -93,7 +93,7 @@ function AddTab() {
 
       if (result.ok) {
         editorRef.current?.clearBackup();
-        navigate(app.transformUrl(`/home/article/all`));
+        navigate(isEditing ? './../../all' : './../all');
         return;
       }
 
@@ -146,33 +146,11 @@ function AddTab() {
     return () => {
       app.pageExit();
     };
-  }, []);
+  }, [isEditing]);
 
   return (
     <EditPage
       isEditing={isEditing}
-      onDelete={() => {
-        app.notifier.confirm(
-          labels.deleteConfirm.format(labels.tab),
-          undefined,
-          async (ok) => {
-            const id = formik.values.id;
-            if (!ok || id == null) return;
-
-            const result = await app.api.delete<IActionResult>(
-              `Article/Delete/${id}`
-            );
-            if (result == null) return;
-
-            if (result.ok) {
-              navigate!(app.transformUrl('/home/article/all'));
-              return;
-            }
-
-            app.alertResult(result);
-          }
-        );
-      }}
       onSubmit={(event) => {
         formik.handleSubmit(event);
       }}

@@ -87,7 +87,9 @@ function AddTab() {
 
       if (result.ok) {
         navigate(
-          app.transformUrl(`/home/tab/all?parent=${values.parent ?? ''}`)
+          `${isEditing ? './../../all' : './../all'}?parent=${
+            values.parent ?? ''
+          }`
         );
         return;
       }
@@ -165,7 +167,7 @@ function AddTab() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    navigate!(app.transformUrl('/home/tab/all'));
+                    navigate('./../../all');
                     return;
                   }
 
