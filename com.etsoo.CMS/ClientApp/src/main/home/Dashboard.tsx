@@ -154,13 +154,13 @@ function Dashboard() {
             color="primary"
             variant="outlined"
             startIcon={<AddIcon />}
-            onClick={() => navigate(app.transformUrl('/home/article/add'))}
+            onClick={() => navigate('./article/add')}
           >
             {labels.addArticle}
           </Button>
           <Button
             startIcon={<MoreIcon />}
-            onClick={() => navigate(app.transformUrl('/home/article/all'))}
+            onClick={() => navigate('./article/all')}
           >
             {labels.more}
           </Button>
@@ -179,11 +179,7 @@ function Dashboard() {
                 <IconButton
                   size="small"
                   title={labels.edit}
-                  onClick={() =>
-                    navigate(
-                      app.transformUrl(`/home/article/edit/${article.id}`)
-                    )
-                  }
+                  onClick={() => navigate(`./article/edit/${article.id}`)}
                   sx={{ marginRight: 1 }}
                 >
                   <EditIcon />
@@ -211,9 +207,7 @@ function Dashboard() {
           {author && (
             <Button
               startIcon={<MoreIcon />}
-              onClick={() =>
-                navigate(app.transformUrl(`/home/user/history/${author}`))
-              }
+              onClick={() => navigate(`./user/history/${author}`)}
             >
               {labels.more}
             </Button>

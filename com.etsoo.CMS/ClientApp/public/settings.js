@@ -12,15 +12,5 @@ window.settings = {
   /**
    * Web url of the cloud
    */
-  webUrl: 'https://cn.etsoo.com',
-
-  /**
-   * Service API endpoint
-   */
-  serviceEndpoint: '/api/',
-
-  /**
-   * Service web URL
-   */
-  serviceUrl: 'http://localhost:7174'
+  webUrl: 'https://cn.etsoo.com'
 };

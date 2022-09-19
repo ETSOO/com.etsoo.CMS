@@ -98,7 +98,7 @@ function AllUsers() {
               title={labels.add}
               size="medium"
               color="primary"
-              onClick={() => navigate(app.transformUrl('/home/user/add'))}
+              onClick={() => navigate('./../add')}
             >
               <AddIcon />
             </Fab>
@@ -179,7 +179,7 @@ function AllUsers() {
                 {!data.isSelf && (
                   <IconButtonLink
                     title={labels.edit}
-                    href={`/home/user/edit/${data.id}`}
+                    href={`./../edit/${data.id}`}
                   >
                     <EditIcon />
                   </IconButtonLink>
@@ -194,7 +194,7 @@ function AllUsers() {
                 )}
                 <IconButtonLink
                   title={labels.audits}
-                  href={`/home/user/history/${data.id}`}
+                  href={`./../history/${data.id}`}
                 >
                   <HistoryIcon />
                 </IconButtonLink>
@@ -213,7 +213,7 @@ function AllUsers() {
               {
                 label: labels.edit,
                 icon: <EditIcon />,
-                action: `/home/user/edit/${data.id}`
+                action: `./../edit/${data.id}`
               },
               {
                 label: labels.resetPassword,
@@ -223,7 +223,7 @@ function AllUsers() {
               {
                 label: labels.audits,
                 icon: <HistoryIcon />,
-                action: `/home/user/history/${data.id}`
+                action: `./../history/${data.id}`
               }
             ],
             <React.Fragment>

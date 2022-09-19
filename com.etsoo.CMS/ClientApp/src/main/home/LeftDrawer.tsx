@@ -138,44 +138,44 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
         </DrawerHeader>
         <Divider />
         <List onClick={mdUp ? undefined : handleDrawerClose}>
-          <ListItemButton {...getMenuItem('/home/')}>
+          <ListItemButton {...getMenuItem('./')}>
             <ListItemIcon>
               <HomeIcon />
             </ListItemIcon>
             <ListItemText primary={labels.menuHome} />
           </ListItemButton>
-          <ListItemButton {...getMenuItem('/home/article/all')}>
+          <ListItemButton {...getMenuItem('./article/all')}>
             <ListItemIcon>
               <ArticleIcon />
             </ListItemIcon>
             <ListItemText primary={labels.articles} />
           </ListItemButton>
-          <ListItemButton {...getMenuItem('/home/tab/all')}>
+          <ListItemButton {...getMenuItem('./tab/all')}>
             <ListItemIcon>
               <TabIcon />
             </ListItemIcon>
             <ListItemText primary={labels.tabs} />
           </ListItemButton>
-          <ListItemButton {...getMenuItem('/home/resource/all')}>
+          <ListItemButton {...getMenuItem('./resource/all')}>
             <ListItemIcon>
               <ListAltIcon />
             </ListItemIcon>
             <ListItemText primary={labels.resources} />
           </ListItemButton>
-          <ListItemButton {...getMenuItem('/home/config/all')}>
+          <ListItemButton {...getMenuItem('./config/all')}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
             <ListItemText primary={labels.configs} />
           </ListItemButton>
-          <ListItemButton {...getMenuItem('/home/plugin/all')}>
+          <ListItemButton {...getMenuItem('./plugin/all')}>
             <ListItemIcon>
               <ExtensionIcon />
             </ListItemIcon>
             <ListItemText primary={labels.plugins} />
           </ListItemButton>
           {adminPermission && (
-            <ListItemButton {...getMenuItem('/home/user/all')}>
+            <ListItemButton {...getMenuItem('./user/all')}>
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
