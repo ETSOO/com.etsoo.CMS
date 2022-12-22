@@ -11,11 +11,11 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { app } from '../../app/MyApp';
-import { ResourceDto } from '../../dto/ResourceDto';
+import { ResourceDto } from '../../api/dto/website/ResourceDto';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import AddToDriveIcon from '@mui/icons-material/AddToDrive';
-import { IActionResult, UserRole } from '@etsoo/appscript';
+import { UserRole } from '@etsoo/appscript';
 import { DomUtils } from '@etsoo/shared';
 import { useNavigate } from 'react-router-dom';
 
@@ -46,10 +46,9 @@ function Resources() {
 
   // Load data
   const reloadData = async () => {
-    app.api.post<ResourceDto[]>('Website/QueryResources').then((data) => {
-      if (data == null) return;
-      setItems(data);
-    });
+    const data = await app.websiteApi.queryResources();
+    if (data == null) return;
+    setItems(data);
   };
 
   const showModal = (item?: ResourceDto) => {
@@ -59,7 +58,6 @@ function Resources() {
       fullScreen: app.smDown,
       inputs: (
         <React.Fragment>
-          {' '}
           <TextField
             autoFocus
             margin="dense"
@@ -92,30 +90,26 @@ function Resources() {
         }
 
         // Form data
-        const data = DomUtils.dataAs(new FormData(form), {
+        const { id, value } = DomUtils.dataAs(new FormData(form), {
           id: 'string',
           value: 'string'
         });
 
         // Validation
-        if (data.id == null) {
+        if (id == null) {
           DomUtils.setFocus('id', form);
           return false;
         }
 
-        if (data.value == null) {
+        if (value == null) {
           DomUtils.setFocus('value', form);
           return false;
         }
 
         // Submit
-        const result = await app.api.put<IActionResult>(
-          'Website/CreateOrUpdateResource',
-          data,
-          {
-            showLoading: false // default will show the loading bar and cause the dialog closed
-          }
-        );
+        const result = await app.websiteApi.createOrUpdateResource(id, value, {
+          showLoading: false // default will show the loading bar and cause the dialog closed
+        });
         if (result == null) return;
 
         if (result.ok) {

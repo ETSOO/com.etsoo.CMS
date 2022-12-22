@@ -59,7 +59,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns>Action result</returns>
-        public async Task<ActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ model)
+        public async Task<IActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ model)
         {
             var parameters = FormatParameters(model);
 
@@ -78,7 +78,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns>Action result</returns>
-        public async ValueTask<ActionResult> CreateServiceAsync(ServiceCreateRQ model)
+        public async ValueTask<IActionResult> CreateServiceAsync(ServiceCreateRQ model)
         {
             var parameters = FormatParameters(model);
 
@@ -120,12 +120,26 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="rq">Reqeust data</param>
         /// <returns>Task</returns>
-        public async Task<ActionResult> InitializeAsync(InitializeRQ rq)
+        public async Task<IActionResult> InitializeAsync(InitializeRQ rq)
         {
             var parameters = FormatParameters(rq);
             var command = CreateCommand($"INSERT INTO website (domain, title) SELECT @{nameof(rq.Domain)}, @{nameof(rq.Title)} WHERE NOT EXISTS (SELECT * FROM website)", parameters);
             await ExecuteAsync(command);
             return ActionResult.Success;
+        }
+
+        /// <summary>
+        /// Read service
+        /// 读取服务
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Result</returns>
+        public async Task<DbService?> ReadServiceAsync(string id)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id);
+            var command = CreateCommand($"SELECT app, secret FROM services WHERE id = @{nameof(id)} AND status < 200", parameters);
+            return await QueryAsAsync<DbService>(command);
         }
 
         /// <summary>

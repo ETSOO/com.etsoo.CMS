@@ -20,11 +20,11 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
-import { TabDto } from '../../dto/TabDto';
+import { TabDto } from '../../api/dto/tab/TabDto';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { TabQueryRQ } from '../../RQ/TabQueryRQ';
+import { TabQueryRQ } from '../../api/rq/tab/TabQueryRQ';
 import { Utils } from '@etsoo/shared';
 import { useSearchParamsEx } from '@etsoo/react';
 
@@ -93,7 +93,7 @@ function AllTabs() {
 
   const queryTabs = React.useCallback(async (parent?: number) => {
     const rq: TabQueryRQ = { currentPage: 0, batchSize: 100, parent };
-    const data = await app.api.post<TabDto[]>('Tab/Query', rq);
+    const data = await app.tabApi.query(rq);
     if (data == null || !isMounted.current) return;
     updateTabs(data);
   }, []);
@@ -124,27 +124,24 @@ function AllTabs() {
         queryTabs(defaultParent);
       } else {
         // Multiple levels
-        app.api
-          .get<number[]>('Tab/AncestorRead/' + defaultParent)
-          .then((data) => {
-            if (data == null || data.length === 0 || !isMounted.current) return;
-            data.reverse();
-            Promise.all(
-              data.map((d) =>
-                app.api.post<TabDto[]>('Tab/Query', {
-                  currentPage: 0,
-                  batchSize: 100,
-                  parent: d
-                })
+        app.tabApi.ancestorRead(defaultParent).then((data) => {
+          if (data == null || data.length === 0 || !isMounted.current) return;
+          data.reverse();
+          Promise.all(
+            data.map((d) =>
+              app.tabApi.query(
+                { currentPage: 0, batchSize: 100, parent: d },
+                { showLoading: false }
               )
-            ).then((items) => {
-              if (!isMounted.current) return;
-              items.forEach((data) => {
-                if (data == null || data.length === 0) return;
-                updateTabs(data);
-              });
+            )
+          ).then((items) => {
+            if (!isMounted.current) return;
+            items.forEach((data) => {
+              if (data == null || data.length === 0) return;
+              updateTabs(data);
             });
           });
+        });
       }
     }
   }, [defaultParent, queryTabs, tabs]);
@@ -187,14 +184,9 @@ function AllTabs() {
                 items={items}
                 keyField="id"
                 labelField="name"
-                onDragEnd={(items) => {
-                  const rq: Record<number, number> = {};
-                  items.forEach((item, index) => (rq[item.id] = index));
-                  app.api.put('Tab/Sort', rq, {
-                    // No indicator for loading
-                    showLoading: false
-                  });
-                }}
+                onDragEnd={(items) =>
+                  app.tabApi.sort(items, { showLoading: false })
+                }
                 itemRenderer={(item, index, nodeRef, actionNodeRef) => (
                   <Grid container item spacing={0} {...nodeRef}>
                     <Grid

@@ -1,13 +1,13 @@
 import { IActionResult } from '@etsoo/appscript';
-import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
+import { DomUtils, Utils } from '@etsoo/shared';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import HelpIcon from '@mui/icons-material/Help';
 import { Box, Grid, IconButton, Paper, Typography } from '@mui/material';
 import React from 'react';
 import { app } from '../app/MyApp';
-import { PlugEditDto, PluginDto } from '../dto/PluginDto';
-import { PluginUpdateDto } from '../dto/PluginUpdateDto';
+import { PluginDto } from '../api/dto/website/PluginDto';
+import { PlugEditDto } from '../api/dto/website/PlugEditDto';
 
 export interface PluginProps {
   /**
@@ -100,66 +100,67 @@ export function PluginItem(props: PluginItemProps) {
         }
 
         // Form data
-        const fd = DomUtils.dataAs(new FormData(form), {
+        let {
+          app: appId,
+          secret,
+          enabled = data?.enabled ?? false
+        } = DomUtils.dataAs(new FormData(form), {
           app: 'string',
           secret: 'string',
           enabled: 'boolean'
         });
 
-        if (fd.enabled == null) fd.enabled = false;
-
-        if (fd.app == null) {
+        if (appId == null) {
           DomUtils.setFocus('app', form);
           return false;
         }
 
         if (validator) {
-          var appData = { app: fd.app, secret: fd.secret };
+          const appData = { app: appId, secret };
           if (validator(form, appData, editing) === false) {
             return false;
           } else {
-            fd.app = appData.app;
-            fd.secret = appData.secret;
+            appId = appData.app;
+            secret = appData.secret;
           }
         }
 
         // Request data
-        type EditData = DataTypes.AddOrEditType<
-          PluginUpdateDto,
-          typeof editing
-        >;
-        const rq: EditData = {
+        const rq = {
           deviceId: app.deviceId,
           id: name,
-          app: fd.app,
-          enabled: fd.enabled ?? true,
-          secret: fd.secret ? app.encrypt(fd.secret) : undefined
+          app: appId,
+          enabled,
+          secret: secret ? app.encrypt(secret) : undefined
         };
 
+        let result: IActionResult | undefined;
         if (editing) {
           // Changed fields
-          const fields: string[] = Utils.getDataChanges(fd, data!);
+          const fields: string[] = Utils.getDataChanges(
+            { app: appId, secret, enabled },
+            data!
+          );
           if (fields.length === 0) {
             return labels.noChanges;
           }
-          rq.changedFields = fields;
+          const editRQ = { ...rq, changedFields: fields };
+          result = await app.websiteApi.updateService(editRQ, {
+            showLoading: false
+          });
+        } else {
+          result = await app.websiteApi.createService(rq, {
+            showLoading: false
+          });
         }
 
-        // Submit
-        const result = await app.api.put<IActionResult>(
-          editing ? 'Website/UpdateService' : 'Website/CreateService',
-          rq,
-          {
-            showLoading: false // default will show the loading bar and cause the dialog closed
-          }
-        );
         if (result == null) return;
 
         if (result.ok) {
           var newData: PluginDto = {
             id: name,
-            app: fd.app ?? data?.app,
-            enabled: fd.enabled ?? data?.enabled ?? true,
+            app: appId ?? data?.app,
+            enabled: enabled,
             refreshTime: new Date()
           };
           setData(newData);

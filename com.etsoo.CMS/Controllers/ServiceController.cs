@@ -1,19 +1,24 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.Service;
-using com.etsoo.CMS.Services;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 
 namespace com.etsoo.CMS.Controllers
 {
+    /// <summary>
+    /// Site service controller
+    /// 网站服务控制器
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [AllowAnonymous]
     public class ServiceController : SharedController
     {
         // Service
-        readonly ExternalService service;
+        readonly IExternalService service;
 
         /// <summary>
         /// Constructor
@@ -22,18 +27,23 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
-        public ServiceController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger)
+        /// <param name="service">Service</param>
+        public ServiceController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger, IExternalService service)
             : base(app, httpContextAccessor)
         {
-            var token = app.Section.GetValue<string>("NextStaticToken");
-            var authorization = httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
-            var tokenKey = "NextStatic ";
-            if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith(tokenKey) || !token.Equals(authorization[(tokenKey.Length)..]))
+            // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ACCESS_TOKEN)
+            var authorization = httpContextAccessor.HttpContext?.Request.Headers.Authorization;
+            if (authorization.HasValue && AuthenticationHeaderValue.TryParse(authorization.ToString(), out var auth) && auth.Scheme == "NextStatic")
             {
-                throw new ApplicationException("No Next Static Token");
+                var token = app.Section.GetValue<string>("NextStaticToken");
+                if (token?.Equals(auth.Parameter) == true)
+                {
+                    this.service = service;
+                    return;
+                }
             }
 
-            service = new ExternalService(app, logger);
+            throw new UnauthorizedAccessException();
         }
 
         /// <summary>

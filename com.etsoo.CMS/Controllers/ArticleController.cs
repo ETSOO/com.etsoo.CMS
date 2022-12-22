@@ -1,10 +1,8 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
-using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Authentication;
-using com.etsoo.CoreFramework.User;
-using com.etsoo.DI;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +17,7 @@ namespace com.etsoo.CMS.Controllers
     public class ArticleController : SharedController
     {
         // Service
-        readonly ArticleService service;
+        readonly IArticleService service;
 
         /// <summary>
         /// Constructor
@@ -27,13 +25,11 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
-        /// <param name="httpClientFactory">HttpClient factory</param>
-        /// <param name="fireService">Fire service</param>
-        public ArticleController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger, IHttpClientFactory httpClientFactory, IFireAndForgetService fireService)
+        /// <param name="service">Service</param>
+        public ArticleController(IMyApp app, IHttpContextAccessor httpContextAccessor, IArticleService service)
             : base(app, httpContextAccessor)
         {
-            service = new ArticleService(app, ServiceUser.CreateSafe(httpContextAccessor.HttpContext), logger, httpClientFactory, fireService);
+            this.service = service;
         }
 
         /// <summary>

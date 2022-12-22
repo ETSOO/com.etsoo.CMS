@@ -14,6 +14,7 @@ import UpgradeIcon from '@mui/icons-material/Upgrade';
 import { app } from '../../app/MyApp';
 import { IActionResult, UserRole } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
+import { EventWatcher, useAsyncState } from '@etsoo/react';
 
 interface UserMenuProps {
   name: string;
@@ -42,25 +43,43 @@ export function UserMenu(props: UserMenuProps) {
   const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
 
   // User menu anchor
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement>();
+  const [anchorEl, setAnchorEl] = useAsyncState<HTMLButtonElement>();
 
   // User menu open or not
   const isMenuOpen = Boolean(anchorEl);
+
+  // Event watcher
+  const watcher = React.useRef(new EventWatcher()).current;
 
   // User menu
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(undefined);
+  const handleMenuClose = async () => {
+    await setAnchorEl(undefined);
+  };
+
+  const handleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    await handleMenuClose();
+
+    const item = (event.target as HTMLElement).closest('li[href]');
+    let href: string | null;
+    if (item && (href = item.getAttribute('href')) != null) {
+      // Even set transitionDuration = 0, still need to wait a little bit
+      // We need to create watcher as ref because of rerenderer
+      watcher.add({
+        type: 'transitionend',
+        action: () => {
+          navigate(href!);
+        },
+        once: true
+      });
+    }
   };
 
   // Sign out
   const handleSignout = () => {
-    // Close menu
-    setAnchorEl(undefined);
-
     // Sign out
     app.signout();
   };
@@ -135,10 +154,12 @@ export function UserMenu(props: UserMenuProps) {
           horizontal: 'right'
         }}
         open={isMenuOpen}
-        onClick={handleMenuClose}
+        transitionDuration={0}
+        onTransitionEnd={(event) => watcher.do(event)}
         onClose={handleMenuClose}
+        onClick={handleClick}
       >
-        <MenuItem onClick={() => navigate('./user/changepassword')}>
+        <MenuItem href="./user/changepassword">
           <ListItemIcon>
             <LockIcon fontSize="small" />
           </ListItemIcon>

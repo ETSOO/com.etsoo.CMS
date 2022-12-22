@@ -1,4 +1,4 @@
-import { AuditLineUpdateData } from '@etsoo/materialui';
+import { AuditLineChangesDto } from '@etsoo/appscript';
 import { AuditFlag } from './AuditFlag';
 
 export type UserHistoryDto = {
@@ -20,12 +20,12 @@ export type UserHistoryDto = {
   /**
    * Content
    */
-  content?: string | { auditData?: AuditLineUpdateData };
+  content?: string | { auditData?: AuditLineChangesDto };
 
   /**
    * Audit data
    */
-  auditData?: AuditLineUpdateData;
+  auditData?: AuditLineChangesDto;
 
   /**
    * Flag

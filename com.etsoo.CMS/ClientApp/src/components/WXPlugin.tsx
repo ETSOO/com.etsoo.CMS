@@ -34,6 +34,8 @@ export function WXPlugin(props: PluginProps) {
           <TextFieldEx
             name="secret"
             label={labels.serviceWXSecret}
+            multiline
+            rows={3}
             autoCorrect="off"
             defaultValue={data?.app ? secret : ''}
             showClear

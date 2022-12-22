@@ -3,6 +3,7 @@ using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Business;
 using com.etsoo.Utils.Actions;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace com.etsoo.CMS.Services
@@ -58,6 +59,19 @@ namespace com.etsoo.CMS.Services
             // Unify the format
             var items = new Regex(@"\s*[;；,，]+\s*", RegexOptions.Multiline).Split(keywords);
             return string.Join(", ", items);
+        }
+
+        /// <summary>
+        /// Parse options
+        /// 解析配置选项
+        /// </summary>
+        /// <typeparam name="T">Generic option type</typeparam>
+        /// <param name="options">JSON options</param>
+        /// <returns>Result</returns>
+        public static T? ParseOptions<T>(string? options) where T : class
+        {
+            if (string.IsNullOrEmpty(options) || !options.StartsWith("{") || !options.EndsWith("}")) return default;
+            return JsonSerializer.Deserialize<T>(options);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns>Action result</returns>
-        public async ValueTask<ActionResult> CreateAsync(UserCreateRQ model)
+        public async ValueTask<IActionResult> CreateAsync(UserCreateRQ model)
         {
             var parameters = FormatParameters(model);
 
@@ -52,7 +52,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<ActionResult> DeleteAsync(string id)
+        public virtual async ValueTask<IActionResult> DeleteAsync(string id)
         {
             var parameters = new DbParameters();
             parameters.Add(nameof(id), id.ToDbString(true, 128));

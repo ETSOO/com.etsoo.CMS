@@ -20,7 +20,7 @@ import {
   GridDataType,
   ScrollerListForwardRef
 } from '@etsoo/react';
-import { ArticleQueryDto } from '../../dto/ArticleQueryDto';
+import { ArticleQueryDto } from '../../api/dto/article/ArticleQueryDto';
 import { UserRole } from '@etsoo/appscript';
 
 function AllArticles() {
@@ -99,12 +99,9 @@ function AllArticles() {
         />,
         <SearchField label={labels.id} name="id" defaultValue={id} />
       ]}
-      loadData={async (data) => {
-        return await app.api.post<ArticleQueryDto[]>('Article/Query', data, {
-          defaultValue: [],
-          showLoading: false
-        });
-      }}
+      loadData={(data) =>
+        app.articleApi.query(data, { defaultValue: [], showLoading: false })
+      }
       columns={[
         {
           field: 'creation',

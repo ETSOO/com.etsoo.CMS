@@ -1,4 +1,7 @@
-﻿using com.etsoo.CMS.Application;
+﻿using com.etsoo.ApiProxy.Configs;
+using com.etsoo.ApiProxy.Defs;
+using com.etsoo.ApiProxy.Proxy;
+using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
@@ -7,10 +10,8 @@ using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.DI;
-using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
 using System.Net;
-using System.Web;
 
 namespace com.etsoo.CMS.Services
 {
@@ -18,24 +19,25 @@ namespace com.etsoo.CMS.Services
     /// Website article service
     /// 网站文章业务逻辑服务
     /// </summary>
-    public class ArticleService : SqliteService<ArticleRepo>
+    public class ArticleService : CommonService<ArticleRepo>, IArticleService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFireAndForgetService fireService;
+        private readonly IBridgeProxy bridgeProxy;
 
         /// <summary>
         /// Constructor
         /// 构造函数
         /// </summary>
         /// <param name="app">Application</param>
-        /// <param name="user">Current user</param>
+        /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        /// <param name="httpClientFactory">HttpClient factory</param>
-        public ArticleService(IMyApp app, IServiceUser user, ILogger logger, IHttpClientFactory httpClientFactory, IFireAndForgetService fireService)
-            : base(app, new ArticleRepo(app, user), logger)
+        /// <param name="fireService">Fire and go service</param>
+        /// <param name="bridgeProxy">Bridge proxy</param>
+        public ArticleService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<ArticleService> logger, IFireAndForgetService fireService, IBridgeProxy bridgeProxy)
+            : base(app, new ArticleRepo(app, userAccessor.UserSafe), logger)
         {
-            _httpClientFactory=httpClientFactory;
             this.fireService = fireService;
+            this.bridgeProxy = bridgeProxy;
         }
 
         /// <summary>
@@ -56,18 +58,18 @@ namespace com.etsoo.CMS.Services
             var id = result.Data;
             await Repo.AddAuditAsync(AuditKind.CreateArticle, id.ToString(), $"Create article {id}", ip, result.Result, rq);
 
-            await NextReNextRevalidateAsync(id);
+            await OnDemandRevalidateAsync(id);
 
             return result.MergeData("id");
         }
 
         /// <summary>
-        /// Next.js On-demand Revalidation
-        /// Next.js 按需重新验证
+        /// On-demand Revalidation
+        /// 按需重新验证
         /// </summary>
         /// <param name="id">Article id</param>
         /// <returns>Task</returns>
-        protected async Task NextReNextRevalidateAsync(int id)
+        protected async Task OnDemandRevalidateAsync(int id)
         {
             // Read article link data
             var link = await Repo.QueryLinkAsync(id);
@@ -76,25 +78,39 @@ namespace com.etsoo.CMS.Services
             var url = link.GetUrl();
             if (string.IsNullOrEmpty(url)) return;
 
-            // Token
-            var token = App.Section.GetValue<string>("NextRevalidationToken");
+            // Website repo
+            var websiteRepo = new WebsiteRepo(App, Repo.User);
 
-            // Fire and forget
-            fireService.FireAsync<IHttpClientFactory>(async (factory, logger) =>
+            // NextJs
+            var nextJs = await websiteRepo.ReadServiceAsync(NextJsOptions.Name);
+            if (nextJs != null)
             {
-                try
+                var nextJsAddress = nextJs.App;
+                var nextJsToken = App.DecriptData(nextJs.Secret);
+
+                // Fire and forget
+                fireService.FireAsync<IHttpClientFactory>(async (factory, logger) =>
                 {
-                    // 发送微信提醒
-                    var client = factory.CreateClient("NextApi");
-                    var response = await client.GetAsync($"?url={HttpUtility.UrlEncode(url)}&secret={HttpUtility.UrlEncode(token)}");
-                    response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadAsStringAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Next.js On-demand Revalidation failed / 按需重新验证失败");
-                }
-            });
+                    try
+                    {
+                        var client = factory.CreateClient();
+                        var nextJsApi = new NextJsProxy(client, logger, new NextJsOptions
+                        {
+                            BaseAddress = nextJsAddress,
+                            Token = nextJsToken
+                        });
+                        var result = await nextJsApi.OnDemandRevalidateAsync(url);
+                        if (!result.Ok)
+                        {
+                            logger.LogError("NextJs On-demand revalidataion failed: {@result}", result);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Next.js On-demand Revalidation failed / 按需重新验证失败");
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -128,11 +144,12 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<string> TranslateAsync(string text)
         {
-            // No dispose needed
-            var client = _httpClientFactory.CreateClient("Translation");
-            using var response = await client.PostAsync("", JsonContent.Create(new { Text = text, TargetLanguageCode = "en", SourceLanguageCode = "zh" }));
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            return await bridgeProxy.TranslateTextAsync(new()
+            {
+                Text = text,
+                TargetLanguageCode = "en",
+                SourceLanguageCode = "zh"
+            });
         }
 
         /// <summary>
@@ -172,7 +189,7 @@ namespace com.etsoo.CMS.Services
              );
             await Repo.AddAuditAsync(AuditKind.UpdateArticle, rq.Id.ToString(), $"Update article {rq.Id}", ip, result, rq);
 
-            await NextReNextRevalidateAsync(rq.Id);
+            await OnDemandRevalidateAsync(rq.Id);
 
             return result;
         }

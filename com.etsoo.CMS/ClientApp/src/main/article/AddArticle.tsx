@@ -4,12 +4,12 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataTypes, DateUtils, Utils } from '@etsoo/shared';
-import { IActionResult } from '@etsoo/appscript';
+import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
 import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
-import { ArticleUpdateDto } from '../../dto/ArticleUpdateDto';
+import { ArticleUpdateDto } from '../../api/dto/article/ArticleUpdateDto';
 import { EOEditorElement, EOEditorEx } from '@etsoo/reacteditor';
 
 function AddTab() {
@@ -23,7 +23,7 @@ function AddTab() {
 
   // Is editing
   const isEditing = id != null;
-  type EditData = DataTypes.AddOrEditType<ArticleUpdateDto, typeof isEditing>;
+  type DataType = DataTypes.AddAndEditType<ArticleUpdateDto>;
 
   // Labels
   const labels = app.getLabels(
@@ -51,8 +51,8 @@ function AddTab() {
   });
 
   // Edit data
-  const [data, setData] = React.useState<EditData>({
-    id,
+  const [data, setData] = React.useState<DataType>({
+    tab1: 0,
     title: '',
     content: '',
     status: 0,
@@ -62,7 +62,7 @@ function AddTab() {
   // Formik
   // https://formik.org/docs/examples/with-material-ui
   // https://firxworx.com/blog/coding/react/integrating-formik-with-react-material-ui-and-typescript/
-  const formik = useFormik<EditData>({
+  const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -74,7 +74,8 @@ function AddTab() {
       }
       const rq = { ...values, content: editorRef.current?.value };
 
-      if (isEditing) {
+      let result: IdActionResult | undefined;
+      if (rq.id != null) {
         // Changed fields
         const fields: string[] = Utils.getDataChanges(rq, data);
         if (fields.length === 0) {
@@ -82,13 +83,12 @@ function AddTab() {
           return;
         }
         rq.changedFields = fields;
+
+        result = await app.articleApi.update(rq);
+      } else {
+        result = await app.articleApi.create(rq);
       }
 
-      // Submit
-      const result = await app.api.put<IActionResult>(
-        isEditing ? 'Article/Update' : 'Article/Create',
-        rq
-      );
       if (result == null) return;
 
       if (result.ok) {
@@ -113,20 +113,19 @@ function AddTab() {
   // Load data
   const loadData = async () => {
     if (id == null) return;
-    app.api
-      .get<ArticleUpdateDto>('Article/UpdateRead/' + id, undefined, {
-        dateFields: ['release']
-      })
-      .then((data) => {
-        if (data == null) return;
-        setData(data);
 
-        if (data.tab1 != null) ancestorRead(data.tab1);
-      });
+    const data = await app.articleApi.updateRead(id, {
+      dateFields: ['release']
+    });
+
+    if (data == null) return;
+    setData(data);
+
+    if (data.tab1 != null) ancestorRead(data.tab1);
   };
 
   const ancestorRead = (tab: number) => {
-    app.api.get<number[]>('Tab/AncestorRead/' + tab).then((data) => {
+    app.tabApi.ancestorRead(tab).then((data) => {
       if (data == null) return;
       data.reverse();
       setTabs(data);

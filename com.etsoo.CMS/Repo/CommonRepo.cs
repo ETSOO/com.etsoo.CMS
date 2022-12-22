@@ -1,4 +1,5 @@
-﻿using com.etsoo.CMS.Defs;
+﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Database;
 using com.etsoo.ServiceApp.Application;
@@ -21,7 +22,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         protected const string SysUserField = $"@{Constants.CurrentUserField}";
 
-        protected CommonRepo(ISqliteApp app, string flag, IServiceUser? user = null) : base(app, flag, user)
+        protected CommonRepo(IMyApp app, string flag, IServiceUser? user = null) : base(app, flag, user)
         {
         }
 

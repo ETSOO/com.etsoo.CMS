@@ -56,7 +56,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public async ValueTask<ActionResult> DeleteAsync(int id)
+        public async ValueTask<IActionResult> DeleteAsync(int id)
         {
             var parameters = new DbParameters();
             parameters.Add(nameof(id), id);

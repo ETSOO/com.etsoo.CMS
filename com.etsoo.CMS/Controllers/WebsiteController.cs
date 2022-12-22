@@ -1,9 +1,8 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.Website;
-using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Authentication;
-using com.etsoo.CoreFramework.User;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +17,7 @@ namespace com.etsoo.CMS.Controllers
     public class WebsiteController : SharedController
     {
         // Service
-        readonly WebsiteService service;
+        readonly IWebsiteService service;
 
         /// <summary>
         /// Constructor
@@ -27,10 +26,11 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
-        public WebsiteController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger)
+        /// <param name="service">Service</param>
+        public WebsiteController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger, IWebsiteService service)
             : base(app, httpContextAccessor)
         {
-            service = new WebsiteService(app, ServiceUser.CreateSafe(httpContextAccessor.HttpContext), logger);
+            this.service = service;
         }
 
         /// <summary>

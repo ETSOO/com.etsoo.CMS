@@ -1,7 +1,15 @@
 using AspNetCoreRateLimit;
+using com.etsoo.ApiProxy.Configs;
+using com.etsoo.ApiProxy.Defs;
+using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
+using com.etsoo.CMS.Services;
+using com.etsoo.CoreFramework.User;
 using com.etsoo.DI;
+using com.etsoo.Logs.Policies;
 using com.etsoo.ServiceApp.Application;
+using com.etsoo.SMTP;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Storage;
 using com.etsoo.Web;
@@ -11,7 +19,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.IO.Compression;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
@@ -24,6 +31,7 @@ var Cors = configuration.GetSection("Cors").Get<IEnumerable<string>?>()?.ToArray
 // Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)
+    .Destructure.With(new PIIAttributeMaskingDestructuringPolicy())
     .CreateLogger();
 
 // Add services
@@ -32,10 +40,19 @@ var services = builder.Services;
 // IP rate limit
 services.AddOptions();
 services.AddMemoryCache();
-services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+services.Configure<IpRateLimitOptions>(configuration.GetSection("IpRateLimiting"));
 services.AddInMemoryRateLimiting();
 services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
+// SMTP
+var smtpSection = builder.Configuration.GetSection(SMTPClientOptions.SectionName).Get<SMTPClientOptions>();
+if (smtpSection != null)
+{
+    var smtpClient = new SMTPClient(smtpSection);
+    services.AddSingleton<ISMTPClient>(smtpClient);
+}
+
+// Fire and forget
 services.AddSingleton<IFireAndForgetService, FireAndForgetService>();
 
 // Service app
@@ -45,6 +62,7 @@ var serviceApp = new MyApp(services, configuration.GetSection("EtsooWebsite"), t
 var Cultures = serviceApp.Configuration.Cultures;
 if (Cultures == null || Cultures.Length == 0)
 {
+    Log.Logger.Error("No Supported Cultures Defined");
     return;
 }
 
@@ -53,20 +71,9 @@ if (Cultures == null || Cultures.Length == 0)
 // Add as singleton to enhance performance
 services.AddSingleton<IMyApp>(serviceApp);
 
-// HttpClient
-var translationApi = configuration.GetValue<string>("EtsooWebsite:TranslationApi");
-services.AddHttpClient("Translation", httpClient =>
-{
-    httpClient.BaseAddress = new Uri(translationApi);
-});
-
-// Next.js revalidation
-var nextApi = configuration.GetValue<string>("EtsooWebsite:NextRevalidationUrl");
-var nextToken = configuration.GetValue<string>("EtsooWebsite:NextRevalidationToken");
-services.AddHttpClient("NextApi", httpClient =>
-{
-    httpClient.BaseAddress = new Uri($"{nextApi}/api/revalidate");
-});
+// Bridge
+services.Configure<BridgeOptions>(configuration.GetSection(BridgeOptions.SectionName));
+services.AddHttpClient<IBridgeProxy, BridgeProxy>();
 
 // Storage
 var storageSection = serviceApp.Section.GetSection("Storage");
@@ -76,18 +83,20 @@ if (storageSection.Exists())
     services.AddSingleton<IStorage>(storage);
 }
 
+// Business services
+services.AddScoped<IServiceUserAccessor, ServiceUserAccessor>();
+services.AddScoped<IArticleService, ArticleService>();
+services.AddScoped<ITabService, TabService>();
+services.AddScoped<IAuthService, AuthService>();
+services.AddScoped<IExternalService, ExternalService>();
+services.AddScoped<IUserService, UserService>();
+services.AddScoped<IWebsiteService, WebsiteService>();
+services.AddScoped<IPublicService, PublicService>();
+
 services.AddControllers().AddJsonOptions(configure =>
 {
-    // Change the Json options here
-    var options = configure.JsonSerializerOptions;
-
-    options.WriteIndented = false;
-    options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    options.PropertyNameCaseInsensitive = true;
-    options.DictionaryKeyPolicy = options.PropertyNamingPolicy;
-
-    // Hold the default options
-    serviceApp.DefaultJsonSerializerOptions = options;
+    // Configure and hold the default options
+    serviceApp.DefaultJsonSerializerOptions = configure.JsonSerializerOptions;
 });
 
 // Swagger

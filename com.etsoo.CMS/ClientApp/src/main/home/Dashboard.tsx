@@ -2,7 +2,7 @@ import React from 'react';
 import { CommonPage, DnDItemStyle, MUGlobal } from '@etsoo/materialui';
 import { app } from '../../app/MyApp';
 import { useNavigate } from 'react-router-dom';
-import { DashboardDto } from '../../dto/DashboardDto';
+import { DashboardDto } from '../../api/dto/website/DashboardDto';
 import {
   Button,
   Card,
@@ -49,90 +49,87 @@ function Dashboard() {
 
   // Load data
   const reloadData = async () => {
-    app.api
-      .get<DashboardDto>('Website/Dashboard', undefined, { showLoading: false })
-      .then((data) => {
-        if (data == null) return;
+    const data = await app.websiteApi.dashboard({ showLoading: false });
+    if (data == null) return;
 
-        const domain = data.site.domain;
-        if (!domain) {
-          app.showInputDialog({
-            title: labels.initializeWebsite,
-            message: labels.initializeWebsiteTip,
-            cancelButton: false,
-            fullScreen: app.smDown,
-            inputs: (
-              <React.Fragment>
-                {' '}
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  name="domain"
-                  required
-                  label={labels.websiteDomain}
-                  fullWidth
-                  variant="standard"
-                  inputProps={{ maxLength: 128 }}
-                />
-                <TextField
-                  name="title"
-                  margin="dense"
-                  variant="standard"
-                  label={labels.websiteTitle}
-                  required
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: 128 }}
-                />
-              </React.Fragment>
-            ),
-            callback: async (form) => {
-              // Cancelled
-              if (form == null) {
-                return;
-              }
+    const domain = data.site.domain;
+    if (!domain) {
+      app.showInputDialog({
+        title: labels.initializeWebsite,
+        message: labels.initializeWebsiteTip,
+        cancelButton: false,
+        fullScreen: app.smDown,
+        inputs: (
+          <React.Fragment>
+            {' '}
+            <TextField
+              autoFocus
+              margin="dense"
+              name="domain"
+              required
+              label={labels.websiteDomain}
+              fullWidth
+              variant="standard"
+              inputProps={{ maxLength: 128 }}
+            />
+            <TextField
+              name="title"
+              margin="dense"
+              variant="standard"
+              label={labels.websiteTitle}
+              required
+              fullWidth
+              multiline
+              rows={2}
+              inputProps={{ maxLength: 128 }}
+            />
+          </React.Fragment>
+        ),
+        callback: async (form) => {
+          // Cancelled
+          if (form == null) {
+            return;
+          }
 
-              // Form data
-              const data = DomUtils.dataAs(new FormData(form), {
-                domain: 'string',
-                title: 'string'
-              });
-
-              // Validation
-              if (data.domain == null) {
-                DomUtils.setFocus('domain', form);
-                return false;
-              }
-
-              if (data.title == null) {
-                DomUtils.setFocus('title', form);
-                return false;
-              }
-
-              // Submit
-              const result = await app.api.post<IActionResult>(
-                'Website/Initialize',
-                data,
-                {
-                  showLoading: false // default will show the loading bar and cause the dialog closed
-                }
-              );
-              if (result == null) return;
-
-              if (result.ok) {
-                await reloadData();
-                return;
-              }
-
-              app.alertResult(result);
-            }
+          // Form data
+          const data = DomUtils.dataAs(new FormData(form), {
+            domain: 'string',
+            title: 'string'
           });
-        } else {
-          app.domain = domain;
-          setData(data);
+
+          // Validation
+          if (data.domain == null) {
+            DomUtils.setFocus('domain', form);
+            return false;
+          }
+
+          if (data.title == null) {
+            DomUtils.setFocus('title', form);
+            return false;
+          }
+
+          // Submit
+          const result = await app.api.post<IActionResult>(
+            'Website/Initialize',
+            data,
+            {
+              showLoading: false // default will show the loading bar and cause the dialog closed
+            }
+          );
+          if (result == null) return;
+
+          if (result.ok) {
+            await reloadData();
+            return;
+          }
+
+          app.alertResult(result);
         }
       });
+    } else {
+      app.domain = domain;
+      setData(data);
+    }
   };
 
   React.useEffect(() => {

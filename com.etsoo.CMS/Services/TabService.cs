@@ -5,7 +5,6 @@ using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
-using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
 using System.Net;
 
@@ -15,17 +14,17 @@ namespace com.etsoo.CMS.Services
     /// Website tab service
     /// 网站栏目业务逻辑服务
     /// </summary>
-    public class TabService : SqliteService<TabRepo>
+    public class TabService : CommonService<TabRepo>, ITabService
     {
         /// <summary>
         /// Constructor
         /// 构造函数
         /// </summary>
         /// <param name="app">Application</param>
-        /// <param name="user">Current user</param>
+        /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        public TabService(IMyApp app, IServiceUser user, ILogger logger)
-            : base(app, new TabRepo(app, user), logger)
+        public TabService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<TabService> logger)
+            : base(app, new TabRepo(app, userAccessor.UserSafe), logger)
         {
         }
 
@@ -50,7 +49,7 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<ActionResult> DeleteAsync(int id)
+        public virtual async ValueTask<IActionResult> DeleteAsync(int id)
         {
             return await Repo.DeleteAsync(id);
         }
