@@ -1,6 +1,6 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
-using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.ServiceApp.Application;
@@ -16,7 +16,7 @@ namespace com.etsoo.CMS.Controllers
     public class AuthController : SharedController
     {
         // Service
-        readonly AuthService service;
+        readonly IAuthService service;
 
         /// <summary>
         /// Constructor
@@ -25,10 +25,11 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
-        public AuthController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger)
+        /// <param name="service">Service</param>
+        public AuthController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger, IAuthService service)
             : base(app, httpContextAccessor)
         {
-            service = new AuthService(app, logger);
+            this.service = service;
         }
 
         /// <summary>
@@ -55,6 +56,9 @@ namespace com.etsoo.CMS.Controllers
                 await WriteResultAsync(ApplicationErrors.NoValidData.AsResult("Id"));
                 return;
             }
+
+            // Ignore case
+            id = id.ToLower();
 
             var pwd = service.DecryptDeviceData(model.Pwd, deviceCore);
             if (string.IsNullOrEmpty(pwd))

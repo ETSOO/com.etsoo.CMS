@@ -1,10 +1,9 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.User;
-using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.CoreFramework.User;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +18,7 @@ namespace com.etsoo.CMS.Controllers
     public class UserController : SharedController
     {
         // Service
-        readonly UserService service;
+        readonly IUserService service;
 
         /// <summary>
         /// Constructor
@@ -28,10 +27,11 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
-        public UserController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<UserController> logger)
+        /// <param name="service">Service</param>
+        public UserController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<UserController> logger, IUserService service)
             : base(app, httpContextAccessor)
         {
-            service = new UserService(app, ServiceUser.CreateSafe(httpContextAccessor.HttpContext), logger);
+            this.service = service;
         }
 
         /// <summary>

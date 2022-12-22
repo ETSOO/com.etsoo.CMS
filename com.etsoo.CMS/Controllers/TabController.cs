@@ -1,9 +1,8 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.Tab;
-using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.CoreFramework.User;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +17,7 @@ namespace com.etsoo.CMS.Controllers
     public class TabController : SharedController
     {
         // Service
-        readonly TabService service;
+        readonly ITabService service;
 
         /// <summary>
         /// Constructor
@@ -27,10 +26,11 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="logger">Logger</param>
-        public TabController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger)
+        /// <param name="service">Service</param>
+        public TabController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger, ITabService service)
             : base(app, httpContextAccessor)
         {
-            service = new TabService(app, ServiceUser.CreateSafe(httpContextAccessor.HttpContext), logger);
+            this.service = service;
         }
 
         /// <summary>

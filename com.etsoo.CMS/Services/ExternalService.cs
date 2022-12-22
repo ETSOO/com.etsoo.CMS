@@ -1,7 +1,7 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Service;
-using com.etsoo.ServiceApp.Services;
 
 namespace com.etsoo.CMS.Services
 {
@@ -9,7 +9,7 @@ namespace com.etsoo.CMS.Services
     /// External service
     /// 外部服务
     /// </summary>
-    public class ExternalService : SqliteService<ServiceRepo>
+    public class ExternalService : CommonService<ServiceRepo>, IExternalService
     {
         /// <summary>
         /// Constructor
@@ -17,7 +17,7 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="logger">Logger</param>
-        public ExternalService(IMyApp app, ILogger logger)
+        public ExternalService(IMyApp app, ILogger<ExternalService> logger)
             : base(app, new ServiceRepo(app), logger)
         {
         }

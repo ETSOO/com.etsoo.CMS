@@ -1,4 +1,3 @@
-import { IActionResult } from '@etsoo/appscript';
 import { CommonPage, TextFieldEx, VBox } from '@etsoo/materialui';
 import { DomUtils } from '@etsoo/shared';
 import { Button } from '@mui/material';
@@ -54,16 +53,8 @@ function ChangePassword() {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Submit data
-      const data = {
-        deviceId: app.deviceId,
-        oldPassword: app.encrypt(app.hash(values.oldPassword)),
-        password: app.encrypt(app.hash(values.password))
-      };
-
-      var result = await app.api.put<IActionResult>(
-        'User/ChangePassword',
-        data
-      );
+      const { oldPassword, password } = values;
+      var result = await app.userApi.changePassword(oldPassword, password);
       if (result == null) return;
 
       if (result.ok) {

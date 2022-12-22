@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CoreFramework.Models;
 using com.etsoo.SourceGenerators.Attributes;
+using com.etsoo.Utils.Serialization;
 using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Website
@@ -35,6 +36,7 @@ namespace com.etsoo.CMS.RQ.Website
         /// </summary>
         [Property(Length = 512)]
         [StringLength(512)]
+        [PII]
         public string? Secret { get; set; }
 
         /// <summary>

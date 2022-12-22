@@ -41,8 +41,8 @@ namespace com.etsoo.CMS.RQ.Website
         /// App secret
         /// 程序密码
         /// </summary>
-        [Property(Length = 512)]
-        [StringLength(512)]
+        [Property(Length = 1024)]
+        [StringLength(1024)]
         public string? Secret { get; set; }
 
         /// <summary>

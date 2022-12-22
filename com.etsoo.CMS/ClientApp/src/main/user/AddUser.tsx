@@ -4,10 +4,10 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataTypes, Utils } from '@etsoo/shared';
-import { IActionResult } from '@etsoo/appscript';
+import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate, useParams } from 'react-router-dom';
 import { app } from '../../app/MyApp';
-import { UserUpdateDto } from '../../dto/UserUpdateDto';
+import { UserUpdateDto } from '../../api/dto/user/UserUpdateDto';
 
 function AddUser() {
   // Route
@@ -16,7 +16,7 @@ function AddUser() {
 
   // Is editing
   const isEditing = id != null;
-  type EditData = DataTypes.AddOrEditType<UserUpdateDto, typeof isEditing>;
+  type DataType = DataTypes.AddAndEditType<UserUpdateDto>;
 
   // Roles
   var roles = app.getLocalRoles();
@@ -37,16 +37,15 @@ function AddUser() {
   });
 
   // Edit data
-  const [data, setData] = React.useState<EditData>({
-    id,
-    enabled: true,
-    refreshTime: new Date()
+  const [data, setData] = React.useState<DataType>({
+    role: 0,
+    enabled: true
   });
 
   // Formik
   // https://formik.org/docs/examples/with-material-ui
   // https://firxworx.com/blog/coding/react/integrating-formik-with-react-material-ui-and-typescript/
-  const formik = useFormik<EditData>({
+  const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -59,7 +58,8 @@ function AddUser() {
         role: 'number'
       });
 
-      if (isEditing) {
+      let result: IdActionResult | undefined;
+      if (rq.id != null) {
         // Changed fields
         const fields: string[] = Utils.getDataChanges(rq, data);
         if (fields.length === 0) {
@@ -67,13 +67,13 @@ function AddUser() {
           return;
         }
         rq.changedFields = fields;
+
+        result = await app.userApi.update(rq);
+      } else {
+        result = await app.userApi.create(rq);
       }
 
       // Submit
-      const result = await app.api.put<IActionResult>(
-        isEditing ? 'User/Update' : 'User/Create',
-        rq
-      );
       if (result == null) return;
 
       if (result.ok) {
@@ -95,10 +95,9 @@ function AddUser() {
   // Load data
   const loadData = async () => {
     if (id == null) return;
-    app.api.get<UserUpdateDto>('User/UpdateRead/' + id).then((data) => {
-      if (data == null) return;
-      setData(data);
-    });
+    const data = await app.userApi.updateRead(id);
+    if (data == null) return;
+    setData(data);
   };
 
   React.useEffect(() => {
@@ -124,9 +123,7 @@ function AddUser() {
                   const id = formik.values.id;
                   if (!ok || id == null) return;
 
-                  const result = await app.api.delete<IActionResult>(
-                    `User/Delete/${id}`
-                  );
+                  const result = await app.userApi.delete(id);
                   if (result == null) return;
 
                   if (result.ok) {

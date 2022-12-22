@@ -1,7 +1,6 @@
 import { HiSelector, HiSelectorProps } from '@etsoo/materialui';
 import { app } from '../app/MyApp';
-import { TabDto } from '../dto/TabDto';
-import { TabQueryRQ } from '../RQ/TabQueryRQ';
+import { TabDto } from '../api/dto/tab/TabDto';
 
 /**
  * Tab selector props
@@ -20,12 +19,12 @@ export function TabSelector(props: TabSelectorProps) {
   return (
     <HiSelector<TabDto>
       labelField="name"
-      loadData={async (parent?: number) => {
-        const rq: TabQueryRQ = { currentPage: 0, batchSize: 100, parent };
-        return await app.api.post<TabDto[]>('Tab/Query', rq, {
-          showLoading: false
-        });
-      }}
+      loadData={(parent?: number) =>
+        app.tabApi.query(
+          { currentPage: 0, batchSize: 100, parent },
+          { showLoading: false }
+        )
+      }
       {...props}
     />
   );

@@ -1,6 +1,5 @@
 ﻿using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.SourceGenerators.Attributes;
-using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.User
 {
@@ -17,15 +16,13 @@ namespace com.etsoo.CMS.RQ.User
         /// 用户编号
         /// </summary>
         [Property(Length = 128)]
-        [Required]
-        public string Id { get; init; } = default!;
+        public required string Id { get; set; }
 
         /// <summary>
         /// Role
         /// 角色
         /// </summary>
-        [Required]
-        public UserRole Role { get; init; }
+        public required UserRole Role { get; init; }
 
         /// <summary>
         /// Enabled or not

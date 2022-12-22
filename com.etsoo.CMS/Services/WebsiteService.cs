@@ -5,7 +5,6 @@ using com.etsoo.CMS.RQ.Website;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
-using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.String;
@@ -17,17 +16,17 @@ namespace com.etsoo.CMS.Services
     /// Website service
     /// 网站业务逻辑服务
     /// </summary>
-    public class WebsiteService : SqliteService<WebsiteRepo>
+    public class WebsiteService : CommonService<WebsiteRepo>, IWebsiteService
     {
         /// <summary>
         /// Constructor
         /// 构造函数
         /// </summary>
         /// <param name="app">Application</param>
-        /// <param name="user">Current user</param>
+        /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        public WebsiteService(IMyApp app, IServiceUser user, ILogger logger)
-            : base(app, new WebsiteRepo(app, user), logger)
+        public WebsiteService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<WebsiteService> logger)
+            : base(app, new WebsiteRepo(app, userAccessor.UserSafe), logger)
         {
         }
 
@@ -38,7 +37,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="model">Model</param>
         /// <param name="ip">IP address</param>
         /// <returns>Action result</returns>
-        public async Task<ActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ rq, IPAddress ip)
+        public async Task<IActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ rq, IPAddress ip)
         {
             var result = await Repo.CreateOrUpdateResourceAsync(rq);
 
@@ -56,10 +55,16 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<IActionResult> CreateServiceAsync(ServiceCreateRQ rq, IPAddress ip)
         {
+            var secret = rq.Secret;
+            if (!string.IsNullOrEmpty(secret))
+            {
+                rq.Secret = App.EncriptData(secret);
+                secret = StringUtils.HideData(secret);
+            }
+
             var result = await Repo.CreateServiceAsync(rq);
 
-            if (!string.IsNullOrEmpty(rq.Secret))
-                rq.Secret = StringUtils.HideData(rq.Secret);
+            rq.Secret = secret;
             await Repo.AddAuditAsync(AuditKind.CreateService, rq.Id, $"Create service {rq.Id}", ip, result, rq);
 
             return result;
@@ -173,6 +178,13 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<IActionResult> UpdateServiceAsync(ServiceUpdateRQ rq, IPAddress ip)
         {
+            var secret = rq.Secret;
+            if (!string.IsNullOrEmpty(secret))
+            {
+                rq.Secret = App.EncriptData(secret);
+                secret = StringUtils.HideData(secret);
+            }
+
             var parameters = new Dictionary<string, object>
             {
                 ["RefreshTime"] = DateTime.UtcNow.ToString("u")
@@ -183,8 +195,7 @@ namespace com.etsoo.CMS.Services
                 IdField = "id"
             }, "refreshTime = @RefreshTime", parameters);
 
-            if (!string.IsNullOrEmpty(rq.Secret))
-                rq.Secret = StringUtils.HideData(rq.Secret);
+            rq.Secret = secret;
             await Repo.AddAuditAsync(AuditKind.UpdateService, rq.Id, $"Update service {rq.Id}", ip, result, rq);
 
             return result;

@@ -1,6 +1,6 @@
-﻿using com.etsoo.CMS.Models;
+﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Models;
 using com.etsoo.Database;
-using com.etsoo.ServiceApp.Application;
 using Dapper;
 using System.Net;
 
@@ -17,7 +17,7 @@ namespace com.etsoo.CMS.Repo
         /// 构造函数
         /// </summary>
         /// <param name="app">Application</param>
-        public AuthRepo(ISqliteApp app)
+        public AuthRepo(IMyApp app)
             : base(app, "auth")
         {
         }
@@ -213,6 +213,7 @@ namespace com.etsoo.CMS.Repo
                     layout INTEGER NOT NULL,
                     orderIndex INTEGER NOT NULL,
                     articles INTEGER NOT NULL,
+                    template TEXT,
 
                     FOREIGN KEY (parent) REFERENCES tabs (id)
                 );

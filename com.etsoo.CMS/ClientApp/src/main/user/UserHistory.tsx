@@ -16,9 +16,9 @@ import WarningIcon from '@mui/icons-material/Warning';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import React from 'react';
 import { app } from '../../app/MyApp';
-import { UserHistoryDto } from '../../dto/UserHistoryDto';
+import { UserHistoryDto } from '../../api/dto/user/UserHistoryDto';
 import { useParams } from 'react-router-dom';
-import { AuditFlag } from '../../dto/AuditFlag';
+import { AuditFlag } from '../../api/dto/user/AuditFlag';
 import {
   GridCellRendererProps,
   GridDataType,
@@ -136,7 +136,7 @@ function UserHistory() {
       loadData={async (data) => {
         if (!id) return null;
         data.author = id;
-        return await app.api.post<UserHistoryDto[]>('User/History', data, {
+        return await app.userApi.history(data, {
           defaultValue: [],
           showLoading: false
         });

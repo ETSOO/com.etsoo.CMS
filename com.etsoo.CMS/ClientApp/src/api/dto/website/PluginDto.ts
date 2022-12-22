@@ -1,15 +1,3 @@
-export type PlugEditDto = {
-  /**
-   * App id
-   */
-  app: string;
-
-  /**
-   * Secret
-   */
-  secret?: string;
-};
-
 export type PluginDto = {
   /**
    * Id

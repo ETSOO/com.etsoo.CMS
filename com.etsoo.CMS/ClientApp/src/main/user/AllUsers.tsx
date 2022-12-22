@@ -17,7 +17,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DomUtils } from '@etsoo/shared';
 import { app } from '../../app/MyApp';
-import { UserDto } from '../../dto/UserDto';
+import { UserDto } from '../../api/dto/user/UserDto';
 import {
   GridCellRendererProps,
   GridDataType,
@@ -110,12 +110,12 @@ function AllUsers() {
         <SearchField label={labels.id} name="sid" defaultValue={id} />,
         <ComboBox options={roles} name="role" label={labels.role} search />
       ]}
-      loadData={async (data) => {
-        return await app.api.post<UserDto[]>('User/Query', data, {
+      loadData={async (data) =>
+        app.userApi.query(data, {
           defaultValue: [],
           showLoading: false
-        });
-      }}
+        })
+      }
       columns={[
         {
           field: 'id',

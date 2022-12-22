@@ -6,7 +6,6 @@ using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
-using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Crypto;
 using System.Net;
@@ -17,21 +16,18 @@ namespace com.etsoo.CMS.Services
     /// Logined user business logic service
     /// 已登录用户业务逻辑服务
     /// </summary>
-    public class UserService : SqliteService<UserRepo>
+    public class UserService : CommonService<UserRepo>, IUserService
     {
-        protected readonly IServiceUser user;
-
         /// <summary>
         /// Constructor
         /// 构造函数
         /// </summary>
         /// <param name="app">Application</param>
-        /// <param name="user">Current user</param>
+        /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        public UserService(IMyApp app, IServiceUser user, ILogger logger)
-            : base(app, new UserRepo(app, user), logger)
+        public UserService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<UserService> logger)
+            : base(app, new UserRepo(app, userAccessor.UserSafe), logger)
         {
-            this.user = user;
         }
 
         /// <summary>
@@ -82,6 +78,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<IActionResult> CreateAsync(UserCreateRQ rq, IPAddress ip)
         {
+            rq.Id = rq.Id.ToLower();
             var result = await Repo.CreateAsync(rq);
             await Repo.AddAuditAsync(AuditKind.CreateUser, rq.Id, $"Create user {rq.Id}", ip, result, rq);
             return result;
@@ -93,7 +90,7 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<ActionResult> DeleteAsync(string id)
+        public virtual async ValueTask<IActionResult> DeleteAsync(string id)
         {
             return await Repo.DeleteAsync(id);
         }
@@ -133,7 +130,7 @@ namespace com.etsoo.CMS.Services
         public async ValueTask<ActionResult> ResetPasswordAsync(string id, string passphrase, IPAddress ip)
         {
             // Forbid reset current user's password
-            if (user.Id.Equals(id, StringComparison.OrdinalIgnoreCase)) return ApplicationErrors.NoValidData.AsResult("id");
+            if (Repo.User?.Id.Equals(id, StringComparison.OrdinalIgnoreCase) == true) return ApplicationErrors.NoValidData.AsResult("id");
 
             // New password
             var password = CryptographyUtils.CreateRandString(RandStringKind.DigitAndLetter, 6).ToString();

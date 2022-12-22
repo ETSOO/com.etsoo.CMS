@@ -3,10 +3,10 @@ import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import React from 'react';
 import { app } from '../../app/MyApp';
-import { IActionResult, UserRole } from '@etsoo/appscript';
+import { UserRole } from '@etsoo/appscript';
 import { DataTypes, Utils } from '@etsoo/shared';
 import { useNavigate } from 'react-router-dom';
-import { SettingsUpdateDto } from '../../dto/SettingsUpdateDto';
+import { SettingsUpdateDto } from '../../api/dto/website/SettingsUpdateDto';
 import { Grid } from '@mui/material';
 
 function Settings() {
@@ -32,15 +32,15 @@ function Settings() {
   // Permissions
   const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
 
-  // Edit data
-  type EditData = DataTypes.AddOrEditType<SettingsUpdateDto, true>;
-  const [data, setData] = React.useState<EditData>({
+  // Data type
+  type DataType = DataTypes.AddOrEditType<SettingsUpdateDto, true, never>;
+  const [data, setData] = React.useState<DataType>({
     domain: 'https://',
     title: ''
   });
 
   // Formik
-  const formik = useFormik<EditData>({
+  const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -49,7 +49,7 @@ function Settings() {
       const rq = { ...values };
 
       // Auto append http protocol
-      if (!rq.domain.startsWith('http')) {
+      if (rq.domain && !rq.domain.startsWith('http')) {
         rq.domain = 'http://' + rq.domain;
       }
 
@@ -62,10 +62,7 @@ function Settings() {
       rq.changedFields = fields;
 
       // Submit
-      const result = await app.api.put<IActionResult>(
-        'Website/UpdateSettings',
-        rq
-      );
+      const result = await app.websiteApi.updateSettings(rq);
       if (result == null) return;
 
       app.notifier.succeed(labels.operationSucceeded, undefined, () => {
@@ -76,10 +73,9 @@ function Settings() {
 
   // Load data
   const loadData = async () => {
-    app.api.get<EditData>('Website/ReadSettings').then((data) => {
-      if (data == null) return;
-      setData(data);
-    });
+    const data = await app.websiteApi.readSettings();
+    if (data == null) return;
+    setData(data);
   };
 
   React.useEffect(() => {

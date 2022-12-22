@@ -6,7 +6,6 @@ using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.ServiceApp.Application;
-using com.etsoo.ServiceApp.Services;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.String;
 using System.Globalization;
@@ -17,7 +16,7 @@ namespace com.etsoo.CMS.Services
     /// Authorization service
     /// 授权服务
     /// </summary>
-    public class AuthService : SqliteService<AuthRepo>
+    public class AuthService : CommonService<AuthRepo>, IAuthService
     {
         /// <summary>
         /// Constructor
@@ -25,7 +24,7 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="logger">Logger</param>
-        public AuthService(IMyApp app, ILogger logger)
+        public AuthService(IMyApp app, ILogger<AuthService> logger)
             : base(app, new AuthRepo(app), logger)
         {
         }
@@ -159,6 +158,11 @@ namespace com.etsoo.CMS.Services
                 // Validate the token first
                 // Expired then password should be valid
                 var (claims, expired, _, _) = App.AuthService.ValidateToken(token);
+                if (claims == null)
+                {
+                    return (ApplicationErrors.NoValidData.AsResult("Claims"), null);
+                }
+
                 var refreshToken = RefreshToken.Create(claims);
                 if (refreshToken == null || (expired && string.IsNullOrEmpty(model.Pwd)))
                 {

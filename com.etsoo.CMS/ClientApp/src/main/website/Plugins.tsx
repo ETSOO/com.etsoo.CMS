@@ -2,10 +2,12 @@ import { UserRole } from '@etsoo/appscript';
 import { CommonPage, MUGlobal } from '@etsoo/materialui';
 import { Grid } from '@mui/material';
 import React from 'react';
+import { PluginDto } from '../../api/dto/website/PluginDto';
 import { app } from '../../app/MyApp';
 import { GAPlugin } from '../../components/GAPlugin';
+import { NextJsPlugin } from '../../components/NextJsPlugin';
+import { ReCAPTCHAPlugin } from '../../components/ReCAPTCHAPlugin';
 import { WXPlugin } from '../../components/WXPlugin';
-import { PluginDto } from '../../dto/PluginDto';
 
 function Plugins() {
   // Paddings
@@ -19,10 +21,9 @@ function Plugins() {
 
   // Load data
   const reloadData = async () => {
-    app.api.post<PluginDto[]>('Website/QueryServices').then((data) => {
-      if (data == null) return;
-      setItems(data);
-    });
+    const data = await app.websiteApi.queryServices();
+    if (data == null) return;
+    setItems(data);
   };
 
   React.useEffect(() => {
@@ -33,8 +34,10 @@ function Plugins() {
   return (
     <CommonPage onUpdateAll={reloadData} paddings={paddings}>
       <Grid container justifyContent="left" spacing={paddings}>
-        <GAPlugin initData={items} disabled={!adminPermission} />
         <WXPlugin initData={items} disabled={!adminPermission} />
+        <GAPlugin initData={items} disabled={!adminPermission} />
+        <ReCAPTCHAPlugin initData={items} disabled={!adminPermission} />
+        <NextJsPlugin initData={items} disabled={!adminPermission} />
       </Grid>
     </CommonPage>
   );

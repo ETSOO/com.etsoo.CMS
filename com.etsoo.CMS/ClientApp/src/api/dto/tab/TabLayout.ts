@@ -30,5 +30,10 @@ export enum TabLayout {
   /**
    * Title, logo & description list
    */
-  FullList
+  FullList,
+
+  /**
+   * Template data
+   */
+  Template
 }

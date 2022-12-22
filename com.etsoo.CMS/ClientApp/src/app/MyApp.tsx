@@ -1,38 +1,40 @@
 import {
-  zhCN,
-  zhHK,
-  enUS,
+  zhHans,
+  zhHant,
+  en,
   ApiAuthorizationScheme,
   AddressUtils,
   ExternalSettings,
-  IApiPayload,
-  LoginRQ,
   DynamicActionResult,
   UserRole,
-  IActionResult
+  LoginRQ
 } from '@etsoo/appscript';
 import {
   CommonApp,
   IServiceAppSettings,
   MUGlobal,
-  ServiceLoginResult,
   TextFieldEx,
   TextFieldExMethods,
   VBox
 } from '@etsoo/materialui';
 import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
-import zhCNResources from '../i18n/zh-CN.json';
-import zhHKResources from '../i18n/zh-HK.json';
-import enUSResources from '../i18n/en-US.json';
+import zhHansResources from '../i18n/zh-Hans.json';
+import zhHantResources from '../i18n/zh-Hant.json';
+import enResources from '../i18n/en.json';
 import React from 'react';
-import { AuditKind } from '../dto/AuditKind';
+import { AuditKind } from '../api/dto/AuditKind';
 import {
   CoreConstants,
   INotificationReact,
   NotificationMessageType
 } from '@etsoo/react';
-import { TabLayout } from '../dto/TabLayout';
-import { ArticleLink } from '../dto/ArticleLink';
+import { TabLayout } from '../api/dto/tab/TabLayout';
+import { ArticleLink } from '../api/dto/article/ArticleLink';
+import { AuthApi } from '../api/AuthApi';
+import { UserApi } from '../api/UserApi';
+import { ArticleApi } from '../api/ArticleApi';
+import { TabApi } from '../api/TabApi';
+import { WebsiteApi } from '../api/WebsiteApi';
 
 /**
  * Service App
@@ -40,6 +42,31 @@ import { ArticleLink } from '../dto/ArticleLink';
 class MyServiceApp extends CommonApp {
   private triedCount = 0;
   private loginDialog?: INotificationReact;
+
+  /**
+   * Authorization API
+   */
+  readonly authApi = new AuthApi(this);
+
+  /**
+   * User API
+   */
+  readonly userApi = new UserApi(this);
+
+  /**
+   * Article API
+   */
+  readonly articleApi = new ArticleApi(this);
+
+  /**
+   * Tab API
+   */
+  readonly tabApi = new TabApi(this);
+
+  /**
+   * Website API
+   */
+  readonly websiteApi = new WebsiteApi(this);
 
   /**
    * Site domain
@@ -100,12 +127,8 @@ class MyServiceApp extends CommonApp {
     return this.getEnumList(TabLayout, 'layout');
   }
 
-  async translate(text: string) {
-    return this.api.post<string>(
-      'Article/Translate',
-      { text },
-      { showLoading: false }
-    );
+  translate(text: string) {
+    return this.articleApi.translate(text, { showLoading: false });
   }
 
   /**
@@ -114,10 +137,7 @@ class MyServiceApp extends CommonApp {
    * @param callback Callback
    */
   async resetPassword(id: string, callback?: () => void) {
-    const result = await this.api.put<IActionResult<{ password: string }>>(
-      'User/ResetPassword/',
-      { deviceId: this.deviceId, id }
-    );
+    const result = await this.userApi.resetPassword(id);
     if (result == null) return;
 
     if (result.ok && result.data) {
@@ -186,12 +206,7 @@ class MyServiceApp extends CommonApp {
         timezone: this.getTimeZone()
       };
 
-      const payload: IApiPayload<ServiceLoginResult, any> = {};
-      const result = await this.api.post<ServiceLoginResult>(
-        'Auth/Login',
-        data,
-        payload
-      );
+      const [result, refreshToken] = await this.authApi.login(data);
 
       if (result == null) {
         return false;
@@ -199,8 +214,6 @@ class MyServiceApp extends CommonApp {
 
       if (result.ok) {
         // Token
-        const refreshToken = this.getResponseToken(payload.response);
-
         if (refreshToken == null || result.data == null) {
           this.notifier.alert(labels.unknownError);
           return;
@@ -312,9 +325,9 @@ const { detectedCulture } = DomUtils;
 MUGlobal.textFieldVariant = 'standard';
 
 const supportedCultures: DataTypes.CultureDefinition[] = [
-  zhCN(zhCNResources),
-  zhHK(zhHKResources),
-  enUS(enUSResources)
+  zhHans(zhHansResources),
+  zhHant(zhHantResources),
+  en(enResources)
 ];
 const supportedRegions = ['CN'];
 
@@ -357,7 +370,7 @@ const settings: IServiceAppSettings = {
   ),
 
   // Current culture
-  currentCulture: DomUtils.getCulture(supportedCultures, detectedCulture)!
+  currentCulture: DomUtils.getCulture(supportedCultures, detectedCulture)[0]!
 };
 
 /**

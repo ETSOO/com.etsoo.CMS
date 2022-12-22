@@ -4,12 +4,12 @@ import { DateUtils } from '@etsoo/shared';
 import { Typography } from '@mui/material';
 import React from 'react';
 import { app } from '../../app/MyApp';
-import { ArticleViewDto } from '../../dto/ArticleViewDto';
+import { ArticleViewDto } from '../../api/dto/article/ArticleViewDto';
 import EditIcon from '@mui/icons-material/Edit';
 
 function ViewArticle() {
   // Route
-  const { id } = useParamsEx({ id: 'number' });
+  const { id = 0 } = useParamsEx({ id: 'number' });
 
   // Labels
   const labels = app.getLabels('tab', 'edit', 'articleView');
@@ -55,7 +55,7 @@ function ViewArticle() {
           singleRow: 'small'
         }
       ]}
-      loadData={() => app.api.get<ArticleViewDto>(`Article/ViewRead/${id}`)}
+      loadData={() => app.articleApi.viewRead(id)}
       actions={(data, refresh) => (
         <React.Fragment>
           <ButtonLink

@@ -4,13 +4,13 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataTypes, Utils } from '@etsoo/shared';
-import { IActionResult } from '@etsoo/appscript';
+import { IActionResult, IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
-import { TabUpdateDto } from '../../dto/TabUpdateDto';
 import { TabSelector } from '../../components/TabSelector';
 import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
-import { TabDto } from '../../dto/TabDto';
+import { TabDto } from '../../api/dto/tab/TabDto';
+import { TabUpdateDto } from '../../api/dto/tab/TabUpdateDto';
 
 function AddTab() {
   // Route
@@ -23,7 +23,7 @@ function AddTab() {
 
   // Is editing
   const isEditing = id != null;
-  type EditData = DataTypes.AddOrEditType<TabUpdateDto, typeof isEditing>;
+  type DataType = DataTypes.AddAndEditType<TabUpdateDto>;
 
   // Labels
   const labels = app.getLabels(
@@ -45,9 +45,11 @@ function AddTab() {
   });
 
   // Edit data
-  const [data, setData] = React.useState<EditData>({
-    id,
+  const [data, setData] = React.useState<DataType>({
+    name: '',
+    url: '',
     enabled: true,
+    articles: 0,
     layout: 0
   });
 
@@ -57,7 +59,7 @@ function AddTab() {
   // Formik
   // https://formik.org/docs/examples/with-material-ui
   // https://firxworx.com/blog/coding/react/integrating-formik-with-react-material-ui-and-typescript/
-  const formik = useFormik<EditData>({
+  const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -68,7 +70,8 @@ function AddTab() {
       // Correct for types safety
       Utils.correctTypes(rq, {});
 
-      if (isEditing) {
+      let result: IdActionResult | undefined;
+      if (rq.id != null) {
         // Changed fields
         const fields: string[] = Utils.getDataChanges(rq, data);
         if (fields.length === 0) {
@@ -76,13 +79,12 @@ function AddTab() {
           return;
         }
         rq.changedFields = fields;
+
+        result = await app.tabApi.update(rq);
+      } else {
+        result = await app.tabApi.create(rq);
       }
 
-      // Submit
-      const result = await app.api.put<IActionResult>(
-        isEditing ? 'Tab/Update' : 'Tab/Create',
-        rq
-      );
       if (result == null) return;
 
       if (result.ok) {
