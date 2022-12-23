@@ -107,7 +107,7 @@ function MyRouter() {
         <Routes>
           <Route path="*" element={<App />} />
 
-          <Route path="/home" element={<Home />}>
+          <Route path="home" element={<Home />}>
             <Route index element={<Dashboard />} />
 
             <Route path="article/all" element={<AllArticles />} />

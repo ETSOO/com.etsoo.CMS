@@ -232,7 +232,7 @@ class MyServiceApp extends CommonApp {
         this.storage.setData(CoreConstants.FieldLoginKeep, keep);
 
         // Replace all pages
-        app.navigate(app.addRootUrl('/home/'));
+        app.navigate('./home/');
 
         // Delay
         setTimeout(() => this.loginDialog?.dismiss(), 0);
