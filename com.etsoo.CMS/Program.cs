@@ -191,6 +191,7 @@ var localizationOptions = new RequestLocalizationOptions
 var app = builder.Build();
 
 app.UseIpRateLimiting();
+app.UseForwardedHeaders();
 
 app.UseRequestLocalization(localizationOptions);
 
