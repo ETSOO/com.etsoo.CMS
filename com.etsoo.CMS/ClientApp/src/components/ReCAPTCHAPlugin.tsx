@@ -1,7 +1,7 @@
 import { Switch, TextFieldEx, VBox } from '@etsoo/materialui';
 import { DomUtils } from '@etsoo/shared';
 import { app } from '../app/MyApp';
-import { PluginItem, PluginProps } from './PluginItem';
+import { checkSecret, PluginItem, PluginProps } from './PluginItem';
 
 /**
  * reCAPTCHAPlugin plugin
@@ -63,7 +63,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
         if (
           data.secret == null ||
           (!editing && data.secret === secret) ||
-          (data.secret !== secret && data.secret.length < 16)
+          (data.secret !== secret && !checkSecret(data.secret))
         ) {
           DomUtils.setFocus('secret', form);
           return false;

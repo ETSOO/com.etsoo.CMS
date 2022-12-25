@@ -208,10 +208,13 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    // https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-2.1&tabs=visual-studio
-    app.UseHsts();
+    if (Environment.GetEnvironmentVariable("SSLOnly") != "false")
+    {
+        // https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-2.1&tabs=visual-studio
+        app.UseHsts();
 
-    app.UseHttpsRedirection();
+        app.UseHttpsRedirection();
+    }
 
     app.UseExceptionHandler(errorApp =>
     {

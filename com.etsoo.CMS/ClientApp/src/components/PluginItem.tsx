@@ -9,6 +9,20 @@ import { app } from '../app/MyApp';
 import { PluginDto } from '../api/dto/website/PluginDto';
 import { PlugEditDto } from '../api/dto/website/PlugEditDto';
 
+export function checkSecret(secret: string, minLength: number = 12) {
+  if (secret.startsWith('{') && secret.endsWith('}')) {
+    try {
+      JSON.parse(secret);
+      return true;
+    } catch (e) {
+      console.log('checkSecret JSON case', e);
+      return false;
+    }
+  } else {
+    return secret.length >= minLength;
+  }
+}
+
 export interface PluginProps {
   /**
    * Plugin init items
