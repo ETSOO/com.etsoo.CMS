@@ -5,6 +5,7 @@ using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.Controllers
 {
@@ -101,6 +102,18 @@ namespace com.etsoo.CMS.Controllers
         {
             var result = await service.InitializeAsync(rq);
             await WriteResultAsync(result);
+        }
+
+        /// <summary>
+        /// Read service (plugin)
+        /// 读取服务（插件）
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Result</returns>
+        [HttpGet("ReadService/{id}")]
+        public async Task<IActionResult> ReadService([Required] string id)
+        {
+            return new JsonResult(await service.ReadServiceAsync(id));
         }
 
         /// <summary>

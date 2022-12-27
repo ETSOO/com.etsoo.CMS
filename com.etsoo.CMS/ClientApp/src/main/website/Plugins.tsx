@@ -7,6 +7,7 @@ import { app } from '../../app/MyApp';
 import { GAPlugin } from '../../components/GAPlugin';
 import { NextJsPlugin } from '../../components/NextJsPlugin';
 import { ReCAPTCHAPlugin } from '../../components/ReCAPTCHAPlugin';
+import { SMTPPlugin } from '../../components/SMTPPlugin';
 import { WXPlugin } from '../../components/WXPlugin';
 
 function Plugins() {
@@ -34,6 +35,7 @@ function Plugins() {
   return (
     <CommonPage onUpdateAll={reloadData} paddings={paddings}>
       <Grid container justifyContent="left" spacing={paddings}>
+        <SMTPPlugin initData={items} disabled={!adminPermission} />
         <WXPlugin initData={items} disabled={!adminPermission} />
         <GAPlugin initData={items} disabled={!adminPermission} />
         <ReCAPTCHAPlugin initData={items} disabled={!adminPermission} />

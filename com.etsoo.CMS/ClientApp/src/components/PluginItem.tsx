@@ -8,19 +8,40 @@ import React from 'react';
 import { app } from '../app/MyApp';
 import { PluginDto } from '../api/dto/website/PluginDto';
 import { PlugEditDto } from '../api/dto/website/PlugEditDto';
+import { NotificationMessageType } from '@etsoo/react';
 
 export function checkSecret(secret: string, minLength: number = 12) {
-  if (secret.startsWith('{') && secret.endsWith('}')) {
+  if (
+    (secret.startsWith('{') || secret.endsWith('}')) &&
+    /"\s*:/.test(secret)
+  ) {
     try {
       JSON.parse(secret);
       return true;
     } catch (e) {
-      console.log('checkSecret JSON case', e);
+      app.notifier.message(
+        NotificationMessageType.Danger,
+        `${e}`,
+        'JSON secret error'
+      );
       return false;
     }
   } else {
     return secret.length >= minLength;
   }
+}
+
+export async function loadPluginSecret(input: HTMLInputElement) {
+  const id = input.id;
+  if (id) {
+    const data = await app.websiteApi.readService(input.id, {
+      showLoading: false
+    });
+    if (data == null) return false;
+    input.value = data.secret;
+  }
+
+  return false;
 }
 
 export interface PluginProps {

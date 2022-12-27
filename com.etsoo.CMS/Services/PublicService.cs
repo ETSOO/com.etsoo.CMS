@@ -1,12 +1,14 @@
 ﻿using com.etsoo.ApiProxy.Configs;
 using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Public;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.DI;
 using com.etsoo.SMTP;
 using com.etsoo.Utils.Actions;
+using com.etsoo.Utils.Serialization;
 using com.etsoo.WeiXin;
 using com.etsoo.WeiXin.Dto;
 using com.etsoo.WeiXin.RQ;
@@ -75,12 +77,17 @@ namespace com.etsoo.CMS.Services
                 throw new NotSupportedException("WeiXin Client Not Supported");
             }
 
-            var client = clientFactory.CreateClient();
-            var wxApi = new WXClient(client, new WXClientOptions
+            // Options
+            var secret = app.DecriptData(wx.Secret);
+            var options = ServiceUtils.ParseOptions<WXClientOptions>(secret) ?? new WXClientOptions
             {
                 AppId = wx.App,
-                AppSecret = app.DecriptData(wx.Secret)
-            });
+                AppSecret = secret
+            };
+
+            // Client
+            var client = clientFactory.CreateClient();
+            var wxApi = new WXClient(client, options);
 
             return await wxApi.CreateJsApiSignatureAsync(rq.Url);
         }
@@ -135,11 +142,22 @@ namespace com.etsoo.CMS.Services
                 return ApplicationErrors.InvalidEmail.AsResult("Recipient");
             }
 
-            // SMTP secton
-            var smtpSection = configuration.GetSection(SMTPClientOptions.SectionName);
+            var smtp = await repo.ReadServiceAsync("SMTP");
+            if (smtp == null)
+            {
+                return ApplicationErrors.NoValidData.AsResult("SMTP");
+            }
+
+            var smtpJSON = app.DecriptData(smtp.Secret);
+            var smtpOptions = ServiceUtils.ParseOptions<SMTPClientOptions>(smtpJSON);
+            if (smtpOptions == null)
+            {
+                return ApplicationErrors.NoValidData.AsResult("SMTPOptions");
+            }
 
             // Template
-            var template = smtpSection.GetValue<string?>(rq.Template);
+            using var jsonDoc = JsonDocument.Parse(smtpJSON);
+            var template = jsonDoc.RootElement.GetPropertyCaseInsensitive(rq.Template)?.GetString();
             if (string.IsNullOrEmpty(template))
             {
                 return ApplicationErrors.NoValidData.AsResult("Template");
@@ -158,8 +176,8 @@ namespace com.etsoo.CMS.Services
                 Subject = HttpUtility.HtmlDecode(rq.Subject)
             };
 
-            // Even the email is wrong, still sent out
-            message.Cc.Add(to);
+            // Configure "Bcc" to make sure the email is received by somebody else
+            message.To.Add(to);
 
             // HTML
             var builder = new BodyBuilder();
@@ -189,12 +207,15 @@ namespace com.etsoo.CMS.Services
             message.Body = builder.ToMessageBody();
 
             // Fire and forget
-            fireService.FireAsync<ISMTPClient>(async (client, logger) =>
+            fireService.FireAsync(async (logger) =>
             {
                 try
                 {
-                    // 发送
-                    await client.SendAsync(message);
+                    // SMTP client
+                    var smtpClient = new SMTPClient(smtpOptions);
+
+                    // Send
+                    await smtpClient.SendAsync(message);
                 }
                 catch (Exception ex)
                 {

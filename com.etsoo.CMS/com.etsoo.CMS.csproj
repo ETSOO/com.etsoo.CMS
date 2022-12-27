@@ -25,12 +25,12 @@
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="com.etsoo.ApiProxy" Version="1.0.7" />
-    <PackageReference Include="com.etsoo.DI" Version="1.0.7" />
+    <PackageReference Include="com.etsoo.DI" Version="1.0.8" />
     <PackageReference Include="com.etsoo.Logs" Version="1.0.3" />
-    <PackageReference Include="com.etsoo.ServiceApp" Version="1.0.70" />
-    <PackageReference Include="com.etsoo.SMTP" Version="1.0.19" />
+    <PackageReference Include="com.etsoo.ServiceApp" Version="1.0.71" />
+    <PackageReference Include="com.etsoo.SMTP" Version="1.0.20" />
     <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.57" />
-    <PackageReference Include="com.etsoo.Web" Version="1.0.48" />
+    <PackageReference Include="com.etsoo.Web" Version="1.0.49" />
     <PackageReference Include="com.etsoo.WeiXin" Version="1.0.26" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />

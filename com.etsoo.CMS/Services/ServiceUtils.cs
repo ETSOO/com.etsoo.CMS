@@ -71,7 +71,7 @@ namespace com.etsoo.CMS.Services
         public static T? ParseOptions<T>(string? options) where T : class
         {
             if (string.IsNullOrEmpty(options) || !options.StartsWith("{") || !options.EndsWith("}")) return default;
-            return JsonSerializer.Deserialize<T>(options);
+            return JsonSerializer.Deserialize<T>(options, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
     }
 }

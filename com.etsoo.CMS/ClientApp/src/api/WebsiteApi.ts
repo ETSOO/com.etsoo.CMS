@@ -4,6 +4,7 @@ import { DataTypes } from '@etsoo/shared';
 import { DashboardDto } from './dto/website/DashboardDto';
 import { PluginDto } from './dto/website/PluginDto';
 import { PluginUpdateDto } from './dto/website/PluginUpdateDto';
+import { PluginViewDto } from './dto/website/PluginViewDto';
 import { ResourceDto } from './dto/website/ResourceDto';
 import { SettingsUpdateDto } from './dto/website/SettingsUpdateDto';
 
@@ -72,6 +73,16 @@ export class WebsiteApi extends EntityApi {
    */
   queryServices(payload?: IApiPayload<PluginDto[]>) {
     return this.api.post('Website/QueryServices', undefined, payload);
+  }
+
+  /**
+   * Read service (plugin)
+   * @param id Id
+   * @param payload Payload
+   * @returns Result
+   */
+  readService(id: string, payload?: IApiPayload<PluginViewDto>) {
+    return this.api.get(`Website/ReadService/${id}`, undefined, payload);
   }
 
   /**

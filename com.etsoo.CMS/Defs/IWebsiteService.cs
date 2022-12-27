@@ -1,4 +1,5 @@
-﻿using com.etsoo.CMS.RQ.Website;
+﻿using com.etsoo.CMS.Models;
+using com.etsoo.CMS.RQ.Website;
 using com.etsoo.CoreFramework.Services;
 using com.etsoo.Utils.Actions;
 using System.Net;
@@ -44,6 +45,14 @@ namespace com.etsoo.CMS.Defs
         /// <param name="rq">Reqeust data</param>
         /// <returns>Task</returns>
         Task<IActionResult> InitializeAsync(InitializeRQ rq);
+
+        /// <summary>
+        /// Read service (plugin)
+        /// 读取服务（插件）
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Result</returns>
+        Task<DbService> ReadServiceAsync(string id);
 
         /// <summary>
         /// Read settings

@@ -9,7 +9,6 @@ using com.etsoo.CoreFramework.User;
 using com.etsoo.DI;
 using com.etsoo.Logs.Policies;
 using com.etsoo.ServiceApp.Application;
-using com.etsoo.SMTP;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Storage;
 using com.etsoo.Web;
@@ -43,14 +42,6 @@ services.AddMemoryCache();
 services.Configure<IpRateLimitOptions>(configuration.GetSection("IpRateLimiting"));
 services.AddInMemoryRateLimiting();
 services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
-// SMTP
-var smtpSection = builder.Configuration.GetSection(SMTPClientOptions.SectionName).Get<SMTPClientOptions>();
-if (smtpSection != null)
-{
-    var smtpClient = new SMTPClient(smtpSection);
-    services.AddSingleton<ISMTPClient>(smtpClient);
-}
 
 // Fire and forget
 services.AddSingleton<IFireAndForgetService, FireAndForgetService>();

@@ -9,44 +9,43 @@ import {
 } from './PluginItem';
 
 /**
- * reCAPTCHAPlugin plugin
- * https://developers.google.com/recaptcha/docs/v3
+ * SMTPPlugin plugin
  * @returns Component
  */
-export function ReCAPTCHAPlugin(props: PluginProps) {
-  const name = 'RECAP';
+export function SMTPPlugin(props: PluginProps) {
+  const name = 'SMTP';
   const secret = '******';
   const { initData, disabled } = props;
   const item = initData?.find((d) => d.id === name);
-  const json = `{"baseAddress": "R", "secret": ""}`;
 
+  const json = `{"host": "email-smtp.ap-southeast-1.amazonaws.com", "port": 465, "useSsl": true, "sender": "", "userName": "", "password": "", "to": null, "cc": null, "bcc": []}`;
   const labels = app.getLabels(
-    'serviceRECAPApp',
-    'serviceRECAPSecret',
+    'serviceSMTPApp',
+    'serviceSMTPSecret',
     'enabled'
   );
 
   return (
     <PluginItem
       name={name}
-      url="https://developers.google.com/recaptcha/docs/v3"
+      url="https://aws.amazon.com/"
       initData={item}
       disabled={disabled}
       inputs={(data) => (
         <VBox gap={1} marginTop={1}>
           <TextFieldEx
             name="app"
-            label={labels.serviceRECAPApp}
+            label={labels.serviceSMTPApp}
             autoCorrect="off"
-            defaultValue={data?.app ?? ''}
+            defaultValue={data?.app ?? 'SES'}
             showClear
             required
           />
           <TextFieldEx
             name="secret"
-            label={labels.serviceRECAPSecret}
+            label={labels.serviceSMTPSecret}
             multiline
-            rows={2}
+            rows={3}
             autoCorrect="off"
             defaultValue={data?.app ? secret : json}
             onDoubleClick={() => navigator.clipboard.writeText(json)}
@@ -64,7 +63,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
         </VBox>
       )}
       validator={(form, data, editing) => {
-        if (data.app.length < 16) {
+        if (data.app.length < 3) {
           DomUtils.setFocus('app', form);
           return false;
         }

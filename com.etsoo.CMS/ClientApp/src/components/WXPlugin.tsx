@@ -1,7 +1,12 @@
 import { Switch, TextFieldEx, VBox } from '@etsoo/materialui';
 import { DomUtils } from '@etsoo/shared';
 import { app } from '../app/MyApp';
-import { checkSecret, PluginItem, PluginProps } from './PluginItem';
+import {
+  checkSecret,
+  loadPluginSecret,
+  PluginItem,
+  PluginProps
+} from './PluginItem';
 
 /**
  * Wechat plugin
@@ -13,6 +18,7 @@ export function WXPlugin(props: PluginProps) {
   const { initData, disabled } = props;
   const item = initData?.find((d) => d.id === name);
 
+  const json = `{"appSecret": "", "token": "", "encodingAESKey": ""}`;
   const labels = app.getLabels('serviceWXApp', 'serviceWXSecret', 'enabled');
 
   return (
@@ -37,7 +43,10 @@ export function WXPlugin(props: PluginProps) {
             multiline
             rows={3}
             autoCorrect="off"
-            defaultValue={data?.app ? secret : ''}
+            defaultValue={data?.app ? secret : json}
+            onDoubleClick={() => navigator.clipboard.writeText(json)}
+            id={item?.id}
+            onVisibility={loadPluginSecret}
             showClear
             showPassword
             required

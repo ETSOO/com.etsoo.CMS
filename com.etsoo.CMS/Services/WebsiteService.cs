@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
+using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Website;
 using com.etsoo.CoreFramework.Models;
@@ -90,6 +91,19 @@ namespace com.etsoo.CMS.Services
         public async Task<IActionResult> InitializeAsync(InitializeRQ rq)
         {
             return await Repo.InitializeAsync(rq);
+        }
+
+        /// <summary>
+        /// Read service (plugin)
+        /// 读取服务（插件）
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Result</returns>
+        public async Task<DbService> ReadServiceAsync(string id)
+        {
+            var result = await Repo.ReadServiceAsync(id);
+            if (result == null) return new DbService(id, string.Empty);
+            return result with { Secret = App.DecriptData(result.Secret) };
         }
 
         /// <summary>
