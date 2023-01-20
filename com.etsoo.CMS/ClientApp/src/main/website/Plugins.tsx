@@ -4,6 +4,7 @@ import { Grid } from '@mui/material';
 import React from 'react';
 import { PluginDto } from '../../api/dto/website/PluginDto';
 import { app } from '../../app/MyApp';
+import { BDJQPlugin } from '../../components/BDJQPlugin';
 import { GAPlugin } from '../../components/GAPlugin';
 import { NextJsPlugin } from '../../components/NextJsPlugin';
 import { ReCAPTCHAPlugin } from '../../components/ReCAPTCHAPlugin';
@@ -40,6 +41,7 @@ function Plugins() {
         <GAPlugin initData={items} disabled={!adminPermission} />
         <ReCAPTCHAPlugin initData={items} disabled={!adminPermission} />
         <NextJsPlugin initData={items} disabled={!adminPermission} />
+        <BDJQPlugin initData={items} disabled={!adminPermission} />
       </Grid>
     </CommonPage>
   );

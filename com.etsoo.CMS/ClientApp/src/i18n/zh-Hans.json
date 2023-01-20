@@ -41,6 +41,8 @@
   "role": "角色",
   "roleAdmin": "管理员",
   "roleUser": "用户",
+  "serviceBDJQ": "百度金桥",
+  "serviceBDJQApp": "脚本标识",
   "serviceGA": "谷歌分析",
   "serviceGAApp": "衡量 ID",
   "serviceNextJs": "NextJs",

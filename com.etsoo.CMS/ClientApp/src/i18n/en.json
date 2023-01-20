@@ -41,6 +41,8 @@
   "role": "role",
   "roleAdmin": "Admin",
   "roleUser": "User",
+  "serviceBDJQ": "Baidu Jinqiao",
+  "serviceBDJQApp": "Script ID",
   "serviceGA": "Google Analytics",
   "serviceGAApp": "MEASUREMENT ID",
   "serviceNextJs": "NextJs",
