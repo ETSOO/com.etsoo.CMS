@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CoreFramework.Business;
 using com.etsoo.SourceGenerators.Attributes;
+using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Article
@@ -26,7 +27,7 @@ namespace com.etsoo.CMS.RQ.Article
         [Property(Length = 256)]
         [StringLength(256)]
         [Required]
-        public string Title { get; init; } = default!;
+        public required string Title { get; init; }
 
         /// <summary>
         /// Subtitle
@@ -48,8 +49,8 @@ namespace com.etsoo.CMS.RQ.Article
         /// Description
         /// 描述
         /// </summary>
-        [Property(Length = 512)]
-        [StringLength(512)]
+        [Property(Length = 1024)]
+        [StringLength(1024)]
         public string? Description { get; init; }
 
         /// <summary>
@@ -59,14 +60,15 @@ namespace com.etsoo.CMS.RQ.Article
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Url { get; set; } = default!;
+        public required string Url { get; set; }
 
         /// <summary>
         /// Content
         /// 内容
         /// </summary>
         [Required]
-        public string Content { get; init; } = default!;
+        [Property(Length = -1)]
+        public required string Content { get; set; }
 
         /// <summary>
         /// Logo
@@ -91,6 +93,12 @@ namespace com.etsoo.CMS.RQ.Article
         /// 幻灯片照片
         /// </summary>
         public string? Slideshow { get; init; }
+
+        /// <summary>
+        /// JSON Data
+        /// </summary>
+        [IsJson]
+        public string? JsonData { get; init; }
 
         /// <summary>
         /// Status

@@ -18,13 +18,13 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 50)]
         [StringLength(50)]
         [Required]
-        public string Id { get; init; } = default!;
+        public required string Id { get; init; }
 
         /// <summary>
         /// Value
         /// 值
         /// </summary>
         [Required]
-        public string Value { get; init; } = default!;
+        public required string Value { get; init; }
     }
 }

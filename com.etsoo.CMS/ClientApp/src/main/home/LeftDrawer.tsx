@@ -73,12 +73,12 @@ export const LeftDrawer = React.forwardRef<LeftDrawerMethods, LeftDrawerProps>(
 
     // Location
     // Reload when location changes
-    const location = useLocation();
+    const pathname = useLocation().pathname.replace('/home/', './');
 
-    const getMenuItem = (href: string) => {
-      return MUGlobal.getMenuItem(location.pathname, href);
-    };
-
+    const getMenuItem = React.useCallback(
+      (href: string) => MUGlobal.getMenuItem(pathname, href),
+      [pathname]
+    );
     // Menu open/close state
     const [open, setOpen] = React.useState<boolean>();
 

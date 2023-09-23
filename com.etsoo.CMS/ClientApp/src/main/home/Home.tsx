@@ -61,11 +61,24 @@ function Home() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            <PageContext.Consumer>
-              {(page) => page.state.title}
-            </PageContext.Consumer>
-          </Typography>
+          <PageContext.Consumer>
+            {({ state }) => (
+              <React.Fragment>
+                <Typography variant="h6" noWrap component="div">
+                  {state.title}
+                </Typography>
+                {state.subtitle && (
+                  <Typography
+                    variant="caption"
+                    noWrap
+                    sx={{ marginLeft: '8px', marginTop: '8px' }}
+                  >
+                    {state.subtitle}
+                  </Typography>
+                )}
+              </React.Fragment>
+            )}
+          </PageContext.Consumer>
           <Box sx={{ flexGrow: 1 }} />
           <UserMenu name={state.name} avatar={state.avatar} smDown={smDown} />
         </Toolbar>

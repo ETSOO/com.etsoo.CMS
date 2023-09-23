@@ -105,6 +105,17 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Read settings
+        /// 读取设置
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpGet("ReadJsonData")]
+        public async Task ReadJsonData()
+        {
+            await service.ReadJsonDataAsync(Response);
+        }
+
+        /// <summary>
         /// Read service (plugin)
         /// 读取服务（插件）
         /// </summary>
@@ -149,6 +160,19 @@ namespace com.etsoo.CMS.Controllers
         public async Task QueryServices()
         {
             await service.QueryServicesAsync(Response);
+        }
+
+        /// <summary>
+        /// Update resource URL
+        /// 更新资源路径
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [HttpPut("UpdateResourceUrl")]
+        public async Task UpdateResourceUrl(WebsiteUpdateResurceUrlRQ rq)
+        {
+            var result = await service.UpdateResurceUrlAsync(rq, Ip);
+            await WriteResultAsync(result);
         }
 
         /// <summary>

@@ -178,7 +178,8 @@ namespace com.etsoo.CMS.Repo
                     title TEXT NOT NULL,
                     keywords TEXT,
                     description TEXT,
-                    version TEXT
+                    version TEXT,
+                    jsonData TEXT
                 );
 
                 /*
@@ -197,7 +198,8 @@ namespace com.etsoo.CMS.Repo
                     app TEXT NOT NULL,
                     secret TEXT,
                     status INTEGER NOT NULL,
-                    refreshTime TEXT NOT NULL
+                    refreshTime TEXT NOT NULL,
+                    jsonData TEXT
                 ) WITHOUT ROWID;
 
                 /*
@@ -214,6 +216,9 @@ namespace com.etsoo.CMS.Repo
                     orderIndex INTEGER NOT NULL,
                     articles INTEGER NOT NULL,
                     template TEXT,
+                    logo TEXT,
+                    description TEXT,
+                    jsonData TEXT,
 
                     FOREIGN KEY (parent) REFERENCES tabs (id)
                 );
@@ -245,6 +250,7 @@ namespace com.etsoo.CMS.Repo
                     status INTEGER NOT NULL,
                     orderIndex INTEGER NOT NULL,
                     slideshow TEXT,
+                    jsonData TEXT,
 
                     FOREIGN KEY (author) REFERENCES users (id)
                 );

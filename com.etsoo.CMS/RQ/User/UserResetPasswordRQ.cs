@@ -16,13 +16,13 @@ namespace com.etsoo.CMS.RQ.User
         /// </summary>
         [Required]
         [StringLength(512, MinimumLength = 32)]
-        public string DeviceId { get; init; } = default!;
+        public required string DeviceId { get; init; }
 
         /// <summary>
         /// User id
         /// 用户编号
         /// </summary>
         [Required]
-        public string Id { get; init; } = default!;
+        public required string Id { get; init; }
     }
 }

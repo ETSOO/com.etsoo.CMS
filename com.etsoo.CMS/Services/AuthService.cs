@@ -18,6 +18,8 @@ namespace com.etsoo.CMS.Services
     /// </summary>
     public class AuthService : CommonService<AuthRepo>, IAuthService
     {
+        readonly CoreFramework.Authentication.IAuthService _authService;
+
         /// <summary>
         /// Constructor
         /// 构造函数
@@ -27,6 +29,8 @@ namespace com.etsoo.CMS.Services
         public AuthService(IMyApp app, ILogger<AuthService> logger)
             : base(app, new AuthRepo(app), logger)
         {
+            if (app.AuthService == null) throw new NullReferenceException(nameof(app.AuthService));
+            _authService = app.AuthService;
         }
 
         // Hash password
@@ -38,7 +42,7 @@ namespace com.etsoo.CMS.Services
         private async Task<string> FormatLoginResultAsync(IActionResult result, IServiceUser user, string device)
         {
             // Expiry seconds
-            result.Data[Constants.SecondsName] = App.AuthService.AccessTokenMinutes * 60;
+            result.Data[Constants.SecondsName] = _authService.AccessTokenMinutes * 60;
 
             // Role
             result.Data["Role"] = user.RoleValue;
@@ -50,10 +54,10 @@ namespace com.etsoo.CMS.Services
             var token = new RefreshToken(user.Id, user.Organization, user.ClientIp, user.Region, user.DeviceId, null);
 
             // Access token
-            result.Data[Constants.TokenName] = App.AuthService.CreateAccessToken(user);
+            result.Data[Constants.TokenName] = _authService.CreateAccessToken(user);
 
             // Refresh token
-            var refreshToken = App.AuthService.CreateRefreshToken(token);
+            var refreshToken = _authService.CreateRefreshToken(token);
 
             // Hash token
             var hashedToken = await App.HashPasswordAsync(refreshToken);
@@ -157,7 +161,7 @@ namespace com.etsoo.CMS.Services
             {
                 // Validate the token first
                 // Expired then password should be valid
-                var (claims, expired, _, _) = App.AuthService.ValidateToken(token);
+                var (claims, expired, _, _) = _authService.ValidateToken(token);
                 if (claims == null)
                 {
                     return (ApplicationErrors.NoValidData.AsResult("Claims"), null);
@@ -184,6 +188,10 @@ namespace com.etsoo.CMS.Services
                 }
 
                 var (deviceToken, user) = tokenResult.Value;
+                if (deviceToken == null)
+                {
+                    return (ApplicationErrors.NoDeviceMatch.AsResult(), null);
+                }
 
                 // Has password or not
                 if (!string.IsNullOrEmpty(model.Pwd))

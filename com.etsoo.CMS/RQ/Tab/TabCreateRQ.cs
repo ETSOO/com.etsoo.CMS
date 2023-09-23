@@ -1,4 +1,5 @@
 ﻿using com.etsoo.SourceGenerators.Attributes;
+using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Tab
@@ -24,7 +25,7 @@ namespace com.etsoo.CMS.RQ.Tab
         [Property(Length = 64)]
         [StringLength(64)]
         [Required]
-        public string Name { get; init; } = default!;
+        public required string Name { get; init; }
 
         /// <summary>
         /// URL
@@ -33,7 +34,7 @@ namespace com.etsoo.CMS.RQ.Tab
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Url { get; set; } = default!;
+        public required string Url { get; set; }
 
         /// <summary>
         /// Enabled or not
@@ -46,5 +47,25 @@ namespace com.etsoo.CMS.RQ.Tab
         /// 布局
         /// </summary>
         public byte Layout { get; set; } = 0;
+
+        /// <summary>
+        /// Logo
+        /// 图标
+        /// </summary>
+        public string? Logo { get; init; }
+
+        /// <summary>
+        /// Description
+        /// 描述
+        /// </summary>
+        [Property(Length = 1024)]
+        [StringLength(1024)]
+        public string? Description { get; init; }
+
+        /// <summary>
+        /// JSON Data
+        /// </summary>
+        [IsJson]
+        public string? JsonData { get; init; }
     }
 }

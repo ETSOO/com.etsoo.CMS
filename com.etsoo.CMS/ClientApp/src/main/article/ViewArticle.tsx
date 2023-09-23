@@ -6,13 +6,22 @@ import React from 'react';
 import { app } from '../../app/MyApp';
 import { ArticleViewDto } from '../../api/dto/article/ArticleViewDto';
 import EditIcon from '@mui/icons-material/Edit';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import PhotoIcon from '@mui/icons-material/Photo';
+import { LocalUtils } from '../../app/LocalUtils';
 
 function ViewArticle() {
   // Route
   const { id = 0 } = useParamsEx({ id: 'number' });
 
   // Labels
-  const labels = app.getLabels('tab', 'edit', 'articleView');
+  const labels = app.getLabels(
+    'tab',
+    'edit',
+    'articleView',
+    'slideshowLogo',
+    'articleLogo'
+  );
 
   React.useEffect(() => {
     // Page title
@@ -56,17 +65,36 @@ function ViewArticle() {
         }
       ]}
       loadData={() => app.articleApi.viewRead(id)}
-      actions={(data, refresh) => (
-        <React.Fragment>
-          <ButtonLink
-            variant="outlined"
-            href={`./../../edit/${data.id}`}
-            startIcon={<EditIcon />}
-          >
-            {labels.edit}
-          </ButtonLink>
-        </React.Fragment>
-      )}
+      actions={(data, refresh) => {
+        const logoState = LocalUtils.createLogoState(data);
+        return (
+          <React.Fragment>
+            <ButtonLink
+              variant="outlined"
+              href={`./../../logo/${data.id}`}
+              startIcon={<PhotoIcon />}
+              state={logoState}
+            >
+              {labels.articleLogo}
+            </ButtonLink>
+            <ButtonLink
+              variant="outlined"
+              href={`./../../gallery/${data.id}`}
+              startIcon={<CollectionsIcon />}
+              state={logoState}
+            >
+              {labels.slideshowLogo}
+            </ButtonLink>
+            <ButtonLink
+              variant="outlined"
+              href={`./../../edit/${data.id}`}
+              startIcon={<EditIcon />}
+            >
+              {labels.edit}
+            </ButtonLink>
+          </React.Fragment>
+        );
+      }}
     >
       {(data) => (
         <iframe

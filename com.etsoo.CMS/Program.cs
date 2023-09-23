@@ -70,8 +70,14 @@ services.AddHttpClient<IBridgeProxy, BridgeProxy>();
 var storageSection = serviceApp.Section.GetSection("Storage");
 if (storageSection.Exists())
 {
-    var storage = new LocalStorage(storageSection);
-    services.AddSingleton<IStorage>(storage);
+    services.AddSingleton<IStorage>((provider) =>
+    {
+        var context = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+        var root = storageSection.GetValue<string?>("Root") ?? "/ETSOOCMS";
+        var urlRoot = storageSection.GetValue<string>("URLRoot")
+            ?? (context == null ? throw new Exception("No HttpContext") : $"{context.Request.Scheme}://{context.Request.Host}/api/Storage");
+        return new LocalStorage(root, urlRoot);
+    });
 }
 
 // Business services

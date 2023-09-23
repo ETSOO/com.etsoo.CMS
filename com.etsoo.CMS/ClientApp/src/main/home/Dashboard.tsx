@@ -52,7 +52,7 @@ function Dashboard() {
     const data = await app.websiteApi.dashboard({ showLoading: false });
     if (data == null) return;
 
-    const domain = data.site.domain;
+    const domain = data.site?.domain;
     if (!domain) {
       app.showInputDialog({
         title: labels.initializeWebsite,
@@ -171,6 +171,7 @@ function Dashboard() {
               spacing={0}
               style={DnDItemStyle(index, false, theme)}
               alignItems="center"
+              onDoubleClick={() => navigate(`./article/view/${article.id}`)}
             >
               <Grid item xs={12} sm={9}>
                 <IconButton
@@ -221,7 +222,11 @@ function Dashboard() {
               alignItems="center"
             >
               <Grid item xs={12} sm={9}>
-                <IconButton size="small" sx={{ marginRight: 1 }}>
+                <IconButton
+                  size="small"
+                  sx={{ marginRight: 1 }}
+                  onClick={() => navigate(`./user/history/${author}`)}
+                >
                   <HistoryIcon />
                 </IconButton>
                 {audit.title}

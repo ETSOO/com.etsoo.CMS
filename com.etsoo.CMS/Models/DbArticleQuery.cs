@@ -47,7 +47,7 @@ namespace com.etsoo.CMS.Models
     /// <param name="Layout">Tab layout</param>
     /// <param name="TabUrl">Tab URL</param>
     [AutoDataReaderGenerator(UtcDateTime = true)]
-    public partial record DbArticleQuery(int Id, string Title, bool IsSelf, EntityStatus Status, DateTime Creation, int Tab1, int? Tab2, int? Tab3, string Url, int Year, int TabLayout, string TabUrl)
+    public partial record DbArticleQuery(int Id, string Title, bool IsSelf, EntityStatus Status, DateTime Creation, int Tab1, int? Tab2, int? Tab3, string Url, int Year, int TabLayout, string TabUrl, string? Logo)
     {
         /// <summary>
         /// Primary tab
@@ -67,8 +67,8 @@ namespace com.etsoo.CMS.Models
         /// </summary>
         public string? TabName3 { get; set; }
 
-        public DbArticleQuery(int id, string title, bool isSelf, int status, string creation, int tab1, int? tab2, int? tab3, string url, int year, int tabLayout, string tabUrl)
-            : this(id, title, isSelf, (EntityStatus)status, StringUtils.TryParse<DateTime>(creation).GetValueOrDefault(), tab1, tab2, tab3, url, year, tabLayout, tabUrl)
+        public DbArticleQuery(int id, string title, bool isSelf, int status, string creation, int tab1, int? tab2, int? tab3, string url, int year, int tabLayout, string tabUrl, string? logo)
+            : this(id, title, isSelf, (EntityStatus)status, StringUtils.TryParse<DateTime>(creation).GetValueOrDefault(), tab1, tab2, tab3, url, year, tabLayout, tabUrl, logo)
         {
         }
     }

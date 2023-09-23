@@ -18,7 +18,7 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Domain { get; init; } = default!;
+        public required string Domain { get; init; }
 
         /// <summary>
         /// Title
@@ -27,6 +27,6 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 128)]
         [StringLength(128)]
         [Required]
-        public string Title { get; init; } = default!;
+        public required string Title { get; init; }
     }
 }

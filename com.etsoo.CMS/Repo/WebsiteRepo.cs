@@ -5,8 +5,10 @@ using com.etsoo.CMS.RQ.Website;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.Database;
+using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
 using System.Reflection;
+using System.Text.Json;
 
 namespace com.etsoo.CMS.Repo
 {
@@ -129,6 +131,34 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Read JSON data
+        /// 读取 JSON 数据
+        /// </summary>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        public async Task ReadJsonDataAsync(HttpResponse response)
+        {
+            var json = $"json(jsonData) AS jsonData".ToJsonCommand(true);
+            var command = CreateCommand($"SELECT {json} FROM website LIMIT 1");
+
+            await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
+        /// Read JSON data to object
+        /// 读取 JSON 数据到对象
+        /// </summary>
+        /// <typeparam name="T">Generic object type</typeparam>
+        /// <returns>Result</returns>
+        public async Task<T?> ReadJsonDataAsync<T>()
+        {
+            var command = CreateCommand($"SELECT jsonData FROM website LIMIT 1");
+            var raw = await ExecuteScalarAsync<string?>(command);
+            if (string.IsNullOrEmpty(raw)) return default;
+            else return JsonSerializer.Deserialize<T>(raw, SharedUtils.JsonDefaultSerializerOptions);
+        }
+
+        /// <summary>
         /// Read service
         /// 读取服务
         /// </summary>
@@ -147,11 +177,15 @@ namespace com.etsoo.CMS.Repo
         /// 读取设置
         /// </summary>
         /// <param name="response">HTTP Response</param>
+        /// <param name="rootUrl">Root URL</param>
         /// <returns>Task</returns>
-        public async Task ReadSettingsAsync(HttpResponse response)
+        public async Task ReadSettingsAsync(HttpResponse response, string? rootUrl)
         {
-            var json = $"domain, title, keywords, description".ToJsonCommand(true);
-            var command = CreateCommand($"SELECT {json} FROM website LIMIT 1");
+            var parameters = new DbParameters();
+            parameters.Add(nameof(rootUrl), rootUrl);
+
+            var json = $"domain, title, keywords, description, @{nameof(rootUrl)} AS rootUrl, json(jsonData) AS jsonData".ToJsonCommand(true);
+            var command = CreateCommand($"SELECT {json} FROM website LIMIT 1", parameters);
 
             await ReadJsonToStreamAsync(command, response);
         }
@@ -163,7 +197,7 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Result</returns>
         public async Task<DbWebsite?> ReadSettingsAsync()
         {
-            var command = CreateCommand($"SELECT rowid, domain, title, description, keywords FROM website LIMIT 1");
+            var command = CreateCommand($"SELECT rowid, domain, title, description, keywords, jsonData FROM website LIMIT 1");
             return await QueryAsAsync<DbWebsite>(command);
         }
 
@@ -182,6 +216,17 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Query available tabs
+        /// 查询可用栏目
+        /// </summary>
+        /// <returns></returns>
+        public async Task<TabLink[]> QueryTabsAsync()
+        {
+            var command = CreateCommand(@$"SELECT id, name, layout, url FROM tabs WHERE status < 200");
+            return await QueryAsListAsync<TabLink>(command);
+        }
+
+        /// <summary>
         /// Query resources
         /// 查询资源
         /// </summary>
@@ -196,6 +241,29 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Update resource URL
+        /// 更新资源路径
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        public async Task UpdateResurceUrlAsync(string oldResourceUrl, string resouceUrl)
+        {
+            var oldField = nameof(oldResourceUrl);
+            var newField = nameof(resouceUrl);
+
+            var parameters = new DbParameters();
+            parameters.Add(oldField, oldResourceUrl);
+            parameters.Add(newField, resouceUrl);
+
+            var command = CreateCommand($"""
+                UPDATE tabs SET logo = REPLACE(logo, @{oldField}, @{newField});
+                UPDATE articles SET logo = REPLACE(logo, @{oldField}, @{newField}), content = REPLACE(content, @{oldField}, @{newField});
+                """, parameters);
+
+            await ExecuteAsync(command);
+        }
+
+        /// <summary>
         /// Upgrade system
         /// 升级系统
         /// </summary>
@@ -203,29 +271,47 @@ namespace com.etsoo.CMS.Repo
         public async Task<IActionResult> UpgradeSystemAsync()
         {
             // New version
-            var newVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3);
-            if (string.IsNullOrEmpty(newVersion))
+            var newVersion = Assembly.GetEntryAssembly()?.GetName().Version;
+            if (newVersion == null)
             {
                 return ApplicationErrors.NoValidData.AsResult("version");
             }
 
             // Current version
+            // When null means initialization
             var version = await ExecuteScalarAsync<string>(CreateCommand("SELECT version FROM website"));
-
-            // Same versions
-            if (newVersion.Equals(version))
+            if (!string.IsNullOrEmpty(version))
             {
-                return ActionResult.Success;
+                var result = new Version(version).CompareTo(newVersion);
+
+                // Same versions
+                if (result >= 0)
+                {
+                    return ActionResult.Success;
+                }
+
+                // Actions
+                if (newVersion.CompareTo(new Version("1.0.2")) > 0)
+                {
+                    var command102 = CreateCommand($@"
+                    ALTER TABLE website ADD COLUMN jsonData TEXT;
+
+                    ALTER TABLE services ADD COLUMN jsonData TEXT;
+
+                    ALTER TABLE tabs ADD COLUMN logo TEXT;
+                    ALTER TABLE tabs ADD COLUMN description TEXT;
+                    ALTER TABLE tabs ADD COLUMN jsonData TEXT;
+
+                    ALTER TABLE articles ADD COLUMN jsonData TEXT;
+                ");
+
+                    await ExecuteAsync(command102);
+                }
             }
-
-            // Actions
-            var parameters = new DbParameters();
-
-            AddSystemParameters(parameters);
 
             // Update version
             var updateParameters = new DbParameters();
-            updateParameters.Add(nameof(newVersion), newVersion);
+            updateParameters.Add(nameof(newVersion), newVersion.ToString(3));
             var command = CreateCommand($"UPDATE website SET version = @{nameof(newVersion)}", updateParameters);
             await QueryAsAsync<DbWebsite>(command);
 

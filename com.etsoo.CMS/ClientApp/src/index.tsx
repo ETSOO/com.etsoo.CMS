@@ -9,18 +9,24 @@ import {
   LinearProgress,
   ThemeProvider
 } from '@mui/material';
-import * as locales from '@mui/material/locale';
 import { Route, Routes } from 'react-router-dom';
 import Dashboard from './main/home/Dashboard';
 import Home from './main/home/Home';
 import AllArticles from './main/article/AllArticles';
 import AddArticle from './main/article/AddArticle';
 import { DynamicRouter } from '@etsoo/react';
+import { zhCN, zhHK } from '@mui/material/locale';
 
 // Lazy load components
 const AllTabs = React.lazy(() => import('./main/tab/AllTabs'));
 const AddTab = React.lazy(() => import('./main/tab/AddTab'));
+const TabLogo = React.lazy(() => import('./main/tab/TabLogo'));
+
 const ViewArticle = React.lazy(() => import('./main/article/ViewArticle'));
+const ArticleLogo = React.lazy(() => import('./main/article/ArticleLogo'));
+const ArticleGallery = React.lazy(
+  () => import('./main/article/ArticleGallery')
+);
 
 const ChangePassword = React.lazy(() => import('./main/user/ChangePassword'));
 const AllUsers = React.lazy(() => import('./main/user/AllUsers'));
@@ -35,9 +41,6 @@ const OnlineDrive = React.lazy(() => import('./main/website/OnlineDrive'));
 // Culture provider
 const CultureStateProvider = app.cultureState.provider;
 const CultureContext = app.cultureState.context;
-
-// All supported locales of the UI framework
-type SupportedLocales = keyof typeof locales;
 
 // User state
 const UserStateProvider = app.userState.provider;
@@ -93,9 +96,16 @@ function MyRouter() {
     window.addEventListener('beforeunload', cleanup);
 
     // Init call
-    app.initCall((result) => {
-      setInit(result);
-    });
+    const init = () => {
+      app.initCall((result) => {
+        setInit(result);
+      });
+    };
+    if (app.isReady) {
+      init();
+    } else {
+      app.pendings.push(init);
+    }
   }, []);
 
   const basename = app.settings.homepage;
@@ -114,10 +124,13 @@ function MyRouter() {
             <Route path="article/add" element={<AddArticle />} />
             <Route path="article/edit/:id" element={<AddArticle />} />
             <Route path="article/view/:id" element={<ViewArticle />} />
+            <Route path="article/logo/:id" element={<ArticleLogo />} />
+            <Route path="article/gallery/:id" element={<ArticleGallery />} />
 
             <Route path="tab/all" element={<AllTabs />} />
             <Route path="tab/add" element={<AddTab />} />
             <Route path="tab/edit/:id" element={<AddTab />} />
+            <Route path="tab/logo/:id" element={<TabLogo />} />
 
             <Route path="user/changepassword" element={<ChangePassword />} />
             <Route path="user/all" element={<AllUsers />} />
@@ -138,6 +151,16 @@ function MyRouter() {
   );
 }
 
+const getThemeCulture = (name: string) => {
+  switch (name) {
+    case 'zh-Hans':
+      return zhCN;
+    case 'zh-Hant':
+      return zhHK;
+  }
+  return {};
+};
+
 const reactRoot = createRoot(document.getElementById('root')!);
 reactRoot.render(
   <ThemeProvider theme={theme}>
@@ -145,12 +168,7 @@ reactRoot.render(
       <CultureContext.Consumer>
         {(culture) => (
           <ThemeProvider
-            theme={(outerTheme) =>
-              createTheme(
-                outerTheme,
-                locales[culture.state.name.replace('-', '') as SupportedLocales]
-              )
-            }
+            theme={createTheme(theme, getThemeCulture(culture.state.name))}
           >
             <NotifierProvider />
             <UserStateProvider

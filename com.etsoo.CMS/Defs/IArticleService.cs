@@ -22,12 +22,21 @@ namespace com.etsoo.CMS.Defs
         Task<IActionResult> CreateAsync(ArticleCreateRQ rq, IPAddress ip);
 
         /// <summary>
+        /// Delete photo
+        /// 删除照片
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Task</returns>
+        Task<IActionResult> DeletePhotoAsync(ArticleDeletePhotoRQ rq, IPAddress ip);
+
+        /// <summary>
         /// Query article
         /// 查询文章
         /// </summary>
         /// <param name="rq">Request data</param>
         /// <returns>Task</returns>
-        Task<List<DbArticleQuery>> QueryAsync(ArticleQueryRQ rq);
+        Task<DbArticleQuery[]> QueryAsync(ArticleQueryRQ rq);
 
         /// <summary>
         /// Query history
@@ -37,6 +46,15 @@ namespace com.etsoo.CMS.Defs
         /// <param name="response">Response</param>
         /// <returns>Task</returns>
         Task QueryHistoryAsync(int id, HttpResponse response);
+
+        /// <summary>
+        /// Sort gallery photos
+        /// 图库照片排序
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Task</returns>
+        Task<IActionResult> SortPhotosAsync(ArticleSortPhotosRQ rq, IPAddress ip);
 
         /// <summary>
         /// Translate
@@ -56,6 +74,27 @@ namespace com.etsoo.CMS.Defs
         Task<IActionResult> UpdateAsync(ArticleUpdateRQ rq, IPAddress ip);
 
         /// <summary>
+        /// Update logo
+        /// 更新照片
+        /// </summary>
+        /// <param name="id">Article id</param>
+        /// <param name="logoStream">Logo stream</param>
+        /// <param name="contentType">Cotent type</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>New URL</returns>
+        ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip);
+
+        /// <summary>
+        /// Async upload photo files
+        /// 异步上传照片文件
+        /// </summary>
+        /// <param name="id">Article id</param>
+        /// <param name="files">Photo files</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Task</returns>
+        Task<IActionResult> UploadPhotosAsync(int id, IEnumerable<IFormFile> files, IPAddress ip);
+
+        /// <summary>
         /// Read for updae
         /// 更新浏览
         /// </summary>
@@ -63,6 +102,15 @@ namespace com.etsoo.CMS.Defs
         /// <param name="response">HTTP Response</param>
         /// <returns>Task</returns>
         Task UpdateReadAsync(int id, HttpResponse response);
+
+        /// <summary>
+        /// Read for gallery photos
+        /// 阅读图库照片
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        Task ViewGalleryAsync(int id, HttpResponse response);
 
         /// <summary>
         /// Read for view

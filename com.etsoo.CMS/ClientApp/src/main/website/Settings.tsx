@@ -1,13 +1,13 @@
-import { EditPage, InputField } from '@etsoo/materialui';
-import * as Yup from 'yup';
+import { EditPage, InputField, VBox } from '@etsoo/materialui';
 import { useFormik } from 'formik';
 import React from 'react';
 import { app } from '../../app/MyApp';
 import { UserRole } from '@etsoo/appscript';
-import { DataTypes, Utils } from '@etsoo/shared';
+import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
 import { useNavigate } from 'react-router-dom';
 import { SettingsUpdateDto } from '../../api/dto/website/SettingsUpdateDto';
-import { Grid } from '@mui/material';
+import { Button, Grid } from '@mui/material';
+import { ReactUtils, useRefs } from '@etsoo/react';
 
 function Settings() {
   // Navigate
@@ -21,13 +21,15 @@ function Settings() {
     'websiteTitle',
     'websiteDescription',
     'websiteKeywords',
-    'websiteKeywordsTip'
+    'websiteKeywordsTip',
+    'articleLogoSize',
+    'tabLogoSize',
+    'slideshowLogoSize',
+    'updateResourceUrl',
+    'resourceUrl',
+    'oldResourceUrl',
+    'resourceUrlTip'
   );
-
-  // Form validation schema
-  const validationSchema = Yup.object({
-    title: Yup.string().required()
-  });
 
   // Permissions
   const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
@@ -39,14 +41,74 @@ function Settings() {
     title: ''
   });
 
+  // Input refs
+  const refFields = [
+    'domain',
+    'title',
+    'description',
+    'keywords',
+    'logoSize',
+    'tabLogoSize',
+    'galleryLogoSize',
+    'operationSucceeded'
+  ] as const;
+  const refs = useRefs(refFields);
+
   // Formik
   const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
-    validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Request data
-      const rq = { ...values };
+      // structuredClone to deal with the jsonData object
+      const rq = structuredClone(values);
+
+      ReactUtils.updateRefValues(refs, rq);
+
+      const jsonData = rq.jsonData;
+      if (jsonData != null && typeof jsonData === 'object') {
+        if (typeof jsonData.logoSize === 'string') {
+          if (jsonData.logoSize === '') {
+            delete jsonData.logoSize;
+          } else {
+            const logoSize = Utils.parseJsonArray(jsonData.logoSize, 0);
+            if (logoSize == null || logoSize.length < 2) {
+              DomUtils.setFocus('jsonData.logoSize');
+              return;
+            }
+            jsonData.logoSize = logoSize as [number, number];
+          }
+        }
+
+        if (typeof jsonData.tabLogoSize === 'string') {
+          if (jsonData.tabLogoSize === '') {
+            delete jsonData.tabLogoSize;
+          } else {
+            const tabLogoSize = Utils.parseJsonArray(jsonData.tabLogoSize, 0);
+            if (tabLogoSize == null || tabLogoSize.length < 2) {
+              DomUtils.setFocus('jsonData.tabLogoSize');
+              return;
+            }
+            jsonData.tabLogoSize = tabLogoSize as [number, number];
+          }
+        }
+
+        if (typeof jsonData.galleryLogoSize === 'string') {
+          if (jsonData.galleryLogoSize === '') {
+            delete jsonData.galleryLogoSize;
+          } else {
+            const galleryLogoSize = Utils.parseJsonArray(
+              jsonData.galleryLogoSize,
+              0
+            );
+            if (galleryLogoSize == null || galleryLogoSize.length < 2) {
+              DomUtils.setFocus('jsonData.galleryLogoSize');
+              return;
+            }
+            jsonData.galleryLogoSize = galleryLogoSize as [number, number];
+          }
+        }
+      }
 
       // Auto append http protocol
       if (rq.domain && !rq.domain.startsWith('http')) {
@@ -62,12 +124,21 @@ function Settings() {
       rq.changedFields = fields;
 
       // Submit
-      const result = await app.websiteApi.updateSettings(rq);
+      const { jsonData: jsonDataObj, ...rest } = rq;
+      const result = await app.websiteApi.updateSettings({
+        jsonData: JSON.stringify(jsonDataObj),
+        ...rest
+      });
       if (result == null) return;
 
-      app.notifier.succeed(labels.operationSucceeded, undefined, () => {
-        navigate('./../../');
-      });
+      if (result.ok) {
+        app.notifier.succeed(labels.operationSucceeded, undefined, () => {
+          navigate('./../../');
+        });
+        return;
+      }
+
+      app.alertResult(result);
     }
   });
 
@@ -75,6 +146,9 @@ function Settings() {
   const loadData = async () => {
     const data = await app.websiteApi.readSettings();
     if (data == null) return;
+
+    ReactUtils.updateRefs(refs, data);
+
     setData(data);
   };
 
@@ -95,19 +169,92 @@ function Settings() {
       onUpdate={loadData}
       submitDisabled={!adminPermission}
     >
-      <Grid item xs={12} sm={12}>
+      <Grid item xs={12} sm={10}>
         <InputField
           fullWidth
           required
           name="domain"
           inputProps={{ maxLength: 128 }}
+          inputRef={refs.domain}
           label={labels.websiteDomain}
-          value={formik.values.domain}
-          onChange={formik.handleChange}
-          error={formik.touched.domain && Boolean(formik.errors.domain)}
-          helperText={formik.touched.domain && formik.errors.domain}
         />
       </Grid>
+      {data.rootUrl && (
+        <Grid item xs={12} sm={2}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => {
+              app.showInputDialog({
+                title: labels.updateResourceUrl,
+                message: undefined,
+                fullScreen: app.smDown,
+                callback: async (form) => {
+                  // Cancelled
+                  if (form == null) {
+                    return;
+                  }
+
+                  // Form data
+                  const { oldResourceUrl } = DomUtils.dataAs(
+                    new FormData(form),
+                    {
+                      oldResourceUrl: 'string'
+                    }
+                  );
+
+                  if (
+                    !oldResourceUrl ||
+                    !oldResourceUrl.startsWith('http') ||
+                    !oldResourceUrl.includes('://') ||
+                    oldResourceUrl.length < 12
+                  ) {
+                    DomUtils.setFocus('oldResourceUrl', form);
+                    return false;
+                  }
+
+                  // Submit
+                  const result = await app.websiteApi.updateResourceUrl(
+                    oldResourceUrl
+                  );
+                  if (result == null) return;
+
+                  if (result.ok) {
+                    app.notifier.succeed(labels.operationSucceeded);
+                    return;
+                  }
+
+                  return app.formatResult(result);
+                },
+                inputs: (
+                  <VBox gap={2} marginTop={2}>
+                    <InputField
+                      fullWidth
+                      name="oldResourceUrl"
+                      required
+                      inputProps={{ maxLength: 128 }}
+                      label={labels.oldResourceUrl}
+                      defaultValue="https://"
+                      helperText={labels.resourceUrlTip}
+                    />
+                    <InputField
+                      fullWidth
+                      name="resorceUrl"
+                      required
+                      inputProps={{ maxLength: 128 }}
+                      label={labels.resourceUrl}
+                      defaultValue={data.rootUrl}
+                      disabled
+                    />
+                  </VBox>
+                )
+              });
+            }}
+          >
+            {labels.updateResourceUrl}
+          </Button>
+        </Grid>
+      )}
       <Grid item xs={12} sm={12}>
         <InputField
           fullWidth
@@ -116,11 +263,8 @@ function Settings() {
           multiline
           rows={2}
           inputProps={{ maxLength: 128 }}
+          inputRef={refs.title}
           label={labels.websiteTitle}
-          value={formik.values.title}
-          onChange={formik.handleChange}
-          error={formik.touched.title && Boolean(formik.errors.title)}
-          helperText={formik.touched.title && formik.errors.title}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -129,10 +273,9 @@ function Settings() {
           name="description"
           multiline
           rows={2}
-          inputProps={{ maxLength: 512 }}
+          inputProps={{ maxLength: 1024 }}
+          inputRef={refs.description}
           label={labels.websiteDescription}
-          value={formik.values.description ?? ''}
-          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -142,10 +285,33 @@ function Settings() {
           multiline
           rows={2}
           inputProps={{ maxLength: 512 }}
+          inputRef={refs.keywords}
           label={labels.websiteKeywords}
           value={formik.values.keywords ?? ''}
-          onChange={formik.handleChange}
-          helperText={labels.websiteKeywordsTip}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <InputField
+          fullWidth
+          name="jsonData.logoSize"
+          inputRef={refs.logoSize}
+          label={labels.articleLogoSize}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <InputField
+          fullWidth
+          name="jsonData.tabLogoSize"
+          inputRef={refs.tabLogoSize}
+          label={labels.tabLogoSize}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <InputField
+          fullWidth
+          name="jsonData.galleryLogoSize"
+          inputRef={refs.galleryLogoSize}
+          label={labels.slideshowLogoSize}
         />
       </Grid>
     </EditPage>

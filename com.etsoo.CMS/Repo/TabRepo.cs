@@ -35,14 +35,15 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Action result</returns>
         public async Task<ActionDataResult<int>> CreateAsync(TabCreateRQ model)
         {
-            model.Url = model.Url.TrimEnd('/');
+            if (model.Url != "/")
+                model.Url = model.Url.TrimEnd('/');
 
             var parameters = FormatParameters(model);
 
             AddSystemParameters(parameters);
 
-            var command = CreateCommand(@$"INSERT INTO tabs (parent, name, url, layout, orderIndex, status, articles, refreshTime)
-                VALUES (@{nameof(model.Parent)}, @{nameof(model.Name)}, @{nameof(model.Url)}, @{nameof(model.Layout)}, 0, IIF(@{nameof(model.Enabled)}, 0, 200), 0, DATETIME('now')); SELECT last_insert_rowid();", parameters);
+            var command = CreateCommand(@$"INSERT INTO tabs (parent, name, description, logo, url, layout, orderIndex, status, articles, refreshTime, jsonData)
+                VALUES (@{nameof(model.Parent)}, @{nameof(model.Name)}, @{nameof(model.Description)}, @{nameof(model.Logo)}, @{nameof(model.Url)}, @{nameof(model.Layout)}, 0, IIF(@{nameof(model.Enabled)}, 0, 200), 0, DATETIME('now'), @{nameof(model.JsonData)}); SELECT last_insert_rowid();", parameters);
 
             var tabId = await ExecuteScalarAsync<int>(command);
 
@@ -117,7 +118,7 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var fields = "id, parent, name, url, articles";
+            var fields = "id, parent, name, url, logo, articles";
             var json = fields.ToJsonCommand();
 
             var items = new List<string>();
@@ -157,6 +158,44 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Read logo
+        /// 读取照片
+        /// </summary>
+        /// <param name="id">Tab id</param>
+        /// <returns>Result</returns>
+        public async Task<string?> ReadLogoAsync(int id)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id);
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand(@$"SELECT IFNULL(logo, '') FROM tabs WHERE id = @{nameof(id)}", parameters);
+
+            return await ExecuteScalarAsync<string?>(command);
+        }
+
+        /// <summary>
+        /// Update logo
+        /// 更新照片
+        /// </summary>
+        /// <param name="id">Tab id</param>
+        /// <param name="url">Photo URL</param>
+        /// <returns>Result</returns>
+        public async Task<int> UpdateLogoAsync(int id, string url)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id);
+            parameters.Add(nameof(url), url);
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand(@$"UPDATE tabs SET logo = @{nameof(url)} WHERE id = @{nameof(id)}", parameters);
+
+            return await ExecuteAsync(command);
+        }
+
+        /// <summary>
         /// View tab update JSON data to HTTP Response
         /// 浏览栏目更新JSON数据到HTTP响应
         /// </summary>
@@ -170,7 +209,7 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var json = $"id, parent, name, url, layout, articles, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
+            var json = $"id, parent, name, logo, description, jsonData, url, layout, articles, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM tabs WHERE id = @{nameof(id)}", parameters);
 
             await ReadJsonToStreamAsync(command, response);

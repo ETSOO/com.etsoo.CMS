@@ -65,6 +65,17 @@ namespace com.etsoo.CMS.Defs
         Task<IActionResult> UpdateAsync(TabUpdateRQ rq, IPAddress ip);
 
         /// <summary>
+        /// Update logo
+        /// 更新照片
+        /// </summary>
+        /// <param name="id">Tab id</param>
+        /// <param name="logoStream">Logo stream</param>
+        /// <param name="contentType">Cotent type</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>New URL</returns>
+        ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip);
+
+        /// <summary>
         /// Read for updae
         /// 更新浏览
         /// </summary>

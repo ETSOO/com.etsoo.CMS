@@ -47,6 +47,22 @@ namespace com.etsoo.CMS.Defs
         Task<IActionResult> InitializeAsync(InitializeRQ rq);
 
         /// <summary>
+        /// Async on demand revalidation
+        /// 异步按需重新验证
+        /// </summary>
+        /// <param name="urls">URLs</param>
+        /// <returns>Task</returns>
+        Task OnDemandRevalidateAsync(params string[] urls);
+
+        /// <summary>
+        /// Read JSON data
+        /// 读取 JSON 数据
+        /// </summary>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        Task ReadJsonDataAsync(HttpResponse response);
+
+        /// <summary>
         /// Read service (plugin)
         /// 读取服务（插件）
         /// </summary>
@@ -77,6 +93,14 @@ namespace com.etsoo.CMS.Defs
         /// <param name="response">Response</param>
         /// <returns>Task</returns>
         Task QueryServicesAsync(HttpResponse response);
+
+        /// <summary>
+        /// Update resource URL
+        /// 更新资源路径
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        Task<IActionResult> UpdateResurceUrlAsync(WebsiteUpdateResurceUrlRQ rq, IPAddress ip);
 
         /// <summary>
         /// Update settings

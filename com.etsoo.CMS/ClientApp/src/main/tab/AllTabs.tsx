@@ -23,10 +23,12 @@ import { app } from '../../app/MyApp';
 import { TabDto } from '../../api/dto/tab/TabDto';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import PhotoIcon from '@mui/icons-material/Photo';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { TabQueryRQ } from '../../api/rq/tab/TabQueryRQ';
 import { Utils } from '@etsoo/shared';
 import { useSearchParamsEx } from '@etsoo/react';
+import { LocalUtils } from '../../app/LocalUtils';
 
 function AllTabs() {
   // Route
@@ -48,7 +50,8 @@ function AllTabs() {
     'parentTab',
     'dragIndicator',
     'edit',
-    'delete'
+    'delete',
+    'tabLogo'
   );
 
   // Permissions
@@ -213,6 +216,17 @@ function AllTabs() {
                       justifyContent="flex-end"
                       alignItems="center"
                     >
+                      <IconButtonLink
+                        title={labels.tabLogo}
+                        href={`./../logo/${item.id}`}
+                        disabled={!adminPermission}
+                        state={LocalUtils.createTabLogoState(item)}
+                        size="small"
+                      >
+                        <PhotoIcon
+                          color={item.logo ? 'secondary' : undefined}
+                        />
+                      </IconButtonLink>
                       <IconButtonLink
                         title={labels.edit}
                         href={`./../edit/${item.id}`}

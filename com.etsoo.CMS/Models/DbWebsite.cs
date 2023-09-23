@@ -11,7 +11,8 @@ namespace com.etsoo.CMS.Models
     /// <param name="Title">Title</param>
     /// <param name="Description">Description</param>
     /// <param name="Keywords">Keywords</param>
+    /// <param name="jsonData">JSON data</param>
     [AutoDataReaderGenerator(UtcDateTime = true)]
     [AutoToJson]
-    public partial record DbWebsite(int RowId, string Domain, string Title, string? Description, string? Keywords);
+    public partial record DbWebsite(int RowId, string Domain, string Title, string? Description, string? Keywords, string? jsonData);
 }

@@ -1,13 +1,18 @@
-﻿using com.etsoo.CMS.Application;
+﻿using com.etsoo.ApiProxy.Configs;
+using com.etsoo.ApiProxy.Proxy;
+using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
+using com.etsoo.DI;
 using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
+using com.etsoo.Utils.Storage;
 using com.etsoo.Utils.String;
 using System.Net;
 
@@ -19,6 +24,9 @@ namespace com.etsoo.CMS.Services
     /// </summary>
     public class WebsiteService : CommonService<WebsiteRepo>, IWebsiteService
     {
+        readonly IFireAndForgetService fireService;
+        readonly IStorage? storage;
+
         /// <summary>
         /// Constructor
         /// 构造函数
@@ -26,9 +34,12 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        public WebsiteService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<WebsiteService> logger)
+        /// <param name="storages">Storages</param>
+        public WebsiteService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<WebsiteService> logger, IEnumerable<IStorage> storages, IFireAndForgetService fireService)
             : base(app, new WebsiteRepo(app, userAccessor.UserSafe), logger)
         {
+            storage = storages.FirstOrDefault();
+            this.fireService = fireService;
         }
 
         /// <summary>
@@ -94,6 +105,57 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Async on demand revalidation
+        /// 异步按需重新验证
+        /// </summary>
+        /// <param name="urls">URLs</param>
+        /// <returns>Task</returns>
+        public async Task OnDemandRevalidateAsync(params string[] urls)
+        {
+            // NextJs
+            var nextJs = await Repo.ReadServiceAsync(NextJsOptions.Name);
+            if (nextJs != null)
+            {
+                var nextJsAddress = nextJs.App;
+                var nextJsToken = App.DecriptData(nextJs.Secret);
+
+                // Fire and forget
+                fireService.FireAsync<IHttpClientFactory>(async (factory, logger) =>
+                {
+                    try
+                    {
+                        var client = factory.CreateClient();
+                        var nextJsApi = new NextJsProxy(client, logger, new NextJsOptions
+                        {
+                            BaseAddress = nextJsAddress,
+                            Token = nextJsToken
+                        });
+                        var result = await nextJsApi.OnDemandRevalidateAsync(urls);
+                        if (!result.Ok)
+                        {
+                            logger.LogError("NextJs On-demand revalidataion failed: {@result}", result);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Next.js On-demand Revalidation failed / 按需重新验证失败");
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Read JSON data
+        /// 读取 JSON 数据
+        /// </summary>
+        /// <param name="response">HTTP Response</param>
+        /// <returns>Task</returns>
+        public async Task ReadJsonDataAsync(HttpResponse response)
+        {
+            await Repo.ReadJsonDataAsync(response);
+        }
+
+        /// <summary>
         /// Read service (plugin)
         /// 读取服务（插件）
         /// </summary>
@@ -114,7 +176,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task ReadSettingsAsync(HttpResponse response)
         {
-            await Repo.ReadSettingsAsync(response);
+            await Repo.ReadSettingsAsync(response, storage?.GetUrl(string.Empty));
         }
 
         /// <summary>
@@ -137,6 +199,26 @@ namespace com.etsoo.CMS.Services
         public async Task QueryServicesAsync(HttpResponse response)
         {
             await Repo.QueryServicesAsync(response);
+        }
+
+        /// <summary>
+        /// Update resource URL
+        /// 更新资源路径
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        public async Task<IActionResult> UpdateResurceUrlAsync(WebsiteUpdateResurceUrlRQ rq, IPAddress ip)
+        {
+            if (storage == null)
+            {
+                return ApplicationErrors.AccessDenied.AsResult("storage");
+            }
+
+            await Repo.UpdateResurceUrlAsync(rq.OldResourceUrl, storage.GetUrl(string.Empty));
+
+            await Repo.AddAuditAsync(AuditKind.UpdateResurceUrl, "website", $"Update website resource URL", rq, ip);
+
+            return ActionResult.Success;
         }
 
         /// <summary>
@@ -169,16 +251,28 @@ namespace com.etsoo.CMS.Services
             else
             {
                 var newRQ = rq with { Id = data.RowId };
-                var (result, _) = await Repo.InlineUpdateAsync<int, UpdateModel<int>>(newRQ, new QuickUpdateConfigs(new[] { "Domain", "Title", "Description", "Keywords" })
+                var (result, _) = await Repo.InlineUpdateAsync<int, UpdateModel<int>>(newRQ, new QuickUpdateConfigs(new[] { "Domain", "Title", "Description", "Keywords", "JsonData" })
                 {
                     TableName = "website",
                     IdField = "rowid"
                 });
 
+                if (result.Ok)
+                {
+                    // Revalidation all tabs except home
+                    var tabs = await Repo.QueryTabsAsync();
+                    var urls = tabs.Select(tab => tab.GetUrl()).Where(item => item != "/" && !item.Equals("#"));
+                    if (urls.Any())
+                    {
+                        await OnDemandRevalidateAsync(urls.ToArray());
+                    }
+                }
+
                 // Audit Json
                 var json = result.Ok && rq.ChangedFields != null ? await SharedUtils.JoinAsAuditJsonAsync(data, newRQ, rq.ChangedFields) : null;
 
                 await Repo.AddAuditAsync(AuditKind.UpdateWebsiteSettings, newRQ.Id.ToString(), $"Update Website Settings", ip, result, json);
+
                 return result;
             }
         }

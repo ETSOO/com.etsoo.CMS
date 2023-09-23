@@ -11,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import PublicIcon from '@mui/icons-material/Public';
+import PhotoIcon from '@mui/icons-material/Photo';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DataTypes, DomUtils } from '@etsoo/shared';
@@ -22,6 +23,7 @@ import {
 } from '@etsoo/react';
 import { ArticleQueryDto } from '../../api/dto/article/ArticleQueryDto';
 import { UserRole } from '@etsoo/appscript';
+import { LocalUtils } from '../../app/LocalUtils';
 
 function AllArticles() {
   // Route
@@ -39,7 +41,8 @@ function AllArticles() {
     'view',
     'articleTitle',
     'viewWebsite',
-    'tab'
+    'tab',
+    'articleLogo'
   );
 
   // Refs
@@ -79,6 +82,7 @@ function AllArticles() {
           </React.Fragment>
         )
       }}
+      quickAction={(data) => navigate(`./../view/${data.id}`)}
       fieldTemplate={{ tab: 'number', id: 'number' }}
       fields={[
         <SearchField label={labels.articleTitle} name="title" />,
@@ -123,7 +127,7 @@ function AllArticles() {
           sortable: false
         },
         {
-          width: 156,
+          width: 188,
           header: labels.actions,
           cellRenderer: ({
             data,
@@ -144,6 +148,16 @@ function AllArticles() {
                     href={`./../edit/${data.id}`}
                   >
                     <EditIcon />
+                  </IconButtonLink>
+                )}
+                {(adminPermission || data.isSelf) && (
+                  <IconButtonLink
+                    title={labels.articleLogo}
+                    href={`./../logo/${data.id}`}
+                    state={LocalUtils.createLogoState(data)}
+                    size="small"
+                  >
+                    <PhotoIcon color={data.logo ? 'secondary' : undefined} />
                   </IconButtonLink>
                 )}
                 <IconButtonLink
@@ -175,6 +189,12 @@ function AllArticles() {
                 label: labels.edit,
                 icon: <EditIcon />,
                 action: `./../edit/${data.id}`
+              },
+              {
+                label: labels.articleLogo,
+                icon: <PhotoIcon />,
+                action: `./../logo/${data.id}`,
+                state: LocalUtils.createLogoState(data)
               },
               {
                 label: labels.view,

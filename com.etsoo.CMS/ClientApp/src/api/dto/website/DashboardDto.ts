@@ -1,5 +1,5 @@
 export type DashboardDto = {
-  site: {
+  site?: {
     domain?: string;
     version?: string;
   };

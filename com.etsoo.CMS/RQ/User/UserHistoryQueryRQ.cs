@@ -15,7 +15,7 @@ namespace com.etsoo.CMS.RQ.User
         /// Author
         /// 作者
         /// </summary>
-        public string Author { get; init; } = default!;
+        public required string Author { get; init; }
 
         /// <summary>
         /// Kind

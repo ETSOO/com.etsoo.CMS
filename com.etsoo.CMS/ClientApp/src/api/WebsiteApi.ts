@@ -7,6 +7,7 @@ import { PluginUpdateDto } from './dto/website/PluginUpdateDto';
 import { PluginViewDto } from './dto/website/PluginViewDto';
 import { ResourceDto } from './dto/website/ResourceDto';
 import { SettingsUpdateDto } from './dto/website/SettingsUpdateDto';
+import { WebsiteJsonData } from './dto/website/WebsiteJsonData';
 
 /**
  * Website API
@@ -76,6 +77,21 @@ export class WebsiteApi extends EntityApi {
   }
 
   /**
+   * Read JSON data
+   * @param payload Payload
+   * @returns Result
+   */
+  async readJsonData(payload?: IApiPayload<{ jsonData?: WebsiteJsonData }>) {
+    const result = await this.api.get(
+      'Website/readJsonData',
+      undefined,
+      payload
+    );
+    if (result == null) return;
+    return result.jsonData ?? {};
+  }
+
+  /**
    * Read service (plugin)
    * @param id Id
    * @param payload Payload
@@ -92,6 +108,20 @@ export class WebsiteApi extends EntityApi {
    */
   readSettings(payload?: IApiPayload<SettingsUpdateDto>) {
     return this.api.get('Website/ReadSettings', undefined, payload);
+  }
+
+  /**
+   * Update resource URL
+   * @param oldResourceUrl Old resource URL
+   * @param payload Payload
+   * @returns Result
+   */
+  updateResourceUrl(oldResourceUrl: string, payload?: ResultPayload) {
+    return this.api.put(
+      'Website/UpdateResourceUrl',
+      { oldResourceUrl },
+      payload
+    );
   }
 
   /**

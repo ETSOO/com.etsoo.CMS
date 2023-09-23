@@ -17,7 +17,7 @@ namespace com.etsoo.CMS.RQ.Website
         /// </summary>
         [Required]
         [StringLength(512, MinimumLength = 32)]
-        public string DeviceId { get; init; } = null!;
+        public required string DeviceId { get; init; }
 
         /// <summary>
         /// Plugin id
@@ -26,7 +26,7 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 30)]
         [StringLength(30)]
         [Required]
-        public string Id { get; init; } = default!;
+        public required string Id { get; init; }
 
         /// <summary>
         /// App id
@@ -35,7 +35,7 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 50)]
         [StringLength(50)]
         [Required]
-        public string App { get; init; } = default!;
+        public required string App { get; init; }
 
         /// <summary>
         /// App secret

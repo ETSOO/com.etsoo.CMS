@@ -35,4 +35,9 @@ export type ArticleQueryDto = ArticleLink & {
    * Tab name 3
    */
   tabName3?: string;
+
+  /**
+   * Logo
+   */
+  logo?: string;
 };

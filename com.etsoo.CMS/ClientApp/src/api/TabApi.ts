@@ -1,4 +1,9 @@
-import { EntityApi, IApiPayload, IdResultPayload } from '@etsoo/appscript';
+import {
+  EntityApi,
+  IApiPayload,
+  IdResultPayload,
+  ResultPayload
+} from '@etsoo/appscript';
 import { ReactAppType } from '@etsoo/materialui';
 import { DataTypes } from '@etsoo/shared';
 import { TabDto } from './dto/tab/TabDto';
@@ -41,6 +46,16 @@ export class TabApi extends EntityApi {
   }
 
   /**
+   * Delete
+   * @param id Id
+   * @param payload Payload
+   * @returns Result
+   */
+  delete(id: number, payload?: ResultPayload) {
+    return this.deleteBase(id, payload);
+  }
+
+  /**
    * Query
    * @param rq Request data
    * @param payload Payload
@@ -71,6 +86,17 @@ export class TabApi extends EntityApi {
     payload?: IdResultPayload
   ) {
     return this.updateBase(rq, payload);
+  }
+
+  /**
+   * Upload logo
+   * @param id Id
+   * @param data Logo form data
+   * @param payload Payload
+   * @returns Result
+   */
+  uploadLogo(id: number, data: FormData, payload?: IApiPayload<string>) {
+    return this.api.put(`${this.flag}/UploadLogo/${id}`, data, payload);
   }
 
   /**

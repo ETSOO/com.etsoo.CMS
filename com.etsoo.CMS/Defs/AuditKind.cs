@@ -20,6 +20,12 @@
         UpdateTab = 11,
         CreateArticle = 12,
         UpdateArticle = 13,
-        CreateResource = 14
+        CreateResource = 14,
+        UpdateTabLogo = 15,
+        UpdateArticleLogo = 16,
+        UpdateGallery = 17,
+        DeleteGalleryPhoto = 18,
+        SortGalleryPhoto = 19,
+        UpdateResurceUrl = 20
     }
 }

@@ -17,7 +17,7 @@ namespace com.etsoo.CMS.RQ.Public
         [EmailAddress]
         [Required]
         [PII]
-        public string Recipient { get; init; } = default!;
+        public required string Recipient { get; init; }
 
         /// <summary>
         /// Subject
@@ -25,14 +25,14 @@ namespace com.etsoo.CMS.RQ.Public
         /// </summary>
         [Required]
         [MaxLength(256)]
-        public string Subject { get; init; } = default!;
+        public required string Subject { get; init; }
 
         /// <summary>
         /// Template name
         /// 模板名称
         /// </summary>
         [Required]
-        public string Template { get; init; } = default!;
+        public required string Template { get; init; }
 
         /// <summary>
         /// Token
@@ -40,7 +40,7 @@ namespace com.etsoo.CMS.RQ.Public
         /// </summary>
         [Required]
         [MaxLength(1024)]
-        public string Token { get; init; } = default!;
+        public required string Token { get; init; }
 
         /// <summary>
         /// Data
@@ -48,6 +48,6 @@ namespace com.etsoo.CMS.RQ.Public
         /// </summary>
         [Required]
         [IsJson]
-        public string Data { get; init; } = default!;
+        public required string Data { get; init; }
     }
 }

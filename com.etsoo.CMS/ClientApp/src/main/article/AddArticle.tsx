@@ -1,14 +1,18 @@
 import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { DataTypes, DateUtils, Utils } from '@etsoo/shared';
+import { DataTypes, Utils } from '@etsoo/shared';
 import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
-import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
+import {
+  ReactUtils,
+  useParamsEx,
+  useRefs,
+  useSearchParamsEx
+} from '@etsoo/react';
 import { ArticleUpdateDto } from '../../api/dto/article/ArticleUpdateDto';
 import { EOEditorElement, EOEditorEx } from '@etsoo/reacteditor';
 
@@ -31,7 +35,6 @@ function AddTab() {
     'enabled',
     'id',
     'tab',
-    'deleteConfirm',
     'articleTitle',
     'articleSubtitle',
     'articleKeywords',
@@ -43,13 +46,6 @@ function AddTab() {
     'entityStatus'
   );
 
-  // Form validation schema
-  const validationSchema = Yup.object({
-    title: Yup.string().required(),
-    url: Yup.string().required(),
-    release: Yup.date().required()
-  });
-
   // Edit data
   const [data, setData] = React.useState<DataType>({
     tab1: 0,
@@ -59,20 +55,34 @@ function AddTab() {
     release: new Date()
   });
 
+  // Input refs
+  const refFields = [
+    'title',
+    'subtitle',
+    'url',
+    'logo',
+    'description',
+    'keywords',
+    'release'
+  ] as const;
+  const refs = useRefs(refFields);
+
   // Formik
   // https://formik.org/docs/examples/with-material-ui
   // https://firxworx.com/blog/coding/react/integrating-formik-with-react-material-ui-and-typescript/
   const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
-    validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Request data
-      if (!editorRef.current?.value) {
-        editorRef.current?.editorWindow.focus();
+      const content = editorRef.current?.value;
+      if (!content) {
+        editorRef.current?.restoreFocus();
         return;
       }
-      const rq = { ...values, content: editorRef.current?.value };
+      const rq = { ...values, content };
+
+      ReactUtils.updateRefValues(refs, rq);
 
       let result: IdActionResult | undefined;
       if (rq.id != null) {
@@ -102,26 +112,34 @@ function AddTab() {
   });
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (!isEditing || formik.values.url === '') {
+    const urlInput = refs.url.current;
+    if (urlInput == null) return;
+    if (!isEditing || urlInput.value === '') {
       const title = event.target.value;
       app.formatUrl(title).then((url) => {
-        if (url != null) formik.setFieldValue('url', url);
+        if (url != null) urlInput.value = url;
       });
     }
   };
 
   // Load data
   const loadData = async () => {
-    if (id == null) return;
+    if (id == null) {
+      ReactUtils.updateRefs(refs, data);
+      return;
+    }
 
-    const data = await app.articleApi.updateRead(id, {
+    const read = await app.articleApi.updateRead(id, {
       dateFields: ['release']
     });
 
-    if (data == null) return;
-    setData(data);
+    if (read == null) return;
 
-    if (data.tab1 != null) ancestorRead(data.tab1);
+    ReactUtils.updateRefs(refs, read);
+
+    setData(read);
+
+    if (read.tab1 != null) ancestorRead(read.tab1);
   };
 
   const ancestorRead = (tab: number) => {
@@ -172,12 +190,9 @@ function AddTab() {
           required
           name="title"
           inputProps={{ maxLength: 256 }}
+          inputRef={refs.title}
           label={labels.articleTitle}
-          value={formik.values.title}
-          onChange={formik.handleChange}
           onBlur={handleBlur}
-          error={formik.touched.title && Boolean(formik.errors.title)}
-          helperText={formik.touched.title && formik.errors.title}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -185,9 +200,8 @@ function AddTab() {
           fullWidth
           name="subtitle"
           inputProps={{ maxLength: 256 }}
+          inputRef={refs.subtitle}
           label={labels.articleSubtitle}
-          value={formik.values.subtitle ?? ''}
-          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -196,11 +210,8 @@ function AddTab() {
           required
           name="url"
           inputProps={{ maxLength: 128 }}
+          inputRef={refs.url}
           label={labels.articleUrl}
-          value={formik.values.url ?? ''}
-          onChange={formik.handleChange}
-          error={formik.touched.url && Boolean(formik.errors.url)}
-          helperText={formik.touched.url && formik.errors.url}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -215,9 +226,8 @@ function AddTab() {
           fullWidth
           name="logo"
           inputProps={{ maxLength: 256 }}
+          inputRef={refs.logo}
           label={labels.articleLogo}
-          value={formik.values.logo ?? ''}
-          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -226,10 +236,9 @@ function AddTab() {
           multiline
           rows={2}
           name="description"
-          inputProps={{ maxLength: 512 }}
+          inputProps={{ maxLength: 1024 }}
+          inputRef={refs.description}
           label={labels.articleDescription}
-          value={formik.values.description ?? ''}
-          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -237,19 +246,8 @@ function AddTab() {
           fullWidth
           name="keywords"
           inputProps={{ maxLength: 256 }}
+          inputRef={refs.keywords}
           label={labels.articleKeywords}
-          value={formik.values.keywords ?? ''}
-          onChange={formik.handleChange}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12}>
-        <InputField
-          fullWidth
-          name="slideshow"
-          inputProps={{ maxLength: 256 }}
-          label={labels.slideshowLogo}
-          value={formik.values.slideshow ?? ''}
-          onChange={formik.handleChange}
         />
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -268,10 +266,7 @@ function AddTab() {
           name="release"
           type="datetime-local"
           label={labels.articleRelease}
-          value={DateUtils.formatForInput(formik.values.release, true)}
-          onChange={formik.handleChange}
-          error={formik.touched.release && Boolean(formik.errors.release)}
-          helperText={formik.touched.release && formik.errors.release}
+          inputRef={refs.release}
         />
       </Grid>
     </EditPage>

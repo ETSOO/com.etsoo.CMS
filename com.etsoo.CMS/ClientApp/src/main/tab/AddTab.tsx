@@ -8,7 +8,12 @@ import { IActionResult, IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
-import { useParamsEx, useSearchParamsEx } from '@etsoo/react';
+import {
+  ReactUtils,
+  useParamsEx,
+  useRefs,
+  useSearchParamsEx
+} from '@etsoo/react';
 import { TabDto } from '../../api/dto/tab/TabDto';
 import { TabUpdateDto } from '../../api/dto/tab/TabUpdateDto';
 
@@ -35,7 +40,9 @@ function AddTab() {
     'tabName',
     'tabUrl',
     'tabLayout',
-    'parentTab'
+    'parentTab',
+    'articleDescription',
+    'tabLogo'
   );
 
   // Form validation schema
@@ -56,6 +63,10 @@ function AddTab() {
   // Tab layouts
   const layouts = app.getTabLayouts();
 
+  // Input refs
+  const refFields = ['name', 'url', 'logo', 'description'] as const;
+  const refs = useRefs(refFields);
+
   // Formik
   // https://formik.org/docs/examples/with-material-ui
   // https://firxworx.com/blog/coding/react/integrating-formik-with-react-material-ui-and-typescript/
@@ -66,6 +77,8 @@ function AddTab() {
     onSubmit: async (values) => {
       // Request data
       const rq = { ...values };
+
+      ReactUtils.updateRefValues(refs, rq);
 
       // Correct for types safety
       Utils.correctTypes(rq, {});
@@ -123,6 +136,8 @@ function AddTab() {
       if (data == null) return;
       setData(data);
 
+      ReactUtils.updateRefs(refs, data);
+
       if (data.parent != null) ancestorRead(data.parent);
     });
   };
@@ -163,9 +178,7 @@ function AddTab() {
                   const id = formik.values.id;
                   if (!ok || id == null) return;
 
-                  const result = await app.api.delete<IActionResult>(
-                    `Tab/Delete/${id}`
-                  );
+                  const result = await app.tabApi.delete(id);
                   if (result == null) return;
 
                   if (result.ok) {
@@ -199,8 +212,7 @@ function AddTab() {
           name="name"
           inputProps={{ maxLength: 64 }}
           label={labels.tabName}
-          value={formik.values.name ?? ''}
-          onChange={formik.handleChange}
+          inputRef={refs.name}
           onBlur={handleBlur}
           error={formik.touched.name && Boolean(formik.errors.name)}
           helperText={formik.touched.name && formik.errors.name}
@@ -213,8 +225,7 @@ function AddTab() {
           name="url"
           inputProps={{ maxLength: 128 }}
           label={labels.tabUrl}
-          value={formik.values.url ?? ''}
-          onChange={formik.handleChange}
+          inputRef={refs.url}
           error={formik.touched.url && Boolean(formik.errors.url)}
           helperText={formik.touched.url && formik.errors.url}
         />
@@ -239,6 +250,26 @@ function AddTab() {
             />
           }
           label={labels.enabled}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <InputField
+          fullWidth
+          name="logo"
+          inputProps={{ maxLength: 256 }}
+          inputRef={refs.logo}
+          label={labels.tabLogo}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <InputField
+          fullWidth
+          multiline
+          rows={2}
+          name="description"
+          inputProps={{ maxLength: 1024 }}
+          inputRef={refs.description}
+          label={labels.articleDescription}
         />
       </Grid>
     </EditPage>

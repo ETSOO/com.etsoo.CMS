@@ -18,9 +18,6 @@ import {
   VBox
 } from '@etsoo/materialui';
 import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
-import zhHansResources from '../i18n/zh-Hans.json';
-import zhHantResources from '../i18n/zh-Hant.json';
-import enResources from '../i18n/en.json';
 import React from 'react';
 import { AuditKind } from '../api/dto/AuditKind';
 import {
@@ -35,6 +32,7 @@ import { UserApi } from '../api/UserApi';
 import { ArticleApi } from '../api/ArticleApi';
 import { TabApi } from '../api/TabApi';
 import { WebsiteApi } from '../api/WebsiteApi';
+import { NavigateFunction } from 'react-router-dom';
 
 /**
  * Service App
@@ -72,6 +70,11 @@ class MyServiceApp extends CommonApp {
    * Site domain
    */
   domain?: string;
+
+  /**
+   * Navigate function
+   */
+  navigateFn?: NavigateFunction;
 
   /**
    * Format article URL
@@ -232,7 +235,8 @@ class MyServiceApp extends CommonApp {
         this.storage.setData(CoreConstants.FieldLoginKeep, keep);
 
         // Replace all pages
-        app.navigate('./home/');
+        if (this.navigateFn) this.navigateFn('/home');
+        else app.navigate('/home/');
 
         // Delay
         setTimeout(() => this.loginDialog?.dismiss(), 0);
@@ -325,14 +329,14 @@ const { detectedCulture } = DomUtils;
 MUGlobal.textFieldVariant = 'standard';
 
 const supportedCultures: DataTypes.CultureDefinition[] = [
-  zhHans(zhHansResources),
-  zhHant(zhHantResources),
-  en(enResources)
+  zhHans(() => import('../i18n/zh-Hans.json')),
+  zhHant(() => import('../i18n/zh-Hant.json')),
+  en(() => import('../i18n/en.json'))
 ];
 const supportedRegions = ['CN'];
 
 // External settings
-const externalSettings = ExternalSettings.Create();
+const externalSettings = ExternalSettings.create();
 if (externalSettings == null) {
   throw new Error('No external settings');
 }

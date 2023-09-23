@@ -18,24 +18,25 @@
     <PackageProjectUrl>https://github.com/ETSOO/com.etsoo.CMS</PackageProjectUrl>
     <Description>ETSOO Website Content Management System (CMS)
 亿速思维网站内容管理系统 (CMS)</Description>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
     <SatelliteResourceLanguages>en;zh-Hans;zh-Hant</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
-    <PackageReference Include="com.etsoo.ApiProxy" Version="1.0.11" />
-    <PackageReference Include="com.etsoo.DI" Version="1.0.8" />
+    <PackageReference Include="com.etsoo.ApiProxy" Version="1.0.47" />
+    <PackageReference Include="com.etsoo.DI" Version="1.0.10" />
+    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.4" />
     <PackageReference Include="com.etsoo.Logs" Version="1.0.4" />
-    <PackageReference Include="com.etsoo.ServiceApp" Version="1.0.80" />
-    <PackageReference Include="com.etsoo.SMTP" Version="1.0.24" />
-    <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.57" />
-    <PackageReference Include="com.etsoo.Web" Version="1.0.56" />
+    <PackageReference Include="com.etsoo.ServiceApp" Version="1.1.70" />
+    <PackageReference Include="com.etsoo.SMTP" Version="1.0.37" />
+    <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.72" />
+    <PackageReference Include="com.etsoo.Web" Version="1.1.34" />
     <PackageReference Include="com.etsoo.WeiXin" Version="1.0.27" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.11" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>

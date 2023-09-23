@@ -28,6 +28,8 @@ function App() {
     // Try login
     if (tryLogin === 'false') return;
 
+    app.navigateFn = navigate;
+
     app.tryLogin(undefined, true).then((result) => {
       if (result) {
         navigate('./home/');

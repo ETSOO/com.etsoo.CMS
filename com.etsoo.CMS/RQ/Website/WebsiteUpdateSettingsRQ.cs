@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CoreFramework.Models;
 using com.etsoo.SourceGenerators.Attributes;
+using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace com.etsoo.CMS.RQ.Website
@@ -43,5 +44,11 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 512)]
         [StringLength(512)]
         public string? Keywords { get; set; }
+
+        /// <summary>
+        /// JSON data
+        /// </summary>
+        [IsJson]
+        public string? JsonData { get; init; }
     }
 }

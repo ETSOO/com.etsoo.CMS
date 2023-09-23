@@ -114,6 +114,21 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Update logo
+        /// 更新照片
+        /// </summary>
+        /// <param name="logo">Logo form</param>
+        /// <returns>Task</returns>
+        [HttpPut("UploadLogo/{id:int}")]
+        [Roles(UserRole.User | UserRole.Founder | UserRole.Admin)]
+        public async Task<string> UploadLogo([FromRoute] int id, IFormFile logo)
+        {
+            using var stream = logo.OpenReadStream();
+            var url = await service.UploadLogoAsync(id, stream, logo.ContentType, Ip) ?? throw new ApplicationException();
+            return url;
+        }
+
+        /// <summary>
         /// Read for updae
         /// 更新浏览
         /// </summary>

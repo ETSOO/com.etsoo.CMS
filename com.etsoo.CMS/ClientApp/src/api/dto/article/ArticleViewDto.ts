@@ -14,4 +14,5 @@ export type ArticleViewDto = ArticleLink & {
   tabName1: string;
   tabName2?: string;
   tabName3?: string;
+  logo?: string;
 };

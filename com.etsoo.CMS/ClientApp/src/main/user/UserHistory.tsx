@@ -117,11 +117,10 @@ function UserHistory() {
           type="date"
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             if (creationEndRef.current == null) return;
-            creationEndRef.current.min = DateUtils.formatForInput(
-              event.currentTarget.valueAsDate
-            );
+            creationEndRef.current.min =
+              DateUtils.formatForInput(event.currentTarget.valueAsDate) ?? '';
           }}
-          inputProps={{ max: DateUtils.formatForInput() }}
+          inputProps={{ max: DateUtils.formatForInput(new Date()) }}
         />,
         <SearchField
           label={labels.endDate}
@@ -129,7 +128,7 @@ function UserHistory() {
           type="date"
           inputRef={creationEndRef}
           inputProps={{
-            max: DateUtils.formatForInput()
+            max: DateUtils.formatForInput(new Date())
           }}
         />
       ]}

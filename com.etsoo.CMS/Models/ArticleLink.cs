@@ -19,7 +19,7 @@ namespace com.etsoo.CMS.Models
         /// Article URL
         /// 文章链接
         /// </summary>
-        public string Url { get; init; } = default!;
+        public required string Url { get; init; }
 
         /// <summary>
         /// Article year
@@ -37,7 +37,7 @@ namespace com.etsoo.CMS.Models
         /// Tab URL
         /// 栏目链接
         /// </summary>
-        public string TabUrl { get; init; } = default!;
+        public required string TabUrl { get; init; }
 
         /// <summary>
         /// Get URL

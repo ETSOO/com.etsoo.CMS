@@ -33,4 +33,9 @@ export type TabUpdateDto = {
    * Articles
    */
   articles: number;
+
+  /**
+   * Description
+   */
+  description?: string;
 };
