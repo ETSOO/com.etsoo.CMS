@@ -1,5 +1,5 @@
 import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
-import { Grid, Typography } from '@mui/material';
+import { Grid } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
 import { DataTypes, Utils } from '@etsoo/shared';

@@ -4,7 +4,7 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataTypes, Utils } from '@etsoo/shared';
-import { IActionResult, IdActionResult } from '@etsoo/appscript';
+import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
@@ -114,16 +114,18 @@ function AddTab() {
   });
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (!isEditing || formik.values.url === '') {
+    const urlInput = refs.url.current;
+    if (urlInput == null) return;
+    if (!isEditing || urlInput.value === '') {
       const name = event.target.value;
       app.formatUrl(name).then((url) => {
         if (url == null) return;
 
         if (currentTab.current == null) {
           if (url === 'home' || url === 'fontpage') url = '';
-          formik.setFieldValue('url', '/' + url);
+          urlInput.value = '/' + url;
         } else {
-          formik.setFieldValue('url', currentTab.current.url + '/' + url);
+          urlInput.value = currentTab.current.url + '/' + url;
         }
       });
     }
@@ -214,8 +216,6 @@ function AddTab() {
           label={labels.tabName}
           inputRef={refs.name}
           onBlur={handleBlur}
-          error={formik.touched.name && Boolean(formik.errors.name)}
-          helperText={formik.touched.name && formik.errors.name}
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -226,8 +226,6 @@ function AddTab() {
           inputProps={{ maxLength: 128 }}
           label={labels.tabUrl}
           inputRef={refs.url}
-          error={formik.touched.url && Boolean(formik.errors.url)}
-          helperText={formik.touched.url && formik.errors.url}
         />
       </Grid>
       <Grid item xs={12} sm={6}>
