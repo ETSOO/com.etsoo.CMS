@@ -5,6 +5,13 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+# Install NodeJs
+RUN apt-get -y update \
+    && apt-get install -y curl \
+    && curl -sL https://deb.nodesource.com/setup_20.x | bash - \ 
+    && apt-get install -y nodejs \
+    && apt-get clean \
+
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["com.etsoo.CMS/com.etsoo.CMS.csproj", "com.etsoo.CMS/"]
