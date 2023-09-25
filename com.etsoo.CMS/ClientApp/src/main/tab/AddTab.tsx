@@ -2,7 +2,6 @@ import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
 import { FormControlLabel, Grid, Switch } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { DataTypes, Utils } from '@etsoo/shared';
 import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
@@ -45,12 +44,6 @@ function AddTab() {
     'tabLogo'
   );
 
-  // Form validation schema
-  const validationSchema = Yup.object({
-    name: Yup.string().required(),
-    url: Yup.string().required()
-  });
-
   // Edit data
   const [data, setData] = React.useState<DataType>({
     name: '',
@@ -73,7 +66,6 @@ function AddTab() {
   const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
-    validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Request data
       const rq = { ...values };
@@ -81,7 +73,7 @@ function AddTab() {
       ReactUtils.updateRefValues(refs, rq);
 
       // Correct for types safety
-      Utils.correctTypes(rq, {});
+      // Utils.correctTypes(rq, {});
 
       let result: IdActionResult | undefined;
       if (rq.id != null) {
@@ -224,8 +216,8 @@ function AddTab() {
           required
           name="url"
           inputProps={{ maxLength: 128 }}
-          label={labels.tabUrl}
           inputRef={refs.url}
+          label={labels.tabUrl}
         />
       </Grid>
       <Grid item xs={12} sm={6}>

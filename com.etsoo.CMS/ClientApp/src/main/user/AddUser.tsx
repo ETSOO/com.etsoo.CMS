@@ -2,7 +2,6 @@ import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
 import { FormControlLabel, Grid, Switch } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { DataTypes, Utils } from '@etsoo/shared';
 import { IdActionResult } from '@etsoo/appscript';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -31,11 +30,6 @@ function AddUser() {
     'user'
   );
 
-  // Form validation schema
-  const validationSchema = Yup.object({
-    id: Yup.string().required()
-  });
-
   // Edit data
   const [data, setData] = React.useState<DataType>({
     role: 0,
@@ -48,7 +42,6 @@ function AddUser() {
   const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
-    validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Request data
       const rq = { ...values };
