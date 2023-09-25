@@ -2,12 +2,12 @@ window.settings = {
   /**
    * Endpoint of the API service
    */
-  endpoint: '/cms/api/',
+  endpoint: '/api/',
 
   /**
    * App root url
    */
-  homepage: '/cms/',
+  homepage: '',
 
   /**
    * Web url of the cloud

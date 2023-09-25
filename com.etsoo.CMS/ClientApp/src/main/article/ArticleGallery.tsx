@@ -50,7 +50,7 @@ function ArticleGallery() {
   );
 
   const loadData = React.useCallback(async () => {
-    const items = await app.articleApi.viewGallery(id);
+    const items = await app.articleApi.viewGallery(id, { defaultValue: [] });
     if (items == null) return;
     setPhotos(items.map((item, index) => ({ id: index, ...item })));
   }, [id]);

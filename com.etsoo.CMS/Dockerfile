@@ -32,5 +32,4 @@ RUN dotnet publish "com.etsoo.CMS.csproj" -c Release -o /app/publish /p:UseAppHo
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-#COPY --from=build /app .
 ENTRYPOINT ["dotnet", "com.etsoo.CMS.dll"]
