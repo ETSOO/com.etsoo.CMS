@@ -73,11 +73,12 @@ namespace com.etsoo.CMS.Repo
         public async Task GetSiteDataAsync(HttpResponse response)
         {
             var site = "title, keywords, description".ToJsonCommand(true);
-            var tabs = "id, parent, name, layout, url".ToJsonCommand();
+            var tabs = "id, parent, name, description, logo, layout, url, jsonData";
+            var tabsJson = tabs.ToJsonCommand();
             var resouces = "id, value".ToJsonCommand();
             var services = "id, app".ToJsonCommand();
             var command = CreateCommand(@$"SELECT {site} FROM website;
-                SELECT {tabs} FROM tabs WHERE status < 200 ORDER BY parent ASC, orderIndex ASC, name ASC;
+                SELECT {tabsJson} FROM (SELECT {tabs} FROM tabs WHERE status < 200 ORDER BY parent ASC, orderIndex ASC, name ASC);
                 SELECT {resouces} FROM resources;
                 SELECT {services} FROM services WHERE status < 200;
             ");
