@@ -279,10 +279,11 @@ namespace com.etsoo.CMS.Repo
 
             // Current version
             // When null means initialization
-            var version = await ExecuteScalarAsync<string>(CreateCommand("SELECT version FROM website"));
-            if (!string.IsNullOrEmpty(version))
+            var versionText = await ExecuteScalarAsync<string>(CreateCommand("SELECT version FROM website"));
+            if (!string.IsNullOrEmpty(versionText))
             {
-                var result = new Version(version).CompareTo(newVersion);
+                var version = new Version(versionText);
+                var result = version.CompareTo(newVersion);
 
                 // Same versions
                 if (result >= 0)
@@ -291,7 +292,7 @@ namespace com.etsoo.CMS.Repo
                 }
 
                 // Actions
-                if (newVersion.CompareTo(new Version("1.0.2")) > 0)
+                if (version.CompareTo(new Version("1.0.2")) < 0)
                 {
                     var command102 = CreateCommand($@"
                     ALTER TABLE website ADD COLUMN jsonData TEXT;
@@ -303,6 +304,15 @@ namespace com.etsoo.CMS.Repo
                     ALTER TABLE tabs ADD COLUMN jsonData TEXT;
 
                     ALTER TABLE articles ADD COLUMN jsonData TEXT;
+                ");
+
+                    await ExecuteAsync(command102);
+                }
+
+                if (version.CompareTo(new Version("1.0.3")) < 0)
+                {
+                    var command102 = CreateCommand($@"
+                    ALTER TABLE tabs ADD COLUMN icon TEXT;
                 ");
 
                     await ExecuteAsync(command102);

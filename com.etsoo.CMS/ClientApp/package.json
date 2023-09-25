@@ -13,7 +13,7 @@
     "@etsoo/shared": "^1.2.15",
     "@mui/icons-material": "^5.14.9",
     "@mui/material": "^5.14.10",
-    "@types/node": "^20.6.5",
+    "@types/node": "^20.7.0",
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
     "formik": "^2.4.5",

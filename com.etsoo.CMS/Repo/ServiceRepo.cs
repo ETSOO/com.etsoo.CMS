@@ -73,7 +73,7 @@ namespace com.etsoo.CMS.Repo
         public async Task GetSiteDataAsync(HttpResponse response)
         {
             var site = "title, keywords, description".ToJsonCommand(true);
-            var tabs = "id, parent, name, description, logo, layout, url, jsonData";
+            var tabs = "id, parent, name, description, logo, icon, layout, url, jsonData";
             var tabsJson = tabs.ToJsonCommand();
             var resouces = "id, value".ToJsonCommand();
             var services = "id, app".ToJsonCommand();

@@ -38,4 +38,14 @@ export type TabUpdateDto = {
    * Description
    */
   description?: string;
+
+  /**
+   * Logo
+   */
+  logo?: string;
+
+  /**
+   * Icon
+   */
+  icon?: string;
 };

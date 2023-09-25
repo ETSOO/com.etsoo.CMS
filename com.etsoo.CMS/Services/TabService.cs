@@ -117,7 +117,7 @@ namespace com.etsoo.CMS.Services
 
             var (result, _) = await Repo.InlineUpdateAsync<int, UpdateModel<int>>(
                 rq,
-                new QuickUpdateConfigs(new[] { "parent", "name", "description", "jsonData", "logo", "url", "layout", "status AS enabled=IIF(@Enabled, 0, 200)" })
+                new QuickUpdateConfigs(new[] { "parent", "name", "description", "jsonData", "logo", "icon", "url", "layout", "status AS enabled=IIF(@Enabled, 0, 200)" })
                 {
                     TableName = "tabs",
                     IdField = "id"

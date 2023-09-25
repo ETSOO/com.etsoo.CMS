@@ -219,6 +219,7 @@ namespace com.etsoo.CMS.Repo
                     logo TEXT,
                     description TEXT,
                     jsonData TEXT,
+                    icon TEXT,
 
                     FOREIGN KEY (parent) REFERENCES tabs (id)
                 );

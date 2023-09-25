@@ -49,9 +49,15 @@ namespace com.etsoo.CMS.RQ.Tab
 
         /// <summary>
         /// Logo
-        /// 图标
+        /// 照片
         /// </summary>
         public string? Logo { get; init; }
+
+        /// <summary>
+        /// Icon
+        /// 小图标
+        /// </summary>
+        public string? Icon { get; init; }
 
         /// <summary>
         /// Description

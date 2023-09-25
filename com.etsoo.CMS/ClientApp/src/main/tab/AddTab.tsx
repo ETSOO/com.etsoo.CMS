@@ -41,7 +41,8 @@ function AddTab() {
     'tabLayout',
     'parentTab',
     'articleDescription',
-    'tabLogo'
+    'tabLogo',
+    'tabIcon'
   );
 
   // Edit data
@@ -57,7 +58,7 @@ function AddTab() {
   const layouts = app.getTabLayouts();
 
   // Input refs
-  const refFields = ['name', 'url', 'logo', 'description'] as const;
+  const refFields = ['name', 'url', 'logo', 'description', 'icon'] as const;
   const refs = useRefs(refFields);
 
   // Formik
@@ -249,6 +250,15 @@ function AddTab() {
           inputProps={{ maxLength: 256 }}
           inputRef={refs.logo}
           label={labels.tabLogo}
+        />
+      </Grid>
+      <Grid item xs={12} sm={12}>
+        <InputField
+          fullWidth
+          name="icon"
+          inputProps={{ maxLength: 128 }}
+          inputRef={refs.icon}
+          label={labels.tabIcon}
         />
       </Grid>
       <Grid item xs={12} sm={12}>

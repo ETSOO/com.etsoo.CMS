@@ -42,8 +42,8 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var command = CreateCommand(@$"INSERT INTO tabs (parent, name, description, logo, url, layout, orderIndex, status, articles, refreshTime, jsonData)
-                VALUES (@{nameof(model.Parent)}, @{nameof(model.Name)}, @{nameof(model.Description)}, @{nameof(model.Logo)}, @{nameof(model.Url)}, @{nameof(model.Layout)}, 0, IIF(@{nameof(model.Enabled)}, 0, 200), 0, DATETIME('now'), @{nameof(model.JsonData)}); SELECT last_insert_rowid();", parameters);
+            var command = CreateCommand(@$"INSERT INTO tabs (parent, name, description, logo, icon, url, layout, orderIndex, status, articles, refreshTime, jsonData)
+                VALUES (@{nameof(model.Parent)}, @{nameof(model.Name)}, @{nameof(model.Description)}, @{nameof(model.Logo)}, @{nameof(model.Icon)}, @{nameof(model.Url)}, @{nameof(model.Layout)}, 0, IIF(@{nameof(model.Enabled)}, 0, 200), 0, DATETIME('now'), @{nameof(model.JsonData)}); SELECT last_insert_rowid();", parameters);
 
             var tabId = await ExecuteScalarAsync<int>(command);
 
@@ -209,7 +209,7 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var json = $"id, parent, name, logo, description, jsonData, url, layout, articles, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
+            var json = $"id, parent, name, logo, icon, description, jsonData, url, layout, articles, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM tabs WHERE id = @{nameof(id)}", parameters);
 
             await ReadJsonToStreamAsync(command, response);
