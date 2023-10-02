@@ -85,6 +85,15 @@ namespace com.etsoo.CMS.Defs
         ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip);
 
         /// <summary>
+        /// Update photo gallery item
+        /// 更新图片库项目
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Result</returns>
+        Task<IActionResult> UpdatePhotoAsync(ArticleUpdatePhotoRQ rq, IPAddress ip);
+
+        /// <summary>
         /// Async upload photo files
         /// 异步上传照片文件
         /// </summary>

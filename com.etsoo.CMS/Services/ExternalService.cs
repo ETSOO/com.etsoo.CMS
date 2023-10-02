@@ -35,6 +35,18 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Get articles
+        /// 获取文章列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="response"></param>
+        /// <returns>Result</returns>
+        public async Task GetArticlesAsync(GetArticlesRQ rq, HttpResponse response)
+        {
+            await Repo.GetArticlesAsync(rq, response);
+        }
+
+        /// <summary>
         /// Get slideshow articles
         /// 获取幻灯片文章
         /// </summary>

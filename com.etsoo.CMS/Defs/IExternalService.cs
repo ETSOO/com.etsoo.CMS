@@ -19,6 +19,15 @@ namespace com.etsoo.CMS.Defs
         Task GetArticleAsync(GetArticleRQ rq, HttpResponse response);
 
         /// <summary>
+        /// Get articles
+        /// 获取文章列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="response"></param>
+        /// <returns>Result</returns>
+        Task GetArticlesAsync(GetArticlesRQ rq, HttpResponse response);
+
+        /// <summary>
         /// Get slideshow articles
         /// 获取幻灯片文章
         /// </summary>

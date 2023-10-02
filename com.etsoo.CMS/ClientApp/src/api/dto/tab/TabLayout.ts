@@ -33,6 +33,12 @@ export enum TabLayout {
   FullList,
 
   /**
+   * Title, logo & content list
+   * 标题、图片和内容列表
+   */
+  ContentList,
+
+  /**
    * Template data
    */
   Template

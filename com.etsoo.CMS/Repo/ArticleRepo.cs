@@ -261,10 +261,38 @@ namespace com.etsoo.CMS.Repo
             return await ExecuteAsync(command);
         }
 
-        public async Task SortPhotosAsync(int id, IEnumerable<int> ids)
+        /// <summary>
+        /// Update photo gallery item
+        /// 更新图片库项目
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Result</returns>
+        public async Task<IActionResult> UpdatePhotoAsync(ArticleUpdatePhotoRQ rq)
         {
-            var items = await ViewGalleryItemsAsync(id) ?? Enumerable.Empty<GalleryPhotoDto>();
+            var items = await ViewGalleryItemsAsync(rq.Id);
+            if (items?.Any() is true)
+            {
+                var item = items.FirstOrDefault(item => item.Url.Equals(rq.Url));
+                if (item == null)
+                {
+                    return ApplicationErrors.NoId.AsResult("url");
+                }
+                else
+                {
+                    // Update
+                    item.Title = rq.Title;
+                    item.Description = rq.Description;
+                    item.Link = rq.Link;
 
+                    await SavePhotosAsync(rq.Id, items);
+
+                    return ActionResult.Success;
+                }
+            }
+            else
+            {
+                return ApplicationErrors.NoId.AsResult();
+            }
         }
 
         /// <summary>
@@ -323,7 +351,7 @@ namespace com.etsoo.CMS.Repo
 
             AddSystemParameters(parameters);
 
-            var json = $"id, title, subtitle, keywords, description, url, content, logo, jsonData, tab1, weight, release, status, slideshow".ToJsonCommand(true);
+            var json = $"id, title, subtitle, keywords, description, url, content, logo, jsonData, tab1, weight, release, status".ToJsonCommand(true);
             var command = CreateCommand($"SELECT {json} FROM articles WHERE id = @{nameof(id)}", parameters);
 
             await ReadJsonToStreamAsync(command, response);

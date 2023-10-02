@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-    <SpaProxyServerUrl>https://localhost:44457</SpaProxyServerUrl>
+    <SpaProxyServerUrl>http://localhost:44456</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>8a509e05-b12f-4fdf-9b10-78814484a981</UserSecretsId>
@@ -26,7 +26,7 @@
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="com.etsoo.ApiProxy" Version="1.0.47" />
     <PackageReference Include="com.etsoo.DI" Version="1.0.10" />
-    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.4" />
+    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.7" />
     <PackageReference Include="com.etsoo.Logs" Version="1.0.4" />
     <PackageReference Include="com.etsoo.ServiceApp" Version="1.1.70" />
     <PackageReference Include="com.etsoo.SMTP" Version="1.0.37" />

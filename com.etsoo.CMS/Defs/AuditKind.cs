@@ -26,6 +26,7 @@
         UpdateGallery = 17,
         DeleteGalleryPhoto = 18,
         SortGalleryPhoto = 19,
-        UpdateResurceUrl = 20
+        UpdateResurceUrl = 20,
+        UpdateGalleryItem = 21
     }
 }

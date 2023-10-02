@@ -23,8 +23,8 @@ namespace com.etsoo.CMS.RQ.Service
         public int? Tab { get; init; }
 
         /// <summary>
-        /// Title
-        /// 标题
+        /// URL
+        /// 网址
         /// </summary>
         [Property(Length = 128, IsAnsi = true)]
         [StringLength(128)]

@@ -256,6 +256,26 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Update photo gallery item
+        /// 更新图片库项目
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="ip">IP address</param>
+        /// <returns>Result</returns>
+        public async Task<IActionResult> UpdatePhotoAsync(ArticleUpdatePhotoRQ rq, IPAddress ip)
+        {
+            var result = await Repo.UpdatePhotoAsync(rq);
+
+            if (result.Ok && storage != null)
+            {
+                await OnDemandRevalidateAsync(rq.Id);
+            }
+
+            await Repo.AddAuditAsync(AuditKind.UpdateGalleryItem, rq.Id.ToString(), $"Update article {rq.Id} gallery photo item", ip, result, rq);
+            return result;
+        }
+
+        /// <summary>
         /// Update logo
         /// 更新照片
         /// </summary>

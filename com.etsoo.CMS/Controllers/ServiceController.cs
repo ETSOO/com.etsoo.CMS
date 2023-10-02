@@ -59,6 +59,18 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Get articles
+        /// 获取文章列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [HttpPost("GetArticles")]
+        public async Task GetArticles(GetArticlesRQ rq)
+        {
+            await service.GetArticlesAsync(rq, Response);
+        }
+
+        /// <summary>
         /// Get slideshow articles
         /// 获取幻灯片文章
         /// </summary>

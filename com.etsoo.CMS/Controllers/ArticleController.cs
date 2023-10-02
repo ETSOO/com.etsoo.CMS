@@ -124,6 +124,20 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Update photo gallery item
+        /// 更新图片库项目
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <returns>Task</returns>
+        [HttpPut("UpdatePhoto")]
+        [Roles(UserRole.User | UserRole.Founder | UserRole.Admin)]
+        public async Task UpdatePhoto(ArticleUpdatePhotoRQ rq)
+        {
+            var result = await service.UpdatePhotoAsync(rq, Ip);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
         /// Update logo
         /// 更新照片
         /// </summary>

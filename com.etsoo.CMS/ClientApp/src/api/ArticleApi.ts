@@ -13,6 +13,7 @@ import { GalleryPhotoDto } from './dto/article/GalleryPhotoDto';
 import { ArticleDeletePhotoRQ } from './rq/article/ArticleDeletePhotoRQ';
 import { ArticleQueryRQ } from './rq/article/ArticleQueryRQ';
 import { ArticleSortPhotosRQ } from './rq/article/ArticleSortPhotosRQ';
+import { ArticleUpdatePhotoRQ } from './rq/article/ArticleUpdatePhotoRQ';
 
 /**
  * Article API
@@ -90,6 +91,17 @@ export class ArticleApi extends EntityApi {
     payload?: IdResultPayload
   ) {
     return this.updateBase(rq, payload);
+  }
+
+  /**
+   * Update photo
+   * @param id Id
+   * @param data Logo form data
+   * @param payload Payload
+   * @returns Result
+   */
+  updatePhoto(rq: ArticleUpdatePhotoRQ, payload?: ResultPayload) {
+    return this.api.put(`${this.flag}/updatePhoto`, rq, payload);
   }
 
   /**

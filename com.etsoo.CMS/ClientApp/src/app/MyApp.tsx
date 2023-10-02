@@ -105,7 +105,13 @@ class MyServiceApp extends CommonApp {
   }
 
   trimChars(url: string) {
-    url = url.toLowerCase().replace(/[^0-9a-z_-]+/g, '');
+    url = url
+      .replace(/\s*&\s*/g, '-')
+      .replace(/\s+/g, '-')
+      .toLowerCase()
+      .replace(/[^0-9a-z_-]+/g, '')
+      .replace(/_{2,}/g, '_')
+      .replace(/-{2,}/g, '-');
     return url;
   }
 

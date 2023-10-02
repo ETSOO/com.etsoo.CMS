@@ -34,8 +34,8 @@ namespace com.etsoo.CMS.Repo
 
             var parameters = FormatParameters(rq);
 
-            var fields = "a.id, a.title, a.subtitle, a.description, a.url, a.logo, a.release, a.year, t.name AS tabName, t.layout AS tabLayout, t.url AS tabUrl";
-            if (rq.WithContent.GetValueOrDefault()) fields += ", a.content, a.keywords";
+            var fields = "a.id, a.title, a.subtitle, a.description, a.jsonData, a.url, a.logo, a.release, a.year, t.name AS tabName, t.layout AS tabLayout, t.url AS tabUrl";
+            if (rq.WithContent.GetValueOrDefault()) fields += ", a.content, a.keywords, json(a.slideshow) AS photos";
 
             var json = fields.ToJsonCommand(true);
             var command = CreateCommand(@$"SELECT {json} FROM articles AS a
@@ -50,6 +50,41 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Get articles
+        /// 获取文章列表
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="response"></param>
+        /// <returns>Result</returns>
+        public async Task GetArticlesAsync(GetArticlesRQ rq, HttpResponse response)
+        {
+            var parameters = FormatParameters(rq);
+
+            var fields = "a.id, a.title, a.subtitle, a.description, a.jsonData, a.url, a.logo, a.release, a.year, t.name AS tabName, t.layout AS tabLayout, t.url AS tabUrl";
+            if (rq.WithContent.GetValueOrDefault()) fields += ", a.content, a.keywords, a.slideshow";
+
+            var jsonFields = "id, title, subtitle, description, jsonData, url, logo, release, year, tabName, tabLayout, tabUrl";
+            if (rq.WithContent.GetValueOrDefault()) jsonFields += ", content, keywords, json(slideshow) AS photos";
+
+            var json = jsonFields.ToJsonCommand();
+
+            var sql = @$"SELECT
+                {json}
+            FROM (SELECT {fields} FROM articles AS a
+                INNER JOIN tabs AS t ON a.tab1 = t.id
+                WHERE a.status < 200
+                    AND (@{nameof(rq.Tab)} IS NULL OR a.tab1 = @{nameof(rq.Tab)})
+                    {(rq.Ids == null ? string.Empty : $" AND a.id IN ({string.Join(", ", rq.Ids)})")}
+                    {(rq.LastRelease.HasValue && rq.LastId.HasValue ? $" AND (a.release, a.id) > (@{nameof(rq.LastRelease)}, @{nameof(rq.LastId)})" : string.Empty)}
+                ORDER BY a.release DESC, a.id DESC
+                LIMIT {rq.BatchSize})";
+
+            var command = CreateCommand(sql, parameters);
+
+            await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
         /// Get slideshow articles
         /// 获取幻灯片文章
         /// </summary>
@@ -57,10 +92,10 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Result</returns>
         public async Task GetSlideshowsAsync(HttpResponse response)
         {
-            var json = "a.id, a.title, a.subtitle, a.description, a.url, a.slideshow, a.year, t.name AS tabName, t.layout AS tabLayout, t.url AS tabUrl".ToJsonCommand();
+            var json = "a.id, a.title, a.subtitle, a.description, a.url, json(a.slideshow) as photos, a.year, t.name AS tabName, t.layout AS tabLayout, t.url AS tabUrl".ToJsonCommand();
             var command = CreateCommand(@$"SELECT {json} FROM articles AS a
                 INNER JOIN tabs AS t ON a.tab1 = t.id
-                WHERE a.status < 200 AND a.slideshow IS NOT NULL ORDER BY t.orderIndex ASC, t.name ASC, a.release DESC");
+                WHERE a.status = 9 AND a.slideshow IS NOT NULL ORDER BY t.orderIndex ASC, t.name ASC, a.release DESC");
             await ReadJsonToStreamAsync(command, response);
         }
 

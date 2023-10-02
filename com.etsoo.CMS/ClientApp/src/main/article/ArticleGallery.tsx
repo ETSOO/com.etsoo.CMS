@@ -1,4 +1,10 @@
-import { CommonPage, FileUploadButton, HBox } from '@etsoo/materialui';
+import {
+  CommonPage,
+  FileUploadButton,
+  HBox,
+  InputField,
+  VBox
+} from '@etsoo/materialui';
 import { DnDList, useParamsEx } from '@etsoo/react';
 import {
   IconButton,
@@ -14,9 +20,11 @@ import { useLocation } from 'react-router-dom';
 import { ArticleLogoDto } from '../../api/dto/article/ArticleLogoDto';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { app } from '../../app/MyApp';
 import { GalleryPhotoListItem } from '../../api/dto/article/GalleryPhotoDto';
+import { DomUtils } from '@etsoo/shared';
 
 function ArticleGallery() {
   // Route
@@ -37,7 +45,11 @@ function ArticleGallery() {
     photoUpload,
     delete: deleteLabel,
     deleteConfirm,
-    dragIndicator
+    dragIndicator,
+    edit,
+    title,
+    description,
+    link
   } = app.getLabels(
     'articleTitle',
     'photoUploadTip',
@@ -46,7 +58,11 @@ function ArticleGallery() {
     'photoUpload',
     'delete',
     'deleteConfirm',
-    'dragIndicator'
+    'dragIndicator',
+    'edit',
+    'title',
+    'description',
+    'link'
   );
 
   const loadData = React.useCallback(async () => {
@@ -54,6 +70,71 @@ function ArticleGallery() {
     if (items == null) return;
     setPhotos(items.map((item, index) => ({ id: index, ...item })));
   }, [id]);
+
+  const editPhoto = (photo: GalleryPhotoListItem) => {
+    app.showInputDialog({
+      title: edit,
+      message: undefined,
+      fullScreen: app.smDown,
+      callback: async (form) => {
+        // Cancelled
+        if (form == null) {
+          return;
+        }
+
+        // Form data
+        const { title, description, link } = DomUtils.dataAs(
+          new FormData(form),
+          {
+            title: 'string',
+            description: 'string',
+            link: 'string'
+          }
+        );
+
+        // Submit
+        const result = await app.articleApi.updatePhoto(
+          { id, url: photo.url, title, description, link },
+          { showLoading: false }
+        );
+        if (result == null) return;
+
+        if (result.ok) {
+          loadData();
+          return;
+        }
+
+        return app.formatResult(result);
+      },
+      inputs: (
+        <VBox gap={2} marginTop={2}>
+          <InputField
+            fullWidth
+            name="title"
+            inputProps={{ maxLength: 128 }}
+            label={title}
+            defaultValue={photo.title}
+          />
+          <InputField
+            fullWidth
+            multiline
+            rows={3}
+            name="description"
+            inputProps={{ maxLength: 1280 }}
+            label={description}
+            defaultValue={photo.description}
+          />
+          <InputField
+            fullWidth
+            name="link"
+            inputProps={{ maxLength: 256 }}
+            label={link}
+            defaultValue={photo.link}
+          />
+        </VBox>
+      )
+    });
+  };
 
   React.useEffect(() => {
     // Page title
@@ -113,9 +194,10 @@ function ArticleGallery() {
             </Stack>
           </Stack>
           <ImageList
-            variant="masonry"
+            variant="quilted"
             cols={app.smDown ? 1 : app.mdUp ? 3 : 2}
             gap={8}
+            sx={{ flexDirection: 'row' }}
           >
             <DnDList<GalleryPhotoListItem>
               items={photos}
@@ -133,14 +215,17 @@ function ArticleGallery() {
                   <img
                     src={`${photo.url}`}
                     style={{ minHeight: '80px' }}
-                    alt={photo.url}
+                    alt={photo.title ?? photo.url}
+                    title={photo.description}
                     loading="lazy"
                   />
                   <ImageListItemBar
-                    title={`${index + 1}`}
+                    title={`${index + 1}${
+                      photo.title ? `. ${photo.title}` : ''
+                    }`}
                     subtitle={`${photo.width} x ${photo.height}`}
                     actionIcon={
-                      <HBox gap={1}>
+                      <HBox gap={0.5}>
                         <IconButton
                           title={deleteLabel}
                           size="small"
@@ -168,6 +253,14 @@ function ArticleGallery() {
                           }}
                         >
                           <DeleteIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="success"
+                          title={edit}
+                          onClick={() => editPhoto(photo)}
+                        >
+                          <EditIcon />
                         </IconButton>
                         <IconButton
                           style={{ cursor: 'move' }}
