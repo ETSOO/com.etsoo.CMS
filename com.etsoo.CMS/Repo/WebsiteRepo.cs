@@ -257,7 +257,7 @@ namespace com.etsoo.CMS.Repo
 
             var command = CreateCommand($"""
                 UPDATE tabs SET logo = REPLACE(logo, @{oldField}, @{newField});
-                UPDATE articles SET logo = REPLACE(logo, @{oldField}, @{newField}), content = REPLACE(content, @{oldField}, @{newField});
+                UPDATE articles SET logo = REPLACE(logo, @{oldField}, @{newField}), content = REPLACE(content, @{oldField}, @{newField}), slideshow = REPLACE(slideshow, @{oldField}, @{newField});
                 """, parameters);
 
             await ExecuteAsync(command);
