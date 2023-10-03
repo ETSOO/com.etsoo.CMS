@@ -79,6 +79,8 @@ services.AddSingleton<IStorage>((provider) =>
         root = Path.Combine(host.ContentRootPath, root[2..]);
     }
 
+    Log.Logger.Debug("Storage root is {root}", root);
+
     var urlRoot = storageSection.GetValue<string>("URLRoot")
         ?? (context == null ? throw new Exception("No HttpContext") : $"{context.Request.Scheme}://{context.Request.Host}/api/Storage");
     return new LocalStorage(root, urlRoot);
