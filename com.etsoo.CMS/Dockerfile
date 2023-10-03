@@ -21,10 +21,7 @@ WORKDIR "/src/com.etsoo.CMS"
 RUN dotnet build "com.etsoo.CMS.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "com.etsoo.CMS.csproj" -c Release -o /app/publish \
-  --no-restore \  
-  --runtime alpine-x64 \
-  /p:UseAppHost=false
+RUN dotnet publish "com.etsoo.CMS.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
