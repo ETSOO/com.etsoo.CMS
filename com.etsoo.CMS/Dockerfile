@@ -1,7 +1,7 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # FROM node:[tag_name] AS [alias_name]
-FROM node:20-alpine AS base
+FROM node:20-alpine AS nodebase
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
 WORKDIR /app
@@ -9,6 +9,7 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+COPY --from=nodebase . .
 WORKDIR /src
 COPY ["com.etsoo.CMS/com.etsoo.CMS.csproj", "com.etsoo.CMS/"]
 RUN dotnet restore "com.etsoo.CMS/com.etsoo.CMS.csproj"
