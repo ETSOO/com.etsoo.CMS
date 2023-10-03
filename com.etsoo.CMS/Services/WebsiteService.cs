@@ -5,7 +5,6 @@ using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Website;
-using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
@@ -25,7 +24,7 @@ namespace com.etsoo.CMS.Services
     public class WebsiteService : CommonService<WebsiteRepo>, IWebsiteService
     {
         readonly IFireAndForgetService fireService;
-        readonly IStorage? storage;
+        readonly IStorage storage;
 
         /// <summary>
         /// Constructor
@@ -34,11 +33,11 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        /// <param name="storages">Storages</param>
-        public WebsiteService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<WebsiteService> logger, IEnumerable<IStorage> storages, IFireAndForgetService fireService)
+        /// <param name="storage">Storage</param>
+        public WebsiteService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<WebsiteService> logger, IStorage storage, IFireAndForgetService fireService)
             : base(app, new WebsiteRepo(app, userAccessor.UserSafe), logger)
         {
-            storage = storages.FirstOrDefault();
+            this.storage = storage;
             this.fireService = fireService;
         }
 
@@ -182,7 +181,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task ReadSettingsAsync(HttpResponse response)
         {
-            await Repo.ReadSettingsAsync(response, storage?.GetUrl(string.Empty));
+            await Repo.ReadSettingsAsync(response, storage.GetUrl(string.Empty));
         }
 
         /// <summary>
@@ -215,11 +214,6 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task<IActionResult> UpdateResurceUrlAsync(WebsiteUpdateResurceUrlRQ rq, IPAddress ip)
         {
-            if (storage == null)
-            {
-                return ApplicationErrors.AccessDenied.AsResult("storage");
-            }
-
             await Repo.UpdateResurceUrlAsync(rq.OldResourceUrl, storage.GetUrl(string.Empty));
 
             await Repo.AddAuditAsync(AuditKind.UpdateResurceUrl, "website", $"Update website resource URL", rq, ip);

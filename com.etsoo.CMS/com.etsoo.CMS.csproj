@@ -14,12 +14,13 @@
     <UserSecretsId>8a509e05-b12f-4fdf-9b10-78814484a981</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <Company>ETSOO / 亿速思维</Company>
-    <Copyright>Copyright © ETSOO 2004 - 2022</Copyright>
+    <Copyright>Copyright © ETSOO 2004 - 2023</Copyright>
     <PackageProjectUrl>https://github.com/ETSOO/com.etsoo.CMS</PackageProjectUrl>
     <Description>ETSOO Website Content Management System (CMS)
 亿速思维网站内容管理系统 (CMS)</Description>
     <AssemblyVersion>1.0.3</AssemblyVersion>
     <SatelliteResourceLanguages>en;zh-Hans;zh-Hant</SatelliteResourceLanguages>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

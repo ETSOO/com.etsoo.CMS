@@ -27,7 +27,7 @@ namespace com.etsoo.CMS.Services
     public class ArticleService : CommonService<ArticleRepo>, IArticleService
     {
         readonly IBridgeProxy bridgeProxy;
-        readonly IStorage? storage;
+        readonly IStorage storage;
         readonly IWebsiteService websiteService;
 
         /// <summary>
@@ -37,14 +37,18 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        /// <param name="fireService">Fire and go service</param>
         /// <param name="bridgeProxy">Bridge proxy</param>
-        /// <param name="storages">Storages</param>
-        public ArticleService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<ArticleService> logger, IBridgeProxy bridgeProxy, IEnumerable<IStorage> storages, IWebsiteService websiteService)
+        /// <param name="storage">Storage</param>
+        public ArticleService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<ArticleService> logger, IBridgeProxy bridgeProxy, IStorage storage, IWebsiteService websiteService)
             : base(app, new ArticleRepo(app, userAccessor.UserSafe), logger)
         {
             this.bridgeProxy = bridgeProxy;
-            storage = storages.FirstOrDefault();
+
+            // Optional injection
+            // IEnumerable<IStorage> storages
+            // storage = storages.FirstOrDefault();
+            this.storage = storage;
+
             this.websiteService = websiteService;
         }
 
@@ -84,7 +88,7 @@ namespace com.etsoo.CMS.Services
         {
             var result = await Repo.DeletePhotoAsync(rq.Id, rq.Url);
 
-            if (result.Ok && storage != null)
+            if (result.Ok)
             {
                 await storage.DeleteUrlAsync(rq.Url);
                 await OnDemandRevalidateAsync(rq.Id);
@@ -286,11 +290,6 @@ namespace com.etsoo.CMS.Services
         /// <returns>New URL</returns>
         public async ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip)
         {
-            if (storage == null)
-            {
-                return null;
-            }
-
             var extension = MimeTypeMap.TryGetExtension(contentType);
             if (string.IsNullOrEmpty(extension))
             {
@@ -344,11 +343,6 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task<IActionResult> UploadPhotosAsync(int id, IEnumerable<IFormFile> files, IPAddress ip)
         {
-            if (storage == null)
-            {
-                return ApplicationErrors.AccessDenied.AsResult(nameof(storage));
-            }
-
             var websiteRepo = new WebsiteRepo(App, Repo.User);
             var websiteData = await websiteRepo.ReadJsonDataAsync<JsonDataGalleryLogoSize>();
             var size = websiteData?.GalleryLogoSize;

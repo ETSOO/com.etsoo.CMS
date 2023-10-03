@@ -68,17 +68,21 @@ services.AddHttpClient<IBridgeProxy, BridgeProxy>();
 
 // Storage
 var storageSection = serviceApp.Section.GetSection("Storage");
-if (storageSection.Exists())
+services.AddSingleton<IStorage>((provider) =>
 {
-    services.AddSingleton<IStorage>((provider) =>
+    var context = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+    var root = storageSection.GetValue<string?>("Root") ?? "./Resources";
+
+    if (root.StartsWith("./"))
     {
-        var context = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
-        var root = storageSection.GetValue<string?>("Root") ?? "/ETSOOCMS";
-        var urlRoot = storageSection.GetValue<string>("URLRoot")
-            ?? (context == null ? throw new Exception("No HttpContext") : $"{context.Request.Scheme}://{context.Request.Host}/api/Storage");
-        return new LocalStorage(root, urlRoot);
-    });
-}
+        var host = provider.GetRequiredService<IWebHostEnvironment>();
+        root = Path.Combine(host.ContentRootPath, root[2..]);
+    }
+
+    var urlRoot = storageSection.GetValue<string>("URLRoot")
+        ?? (context == null ? throw new Exception("No HttpContext") : $"{context.Request.Scheme}://{context.Request.Host}/api/Storage");
+    return new LocalStorage(root, urlRoot);
+});
 
 // Business services
 services.AddScoped<IServiceUserAccessor, ServiceUserAccessor>();

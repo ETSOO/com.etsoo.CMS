@@ -18,7 +18,7 @@ namespace com.etsoo.CMS.Services
     /// </summary>
     public class TabService : CommonService<TabRepo>, ITabService
     {
-        readonly IStorage? storage;
+        readonly IStorage storage;
 
         /// <summary>
         /// Constructor
@@ -27,11 +27,11 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        /// <param name="storages">Storages</param>
-        public TabService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<TabService> logger, IEnumerable<IStorage> storages)
+        /// <param name="storage">Storage</param>
+        public TabService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<TabService> logger, IStorage storage)
             : base(app, new TabRepo(app, userAccessor.UserSafe), logger)
         {
-            storage = storages.FirstOrDefault();
+            this.storage = storage;
         }
 
         /// <summary>
@@ -138,11 +138,6 @@ namespace com.etsoo.CMS.Services
         /// <returns>New URL</returns>
         public async ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip)
         {
-            if (storage == null)
-            {
-                return null;
-            }
-
             var extension = MimeTypeMap.TryGetExtension(contentType);
             if (string.IsNullOrEmpty(extension))
             {
