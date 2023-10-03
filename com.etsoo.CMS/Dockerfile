@@ -1,7 +1,7 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # FROM node:[tag_name] AS [alias_name]
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
@@ -27,7 +27,10 @@ WORKDIR "/src/com.etsoo.CMS"
 RUN dotnet build "com.etsoo.CMS.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "com.etsoo.CMS.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "com.etsoo.CMS.csproj" -c Release -o /app/publish \
+  --no-restore \  
+  --runtime alpine-x64 \
+  /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
