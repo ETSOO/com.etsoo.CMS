@@ -119,6 +119,8 @@ namespace com.etsoo.CMS.Services
                 var nextJsAddress = nextJs.App;
                 var nextJsToken = App.DecriptData(nextJs.Secret);
 
+                Logger.LogDebug("Static page generation to {address} for urls: {urls}", nextJsAddress, urls);
+
                 // Fire and forget
                 fireService.FireAsync<IHttpClientFactory>(async (factory, logger) =>
                 {
@@ -141,6 +143,10 @@ namespace com.etsoo.CMS.Services
                         logger.LogError(ex, "Next.js On-demand Revalidation failed / 按需重新验证失败");
                     }
                 });
+            }
+            else
+            {
+                Logger.LogWarning("Static page generation for urls: {urls} not defined", urls);
             }
         }
 
