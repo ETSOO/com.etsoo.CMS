@@ -52,7 +52,7 @@ function AddUser() {
       });
 
       let result: IdActionResult | undefined;
-      if (rq.id != null) {
+      if (rq.id != null && isEditing) {
         // Changed fields
         const fields: string[] = Utils.getDataChanges(rq, data);
         if (fields.length === 0) {
@@ -63,7 +63,7 @@ function AddUser() {
 
         result = await app.userApi.update(rq);
       } else {
-        result = await app.userApi.create(rq);
+        result = await app.userApi.create(rq as any);
       }
 
       // Submit

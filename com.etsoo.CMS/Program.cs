@@ -71,7 +71,7 @@ var storageSection = serviceApp.Section.GetSection("Storage");
 services.AddSingleton<IStorage>((provider) =>
 {
     var context = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
-    var root = storageSection.GetValue<string?>("Root") ?? "./Resources";
+    var root = storageSection.GetValue<string?>("Root") ?? "./";
 
     if (root.StartsWith("./"))
     {
