@@ -7,7 +7,7 @@ namespace com.etsoo.CMS.Models
     /// 文章链接数据
     /// </summary>
     [AutoDataReaderGenerator(UtcDateTime = true)]
-    public partial record ArticleLink : IArticleLink
+    public partial record ArticleLinkExtended : IArticleLink
     {
         /// <summary>
         /// Article id
@@ -28,6 +28,18 @@ namespace com.etsoo.CMS.Models
         public int Year { get; init; }
 
         /// <summary>
+        /// Tab layout
+        /// 栏目布局
+        /// </summary>
+        public int TabLayout { get; init; }
+
+        /// <summary>
+        /// Tab URL
+        /// 栏目链接
+        /// </summary>
+        public required string TabUrl { get; init; }
+
+        /// <summary>
         /// Primary tab id
         /// 主栏目编号
         /// </summary>
@@ -46,15 +58,27 @@ namespace com.etsoo.CMS.Models
         public int? Tab3 { get; init; }
 
         /// <summary>
-        /// Tab layout
-        /// 栏目布局
+        /// Tab 2 layout
+        /// 栏目2布局
         /// </summary>
-        public int TabLayout { get; init; }
+        public int? TabLayout2 { get; init; }
 
         /// <summary>
-        /// Tab URL
-        /// 栏目链接
+        /// Tab 2 URL
+        /// 栏目2网址
         /// </summary>
-        public required string TabUrl { get; init; }
+        public string? TabUrl2 { get; init; }
+
+        /// <summary>
+        /// Tab 3 layout
+        /// 栏目3布局
+        /// </summary>
+        public int? TabLayout3 { get; init; }
+
+        /// <summary>
+        /// Tab 3 URL
+        /// 栏目3网址
+        /// </summary>
+        public string? TabUrl3 { get; init; }
     }
 }

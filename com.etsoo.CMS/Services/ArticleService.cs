@@ -110,11 +110,36 @@ namespace com.etsoo.CMS.Services
             var link = await Repo.QueryLinkAsync(id);
             if (link == null) return;
 
+            var urls = new List<string>();
+
+            // Article link
             var url = link.GetUrl();
-            if (string.IsNullOrEmpty(url)) return;
+            if (!string.IsNullOrEmpty(url))
+            {
+                urls.Add(url);
+            }
+
+            // Tabs
+            var tabIds = new List<int>
+            {
+                link.Tab1
+            };
+            if (link.Tab2.HasValue) tabIds.Add(link.Tab2.Value);
+            if (link.Tab3.HasValue) tabIds.Add(link.Tab3.Value);
+
+            var tabRepo = new TabRepo(App, Repo.User);
+            var tabs = await tabRepo.AncestorReadAsync(tabIds);
+            foreach (var tab in tabs)
+            {
+                var tabUrl = ArticleLinkExtensions.GetTabUrl(tab.Layout, tab.Url);
+                if (!string.IsNullOrEmpty(tabUrl))
+                {
+                    urls.Add(tabUrl);
+                }
+            }
 
             // Website service
-            await websiteService.OnDemandRevalidateAsync(url);
+            await websiteService.OnDemandRevalidateAsync(urls.ToArray());
         }
 
         /// <summary>

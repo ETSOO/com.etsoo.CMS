@@ -4,7 +4,9 @@ import {
   SearchField,
   IconButtonLink,
   MobileListItemRenderer,
-  Tiplist
+  Tiplist,
+  VBox,
+  InputField
 } from '@etsoo/materialui';
 import { BoxProps, Fab, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -12,6 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import PublicIcon from '@mui/icons-material/Public';
 import PhotoIcon from '@mui/icons-material/Photo';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DataTypes, DomUtils } from '@etsoo/shared';
@@ -42,7 +45,9 @@ function AllArticles() {
     'articleTitle',
     'viewWebsite',
     'tab',
-    'articleLogo'
+    'articleLogo',
+    'regenerateLink',
+    'link'
   );
 
   // Refs
@@ -71,6 +76,63 @@ function AllArticles() {
         onRefresh: reloadData,
         fabButtons: (
           <React.Fragment>
+            <Fab
+              title={labels.regenerateLink}
+              size="small"
+              onClick={() => {
+                app.showInputDialog({
+                  title: labels.regenerateLink,
+                  message: undefined,
+                  fullScreen: app.smDown,
+                  callback: async (form) => {
+                    // Cancelled
+                    if (form == null) {
+                      return;
+                    }
+
+                    // Form data
+                    const { url } = DomUtils.dataAs(new FormData(form), {
+                      url: 'string'
+                    });
+
+                    if (!url) {
+                      DomUtils.setFocus('url');
+                      return false;
+                    }
+
+                    // Submit
+                    const result = await app.websiteApi.regenerateUrls(
+                      url.split(/\s*[;\n]\s*/g),
+                      {
+                        showLoading: false
+                      }
+                    );
+                    if (result == null) return;
+
+                    if (result.ok) {
+                      return;
+                    }
+
+                    return app.formatResult(result);
+                  },
+                  inputs: (
+                    <VBox gap={2} marginTop={2}>
+                      <InputField
+                        fullWidth
+                        required
+                        name="url"
+                        multiline
+                        rows={3}
+                        inputProps={{ maxLength: 1024 }}
+                        label={labels.link}
+                      />
+                    </VBox>
+                  )
+                });
+              }}
+            >
+              <SyncAltIcon />
+            </Fab>
             <Fab
               title={labels.add}
               size="medium"

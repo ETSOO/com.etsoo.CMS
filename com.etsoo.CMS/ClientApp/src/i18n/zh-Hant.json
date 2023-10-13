@@ -43,6 +43,7 @@
   "photoUploadError1": "選擇的檔案超過了5個，不支援上傳",
   "photoUploadError2": "檔案 {0} 超過了10M，不支援上傳",
   "plugins": "插件",
+  "regenerateLink": "重新產生連結",
   "resetPassword": "重置密碼",
   "resources": "資源",
   "resourceUrl": "資源網址",

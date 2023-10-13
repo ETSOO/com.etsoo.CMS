@@ -52,7 +52,7 @@ namespace com.etsoo.CMS.Defs
         /// </summary>
         /// <param name="urls">URLs</param>
         /// <returns>Task</returns>
-        Task OnDemandRevalidateAsync(params string[] urls);
+        ValueTask<IActionResult> OnDemandRevalidateAsync(params string[] urls);
 
         /// <summary>
         /// Read JSON data

@@ -139,6 +139,18 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Regenerate URL
+        /// 重新生成网址
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpPost("RegenerateUrl")]
+        public async Task RegenerateUrl(IEnumerable<string> urls)
+        {
+            var result = await service.OnDemandRevalidateAsync(urls.ToArray());
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
         /// Query resources
         /// 查询资源
         /// </summary>

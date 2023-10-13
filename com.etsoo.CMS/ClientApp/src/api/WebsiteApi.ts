@@ -102,6 +102,19 @@ export class WebsiteApi extends EntityApi {
   }
 
   /**
+   * Regenerate URLs
+   * @param urls URLs
+   * @param payload Payload
+   * @returns Result
+   */
+  regenerateUrls(urls: string[], payload?: ResultPayload) {
+    return this.api.post('Website/RegenerateUrl', urls, {
+      contentType: this.api.jsonContentType,
+      ...payload
+    });
+  }
+
+  /**
    * Read settings
    * @param payload Payload
    * @returns Result

@@ -205,7 +205,7 @@ namespace com.etsoo.CMS.Repo
         /// <returns>Result</returns>
         public async ValueTask<ArticleLink?> QueryLinkAsync(int id)
         {
-            var command = CreateCommand($"SELECT a.id, a.url, a.year, t.layout AS TabLayout, t.url AS TabUrl FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id WHERE a.id = {id}");
+            var command = CreateCommand($"SELECT a.id, a.url, a.year, a.tab1, a.tab2, a.tab3, t.layout AS TabLayout, t.url AS TabUrl FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id WHERE a.id = {id}");
             return await QueryAsAsync<ArticleLink>(command);
         }
 

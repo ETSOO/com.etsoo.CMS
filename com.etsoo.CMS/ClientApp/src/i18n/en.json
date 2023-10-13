@@ -43,6 +43,7 @@
   "photoUploadError1": "The selected files exceed 5, uploading is not supported",
   "photoUploadError2": "The file {0} exceeds 10M and cannot be uploaded",
   "plugins": "Plugins",
+  "regenerateLink": "Regenerate link",
   "resources": "Resources",
   "resourceUrl": "Resource URL",
   "resourceUrlTip": "Resource URL is case-sensitive, please match them strictly",

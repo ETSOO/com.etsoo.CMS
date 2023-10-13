@@ -1,4 +1,5 @@
 ﻿using com.etsoo.CMS.Application;
+using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
@@ -232,6 +233,25 @@ namespace com.etsoo.CMS.Repo
             var command = CreateCommand($"WITH ctx(id) AS (SELECT @{nameof(id)} UNION ALL SELECT t.parent FROM tabs AS t INNER JOIN ctx ON t.id = ctx.id WHERE t.parent IS NOT NULL) SELECT json_group_array(id) FROM ctx", parameters);
 
             await ReadJsonToStreamAsync(command, response);
+        }
+
+        /// <summary>
+        /// View tab ancestors
+        /// 浏览上层栏目
+        /// </summary>
+        /// <param name="ids">Ids</param>
+        /// <returns>Result</returns>
+        public async Task<ParentTab[]> AncestorReadAsync(IEnumerable<int> ids)
+        {
+            var sql = $"""
+                WITH ctx(id, parent, name, url, layout, level) AS (
+                    SELECT f.id, f.parent, f.name, f.url, f.layout, 0 FROM tabs AS f WHERE f.id IN ({string.Join(',', ids)}) AND f.status < 200
+                        UNION ALL
+                    SELECT t.id, t.parent, t.name, t.url, t.layout, ctx.level + 1 FROM tabs AS t INNER JOIN ctx ON t.id = ctx.parent WHERE ctx.parent IS NOT NULL AND t.status < 200
+                ) SELECT * FROM ctx
+                """;
+            var command = CreateCommand(sql);
+            return await QueryAsListAsync<ParentTab>(command);
         }
     }
 }

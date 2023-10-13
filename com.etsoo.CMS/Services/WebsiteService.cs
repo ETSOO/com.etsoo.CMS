@@ -5,6 +5,7 @@ using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
@@ -109,16 +110,24 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="urls">URLs</param>
         /// <returns>Task</returns>
-        public async Task OnDemandRevalidateAsync(params string[] urls)
+        public async ValueTask<IActionResult> OnDemandRevalidateAsync(params string[] urls)
         {
             // NextJs
             var nextJs = await Repo.ReadServiceAsync(NextJsOptions.Name);
             if (nextJs != null)
             {
-                var nextJsAddress = nextJs.App;
+                var nextJsAddress = nextJs.App.TrimEnd('/');
                 var nextJsToken = App.DecriptData(nextJs.Secret);
 
-                Logger.LogDebug("Static page generation to {address} for urls: {urls}", nextJsAddress, urls);
+                var fUrls = urls.Select(url =>
+                {
+                    url = url.Trim();
+                    if (url.StartsWith('/')) return url;
+                    else if (url.StartsWith(nextJsAddress)) return url[nextJsAddress.Length..];
+                    else return string.Empty;
+                }).Where(url => !string.IsNullOrEmpty(url)).ToArray();
+
+                Logger.LogDebug("Static page generation to {address} for urls: {urls}", nextJsAddress, fUrls);
 
                 // Fire and forget
                 fireService.FireAsync<IHttpClientFactory>(async (factory, logger) =>
@@ -131,7 +140,7 @@ namespace com.etsoo.CMS.Services
                             BaseAddress = nextJsAddress,
                             Token = nextJsToken
                         });
-                        var result = await nextJsApi.OnDemandRevalidateAsync(urls);
+                        var result = await nextJsApi.OnDemandRevalidateAsync(fUrls);
                         if (!result.Ok)
                         {
                             logger.LogError("NextJs On-demand revalidataion failed: {@result}", result);
@@ -142,10 +151,13 @@ namespace com.etsoo.CMS.Services
                         logger.LogError(ex, "Next.js On-demand Revalidation failed / 按需重新验证失败");
                     }
                 });
+
+                return ActionResult.Success;
             }
             else
             {
                 Logger.LogWarning("Static page generation for urls: {urls} not defined", urls);
+                return ApplicationErrors.InvalidAction.AsResult();
             }
         }
 
