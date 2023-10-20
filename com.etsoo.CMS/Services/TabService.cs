@@ -50,12 +50,12 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
-        /// Delete single user
-        /// 删除单个用户
+        /// Delete tab
+        /// 删除栏目
         /// </summary>
-        /// <param name="id">User id</param>
+        /// <param name="id">Tab id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<IActionResult> DeleteAsync(int id)
+        public async ValueTask<IActionResult> DeleteAsync(int id)
         {
             return await Repo.DeleteAsync(id);
         }
@@ -135,6 +135,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="id">Tab id</param>
         /// <param name="logoStream">Logo stream</param>
         /// <param name="contentType">Cotent type</param>
+        /// <param name="ip">IP</param>
         /// <returns>New URL</returns>
         public async ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip)
         {

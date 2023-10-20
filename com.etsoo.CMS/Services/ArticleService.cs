@@ -78,6 +78,17 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Delete article
+        /// 删除文章
+        /// </summary>
+        /// <param name="id">Article id</param>
+        /// <returns>Action result</returns>
+        public async ValueTask<IActionResult> DeleteAsync(int id)
+        {
+            return await Repo.DeleteAsync(id);
+        }
+
+        /// <summary>
         /// Delete photo
         /// 删除照片
         /// </summary>

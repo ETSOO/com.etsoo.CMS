@@ -22,6 +22,14 @@ namespace com.etsoo.CMS.Defs
         Task<IActionResult> CreateAsync(ArticleCreateRQ rq, IPAddress ip);
 
         /// <summary>
+        /// Delete article
+        /// 删除文章
+        /// </summary>
+        /// <param name="id">Article id</param>
+        /// <returns>Action result</returns>
+        ValueTask<IActionResult> DeleteAsync(int id);
+
+        /// <summary>
         /// Delete photo
         /// 删除照片
         /// </summary>

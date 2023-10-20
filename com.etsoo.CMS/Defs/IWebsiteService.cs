@@ -55,6 +55,13 @@ namespace com.etsoo.CMS.Defs
         ValueTask<IActionResult> OnDemandRevalidateAsync(params string[] urls);
 
         /// <summary>
+        /// Get mobile QRCode image Base64 string
+        /// 获取移动端QRCode图片的Base64字符串
+        /// </summary>
+        /// <returns>Base64 string</returns>
+        Task<string> QRCodeAsync(string url);
+
+        /// <summary>
         /// Read JSON data
         /// 读取 JSON 数据
         /// </summary>
@@ -77,6 +84,13 @@ namespace com.etsoo.CMS.Defs
         /// <param name="response">HTTP Response</param>
         /// <returns>Task</returns>
         Task ReadSettingsAsync(HttpResponse response);
+
+        /// <summary>
+        /// Regenerate all tab URLs
+        /// 重新生成所有栏目网址
+        /// </summary>
+        /// <returns>Result</returns>
+        ValueTask<IActionResult> RegenerateTabUrlsAsync();
 
         /// <summary>
         /// Query resources

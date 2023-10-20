@@ -163,13 +163,12 @@ function ArticleGallery() {
               <FileUploadButton
                 variant="contained"
                 startIcon={<FileUploadIcon />}
-                maxFiles={10}
+                maxFiles={5}
                 maxFileSize={104857600}
                 onFileInvalid={(values, file) => {
                   if (file == null) {
                     app.notifier.alert(photoUploadError1);
                   } else {
-                    console.log(values);
                     app.notifier.alert(photoUploadError2.format(file.name));
                   }
                 }}
@@ -194,7 +193,7 @@ function ArticleGallery() {
             </Stack>
           </Stack>
           <ImageList
-            variant="quilted"
+            variant="masonry"
             cols={app.smDown ? 1 : app.mdUp ? 3 : 2}
             gap={8}
             sx={{ flexDirection: 'row' }}

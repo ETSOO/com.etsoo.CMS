@@ -95,6 +95,7 @@ services.AddScoped<IExternalService, ExternalService>();
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IWebsiteService, WebsiteService>();
 services.AddScoped<IPublicService, PublicService>();
+services.AddScoped<IDriveService, DriveService>();
 
 services.AddControllers().AddJsonOptions(configure =>
 {

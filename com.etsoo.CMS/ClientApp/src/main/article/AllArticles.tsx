@@ -240,7 +240,7 @@ function AllArticles() {
           }
         }
       ]}
-      itemSize={[96, margin]}
+      itemSize={[118, margin]}
       innerItemRenderer={(props) =>
         MobileListItemRenderer(props, (data) => {
           return [

@@ -90,7 +90,7 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<IActionResult> DeleteAsync(string id)
+        public async ValueTask<IActionResult> DeleteAsync(string id)
         {
             return await Repo.DeleteAsync(id);
         }

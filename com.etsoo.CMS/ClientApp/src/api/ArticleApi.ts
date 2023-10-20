@@ -41,6 +41,16 @@ export class ArticleApi extends EntityApi {
   }
 
   /**
+   * Delete
+   * @param id Id
+   * @param payload Payload
+   * @returns Result
+   */
+  delete(id: number, payload?: ResultPayload) {
+    return this.deleteBase(id, payload);
+  }
+
+  /**
    * Delete photo
    * @param rq Request data
    * @param payload Payload

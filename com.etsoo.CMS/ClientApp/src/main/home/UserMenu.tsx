@@ -5,21 +5,49 @@ import {
   ListItemIcon,
   ListItemText,
   Menu,
-  MenuItem
+  MenuItem,
+  Typography
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { BridgeCloseButton, UserAvatar } from '@etsoo/materialui';
+import { BridgeCloseButton, UserAvatar, VBox } from '@etsoo/materialui';
 import LockIcon from '@mui/icons-material/Lock';
 import UpgradeIcon from '@mui/icons-material/Upgrade';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { app } from '../../app/MyApp';
 import { IActionResult, UserRole } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { EventWatcher, useAsyncState } from '@etsoo/react';
+import LinearProgress from '@mui/material/LinearProgress';
 
 interface UserMenuProps {
   name: string;
   avatar: string | undefined;
   smDown: boolean;
+}
+
+function QRCode() {
+  // QRCode
+  const [qrCode, setQRCode] = React.useState<string>();
+
+  React.useEffect(() => {
+    app.websiteApi.qrCode({ showLoading: false }).then((qrcode) => {
+      if (!qrcode) return;
+      setQRCode(qrcode);
+    });
+  }, []);
+
+  return (
+    <VBox alignItems="center">
+      {qrCode == null ? (
+        <LinearProgress sx={{ width: '100%' }} />
+      ) : (
+        <React.Fragment>
+          <Typography>{app.get('mobileAccessTip')}</Typography>
+          <img alt="Mobile QRCode" src={qrCode} width="360" />
+        </React.Fragment>
+      )}
+    </VBox>
+  );
 }
 
 export function UserMenu(props: UserMenuProps) {
@@ -36,7 +64,8 @@ export function UserMenu(props: UserMenuProps) {
     'switchOrganization',
     'signout',
     'upgradeSystem',
-    'operationSucceeded'
+    'operationSucceeded',
+    'mobileAccess'
   );
 
   // Permissions
@@ -94,6 +123,11 @@ export function UserMenu(props: UserMenuProps) {
       }
       app.alertResult(result);
     });
+  };
+
+  // Scan QRcode
+  const qrcode = () => {
+    app.notifier.succeed(<QRCode />, labels.mobileAccess);
   };
 
   return (
@@ -164,6 +198,12 @@ export function UserMenu(props: UserMenuProps) {
             <LockIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>{labels.changePassword}</ListItemText>
+        </MenuItem>
+        <MenuItem key="qrcode" onClick={qrcode}>
+          <ListItemIcon>
+            <QrCode2Icon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>{labels.mobileAccess}</ListItemText>
         </MenuItem>
         {adminPermission && [
           <Divider key="dividerUpgrade" />,

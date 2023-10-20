@@ -121,6 +121,7 @@ namespace com.etsoo.CMS.Controllers
         /// <returns>Task</returns>
         [HttpPut("UploadLogo/{id:int}")]
         [Roles(UserRole.User | UserRole.Founder | UserRole.Admin)]
+        [RequestSizeLimit(10485760)]
         public async Task<string> UploadLogo([FromRoute] int id, IFormFile logo)
         {
             using var stream = logo.OpenReadStream();

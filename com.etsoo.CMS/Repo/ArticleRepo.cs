@@ -71,6 +71,29 @@ namespace com.etsoo.CMS.Repo
         }
 
         /// <summary>
+        /// Delete article
+        /// 删除文章
+        /// </summary>
+        /// <param name="id">Article id</param>
+        /// <returns>Action result</returns>
+        public async ValueTask<IActionResult> DeleteAsync(int id)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id);
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"DELETE FROM articles WHERE id = @{nameof(id)} AND status = 255", parameters);
+
+            var result = await ExecuteAsync(command);
+
+            if (result > 0)
+                return ActionResult.Success;
+            else
+                return ApplicationErrors.NoId.AsResult();
+        }
+
+        /// <summary>
         /// Delete photo
         /// 删除照片
         /// </summary>

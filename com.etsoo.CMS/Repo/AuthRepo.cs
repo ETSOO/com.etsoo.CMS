@@ -134,7 +134,7 @@ namespace com.etsoo.CMS.Repo
 
                 CREATE INDEX IF NOT EXISTS index_users_refreshTime ON users (refreshTime);
 
-                INSERT INTO users (id, password, role, status, creation) VALUES (@{nameof(id)}, @{nameof(password)}, 8192, 0, DATETIME('now'));
+                INSERT INTO users (id, password, role, status, creation) VALUES (@{nameof(id)}, @{nameof(password)}, 8192, 0, DATETIME('now', 'utc'));
 
                 /*
                     device token table
@@ -168,7 +168,7 @@ namespace com.etsoo.CMS.Repo
                 CREATE INDEX IF NOT EXISTS index_audits_author ON audits (author);
                 CREATE INDEX IF NOT EXISTS index_audits_kind_target ON audits (kind, target);
 
-                INSERT INTO audits (kind, title, creation, author, target, ip) VALUES (0, 'Initialize the website', DATETIME('now'), @{nameof(id)}, @{nameof(id)}, @{nameof(ip)});
+                INSERT INTO audits (kind, title, creation, author, target, ip) VALUES (0, 'Initialize the website', DATETIME('now', 'utc'), @{nameof(id)}, @{nameof(id)}, @{nameof(ip)});
 
                 /*
                     website table
@@ -259,6 +259,24 @@ namespace com.etsoo.CMS.Repo
                 CREATE INDEX IF NOT EXISTS index_articles_primary ON articles (tab1, tab2, tab3, orderIndex, release, weight, status);
                 CREATE INDEX IF NOT EXISTS index_articles_author ON articles (author);
                 CREATE INDEX IF NOT EXISTS index_articles_url ON articles (url, year);
+
+                /*
+                    files table
+                */
+                CREATE TABLE IF NOT EXISTS files (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    path TEXT NOT NULL,
+                    size INTEGER NOT NULL,
+                    contentType TEXT NOT NULL,
+                    shared INTEGER DEFAULT 0,
+                    author TEXT NOT NULL,
+                    creation TEXT NOT NULL
+                ) WITHOUT ROWID;
+
+                CREATE INDEX IF NOT EXISTS index_files_name ON files (name);
+                CREATE INDEX IF NOT EXISTS index_files_author ON files (author);
+                CREATE INDEX IF NOT EXISTS index_files_creation ON files (creation);
             ", new DbParameters(new { id, password, ip = ip.ToString() }));
 
             await ExecuteAsync(command);

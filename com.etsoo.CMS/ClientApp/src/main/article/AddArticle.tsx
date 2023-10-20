@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import React from 'react';
 import { useFormik } from 'formik';
 import { DataTypes, Utils } from '@etsoo/shared';
-import { IdActionResult } from '@etsoo/appscript';
+import { EntityStatus, IdActionResult, UserRole } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../../app/MyApp';
 import { TabSelector } from '../../components/TabSelector';
@@ -29,6 +29,9 @@ function AddTab() {
   const isEditing = id != null;
   type DataType = DataTypes.AddAndEditType<ArticleUpdateDto>;
 
+  // Permissions
+  const adminPermission = app.hasPermission([UserRole.Admin, UserRole.Founder]);
+
   // Labels
   const labels = app.getLabels(
     'noChanges',
@@ -43,7 +46,9 @@ function AddTab() {
     'articleRelease',
     'articleLogo',
     'slideshowLogo',
-    'entityStatus'
+    'entityStatus',
+    'deleteConfirm',
+    'article'
   );
 
   // Edit data
@@ -172,6 +177,29 @@ function AddTab() {
         formik.handleSubmit(event);
       }}
       onUpdate={loadData}
+      onDelete={
+        adminPermission && data?.status === EntityStatus.Deleted
+          ? () => {
+              app.notifier.confirm(
+                labels.deleteConfirm.format(labels.article),
+                undefined,
+                async (ok) => {
+                  if (!ok || id == null) return;
+
+                  const result = await app.articleApi.delete(id);
+                  if (result == null) return;
+
+                  if (result.ok) {
+                    navigate('./../../all');
+                    return;
+                  }
+
+                  app.alertResult(result);
+                }
+              );
+            }
+          : undefined
+      }
     >
       <Grid container item xs={12} sm={12} spacing={1}>
         <TabSelector

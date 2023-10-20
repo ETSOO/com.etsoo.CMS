@@ -59,6 +59,14 @@ export class WebsiteApi extends EntityApi {
   }
 
   /**
+   * Get mobile base64 QRCode
+   * @param payload Payload
+   */
+  qrCode(payload?: IApiPayload<string>) {
+    return this.api.get('Website/QRCode', undefined, payload);
+  }
+
+  /**
    * Query resources
    * @param payload Payload
    * @returns Result
@@ -99,6 +107,15 @@ export class WebsiteApi extends EntityApi {
    */
   readService(id: string, payload?: IApiPayload<PluginViewDto>) {
     return this.api.get(`Website/ReadService/${id}`, undefined, payload);
+  }
+
+  /**
+   * Regenerate all tab URLs
+   * @param payload Payload
+   * @returns Result
+   */
+  regenerateTabUrls(payload?: ResultPayload) {
+    return this.api.put('Website/RegenerateTabUrls', undefined, payload);
   }
 
   /**

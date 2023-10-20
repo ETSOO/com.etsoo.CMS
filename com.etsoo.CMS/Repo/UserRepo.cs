@@ -39,7 +39,7 @@ namespace com.etsoo.CMS.Repo
             AddSystemParameters(parameters);
 
             var command = CreateCommand($@"INSERT INTO users (id, password, role, status, creation)
-                VALUES (@{nameof(model.Id)}, '', @{nameof(model.Role)}, IIF(@{nameof(model.Enabled)}, 0, 200), DATETIME('now'))", parameters);
+                VALUES (@{nameof(model.Id)}, '', @{nameof(model.Role)}, IIF(@{nameof(model.Enabled)}, 0, 200), DATETIME('now', 'utc'))", parameters);
 
             await ExecuteAsync(command);
 
@@ -52,7 +52,7 @@ namespace com.etsoo.CMS.Repo
         /// </summary>
         /// <param name="id">User id</param>
         /// <returns>Action result</returns>
-        public virtual async ValueTask<IActionResult> DeleteAsync(string id)
+        public async ValueTask<IActionResult> DeleteAsync(string id)
         {
             var parameters = new DbParameters();
             parameters.Add(nameof(id), id.ToDbString(true, 128));

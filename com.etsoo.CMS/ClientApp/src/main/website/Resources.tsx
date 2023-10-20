@@ -15,6 +15,7 @@ import { ResourceDto } from '../../api/dto/website/ResourceDto';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import AddToDriveIcon from '@mui/icons-material/AddToDrive';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { UserRole } from '@etsoo/appscript';
 import { DomUtils } from '@etsoo/shared';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +33,9 @@ function Resources() {
     'edit',
     'id',
     'resourceValue',
-    'onlineDrive'
+    'onlineDrive',
+    'regenerateLink',
+    'confirmAction'
   );
 
   // State
@@ -183,6 +186,36 @@ function Resources() {
             </Grid>
           ))}
         </CardContent>
+        <CardActions
+          sx={{
+            justifyContent: 'space-between',
+            paddingLeft: 2,
+            paddingRight: 2
+          }}
+        >
+          <Button
+            variant="outlined"
+            startIcon={<SyncAltIcon />}
+            onClick={() => {
+              app.notifier.confirm(
+                labels.confirmAction.format(labels.regenerateLink),
+                undefined,
+                async (confirmed) => {
+                  if (!confirmed) return;
+                  const result = await app.websiteApi.regenerateTabUrls({
+                    showLoading: false
+                  });
+                  if (result == null) return;
+                  if (!result.ok) {
+                    app.alertResult(result);
+                  }
+                }
+              );
+            }}
+          >
+            {labels.regenerateLink}
+          </Button>
+        </CardActions>
       </Card>
     </CommonPage>
   );

@@ -33,6 +33,7 @@ import { ArticleApi } from '../api/ArticleApi';
 import { TabApi } from '../api/TabApi';
 import { WebsiteApi } from '../api/WebsiteApi';
 import { NavigateFunction } from 'react-router-dom';
+import { DriveApi } from '../api/DriveApi';
 
 /**
  * Service App
@@ -67,6 +68,11 @@ class MyServiceApp extends CommonApp {
   readonly websiteApi = new WebsiteApi(this);
 
   /**
+   * Online drive API
+   */
+  readonly driveApi = new DriveApi(this);
+
+  /**
    * Site domain
    */
   domain?: string;
@@ -83,10 +89,10 @@ class MyServiceApp extends CommonApp {
    * @returns Result
    */
   formatLink(item: ArticleLink) {
-    const { url, year, tabLayout, tabUrl } = item;
+    const { url, tabLayout, tabUrl } = item;
     if (tabLayout === 0) return `${this.domain}${tabUrl}`;
     if (tabLayout === 1) return '#';
-    return `${this.domain}${tabUrl}/${year}/${url}`;
+    return `${this.domain}${tabUrl}/${url}`;
   }
 
   private formatTitle(result: DynamicActionResult): [boolean, string] {
@@ -289,9 +295,13 @@ class MyServiceApp extends CommonApp {
             inputRef={(ref) => {
               Reflect.set(loginRef, 'current', ref);
 
-              const userIdSaved = this.storage.getPersistedData<string>(
-                CoreConstants.FieldUserIdSaved
-              );
+              const url = new URL(globalThis.location.href);
+
+              const userIdSaved =
+                url.searchParams.get('loginid') ??
+                this.storage.getPersistedData<string>(
+                  CoreConstants.FieldUserIdSaved
+                );
 
               if (userIdSaved && loginRef.current)
                 loginRef.current.value = userIdSaved;

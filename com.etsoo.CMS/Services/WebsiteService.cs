@@ -10,6 +10,7 @@ using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.Repositories;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.DI;
+using com.etsoo.ImageUtils.Barcode;
 using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Storage;
@@ -162,6 +163,27 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Get mobile QRCode image Base64 string
+        /// 获取移动端QRCode图片的Base64字符串
+        /// </summary>
+        /// <returns>Base64 string</returns>
+        public async Task<string> QRCodeAsync(string url)
+        {
+            url = url.Replace("{id}", Repo.User?.Id);
+
+            var options = new BarcodeOptions
+            {
+                Type = "QRCode",
+                Content = url,
+                ForegroundText = "#3f51b5",
+                Width = 360,
+                Height = 360
+            };
+
+            return await Task.Run(() => BarcodeUtils.Create(options));
+        }
+
+        /// <summary>
         /// Read JSON data
         /// 读取 JSON 数据
         /// </summary>
@@ -195,6 +217,19 @@ namespace com.etsoo.CMS.Services
         {
             await Repo.ReadSettingsAsync(response, storage.GetUrl(string.Empty));
         }
+
+        /// <summary>
+        /// Regenerate all tab URLs
+        /// 重新生成所有栏目网址
+        /// </summary>
+        /// <returns>Result</returns>
+        public async ValueTask<IActionResult> RegenerateTabUrlsAsync()
+        {
+            var tabs = await Repo.QueryTabsAsync();
+            var urls = tabs.Select(tab => tab.GetUrl()).Where(url => !url.Equals('#') && !url.Equals('/')).ToArray();
+            return await OnDemandRevalidateAsync(urls);
+        }
+
 
         /// <summary>
         /// Query resources

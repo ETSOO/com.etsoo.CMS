@@ -9,10 +9,11 @@ import {
 } from '@mui/material';
 import React from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
-import { DrawerHeader, LeftDrawer, LeftDrawerMethods } from './LeftDrawer';
 import { app } from '../../app/MyApp';
 import { UserMenu } from './UserMenu';
 import { Outlet } from 'react-router-dom';
+import { LeftDrawerLocal } from './LeftDrawerLocal';
+import { DrawerHeader } from '@etsoo/materialui';
 
 // Size
 const width = 220;
@@ -31,10 +32,12 @@ function Home() {
   const mdUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up('md'));
   app.mdUp = mdUp;
 
-  // Ref
-  const drawerRef = React.useRef<LeftDrawerMethods>(null);
-
   const { authorized } = state;
+
+  const [open, setOpen] = React.useState(mdUp);
+  React.useEffect(() => {
+    setOpen(mdUp);
+  }, [mdUp]);
 
   // When unauthorized (by refresh)
   // Return blank and try login
@@ -56,8 +59,8 @@ function Home() {
           <IconButton
             edge="start"
             color="inherit"
-            onClick={() => drawerRef.current?.open()}
-            sx={{ ...(mdUp && { display: 'none' }) }}
+            onClick={() => setOpen(true)}
+            sx={{ ...(open && { display: 'none' }) }}
           >
             <MenuIcon />
           </IconButton>
@@ -84,11 +87,12 @@ function Home() {
         </Toolbar>
       </AppBar>
       <Box sx={{ display: 'flex' }}>
-        <LeftDrawer
+        <LeftDrawerLocal
           mdUp={mdUp}
           organization={state.organization}
-          ref={drawerRef}
           width={width}
+          onMinimize={() => setOpen(false)}
+          open={open}
         />
         {/*
         https://stackoverflow.com/questions/36247140/why-dont-flex-items-shrink-past-content-size

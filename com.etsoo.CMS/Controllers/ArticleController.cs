@@ -47,6 +47,20 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Delete Article
+        /// 删除文章
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <returns>Task</returns>
+        [HttpDelete("Delete/{id:int}")]
+        [Roles(UserRole.Founder | UserRole.Admin)]
+        public async Task Delete(int id)
+        {
+            var result = await service.DeleteAsync(id);
+            await WriteResultAsync(result);
+        }
+
+        /// <summary>
         /// Delete photo
         /// 删除照片
         /// </summary>
@@ -145,6 +159,7 @@ namespace com.etsoo.CMS.Controllers
         /// <returns>Task</returns>
         [HttpPut("UploadLogo/{id:int}")]
         [Roles(UserRole.User | UserRole.Founder | UserRole.Admin)]
+        [RequestSizeLimit(10485760)]
         public async Task<string> UploadLogo([FromRoute] int id, IFormFile logo)
         {
             using var stream = logo.OpenReadStream();
@@ -160,6 +175,8 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="files">Photo files</param>
         /// <returns>Task</returns>
         [HttpPost("UploadPhotos/{id:int}")]
+        [RequestSizeLimit(52428800)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10485760)]
         public async Task UploadPhotos(int id, IEnumerable<IFormFile> files)
         {
             if (files.Count() > 5 || files.Any(file => file.Length > 10485760))

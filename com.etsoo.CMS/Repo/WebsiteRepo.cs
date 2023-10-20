@@ -87,7 +87,7 @@ namespace com.etsoo.CMS.Repo
             AddSystemParameters(parameters);
 
             var command = CreateCommand($@"INSERT INTO services (id, app, secret, status, refreshTime)
-                VALUES (@{nameof(model.Id)}, @{nameof(model.App)}, @{nameof(model.Secret)}, IIF(@{nameof(model.Enabled)}, 0, 200), DATETIME('now'))", parameters);
+                VALUES (@{nameof(model.Id)}, @{nameof(model.App)}, @{nameof(model.Secret)}, IIF(@{nameof(model.Enabled)}, 0, 200), DATETIME('now', 'utc'))", parameters);
 
             await ExecuteAsync(command);
 
@@ -295,27 +295,49 @@ namespace com.etsoo.CMS.Repo
                 if (version.CompareTo(new Version("1.0.2")) < 0)
                 {
                     var command102 = CreateCommand($@"
-                    ALTER TABLE website ADD COLUMN jsonData TEXT;
+                        ALTER TABLE website ADD COLUMN jsonData TEXT;
 
-                    ALTER TABLE services ADD COLUMN jsonData TEXT;
+                        ALTER TABLE services ADD COLUMN jsonData TEXT;
 
-                    ALTER TABLE tabs ADD COLUMN logo TEXT;
-                    ALTER TABLE tabs ADD COLUMN description TEXT;
-                    ALTER TABLE tabs ADD COLUMN jsonData TEXT;
+                        ALTER TABLE tabs ADD COLUMN logo TEXT;
+                        ALTER TABLE tabs ADD COLUMN description TEXT;
+                        ALTER TABLE tabs ADD COLUMN jsonData TEXT;
 
-                    ALTER TABLE articles ADD COLUMN jsonData TEXT;
-                ");
+                        ALTER TABLE articles ADD COLUMN jsonData TEXT;
+                    ");
 
                     await ExecuteAsync(command102);
                 }
 
                 if (version.CompareTo(new Version("1.0.3")) < 0)
                 {
-                    var command102 = CreateCommand($@"
-                    ALTER TABLE tabs ADD COLUMN icon TEXT;
-                ");
+                    var command103 = CreateCommand($@"
+                        ALTER TABLE tabs ADD COLUMN icon TEXT;
+                    ");
 
-                    await ExecuteAsync(command102);
+                    await ExecuteAsync(command103);
+                }
+
+                if (version.CompareTo(new Version("1.0.4")) < 0)
+                {
+                    var command104 = CreateCommand($@"
+                        CREATE TABLE IF NOT EXISTS files (
+                            id TEXT PRIMARY KEY,
+                            name TEXT NOT NULL,
+                            path TEXT NOT NULL,
+                            size INTEGER NOT NULL,
+                            contentType TEXT NOT NULL,
+                            shared INTEGER DEFAULT 0,
+                            author TEXT NOT NULL,
+                            creation TEXT NOT NULL
+                        ) WITHOUT ROWID;
+
+                        CREATE INDEX IF NOT EXISTS index_files_name ON files (name);
+                        CREATE INDEX IF NOT EXISTS index_files_author ON files (author);
+                        CREATE INDEX IF NOT EXISTS index_files_creation ON files (creation);
+                    ");
+
+                    await ExecuteAsync(command104);
                 }
             }
 

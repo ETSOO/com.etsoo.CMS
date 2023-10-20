@@ -105,6 +105,26 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Get mobile QRCode image Base64 string
+        /// 获取移动端QRCode图片的Base64字符串
+        /// </summary>
+        /// <returns>Base64 string</returns>
+        [HttpGet("QRCode")]
+        public async Task<string> QRCode()
+        {
+            var request = context.HttpContext?.Request;
+            if (request == null) return string.Empty;
+
+            var url = $"{request.Scheme}://{request.Host}";
+
+            if (request.Path.Value?.StartsWith("/cms/", StringComparison.OrdinalIgnoreCase) is true) url += "/cms/";
+
+            url += "?loginid={id}";
+
+            return await service.QRCodeAsync(url);
+        }
+
+        /// <summary>
         /// Read settings
         /// 读取设置
         /// </summary>
@@ -136,6 +156,18 @@ namespace com.etsoo.CMS.Controllers
         public async Task ReadSettings()
         {
             await service.ReadSettingsAsync(Response);
+        }
+
+        /// <summary>
+        /// Regenerate all tab URLs
+        /// 重新生成所有栏目网址
+        /// </summary>
+        /// <returns>Task</returns>
+        [HttpPut("RegenerateTabUrls")]
+        public async Task RegenerateTabUrls()
+        {
+            var result = await service.RegenerateTabUrlsAsync();
+            await WriteResultAsync(result);
         }
 
         /// <summary>
