@@ -14,10 +14,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import UpgradeIcon from '@mui/icons-material/Upgrade';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { app } from '../../app/MyApp';
-import { IActionResult, UserRole } from '@etsoo/appscript';
+import { UserRole } from '@etsoo/appscript';
 import { useNavigate } from 'react-router-dom';
 import { EventWatcher, useAsyncState } from '@etsoo/react';
 import LinearProgress from '@mui/material/LinearProgress';
+import { IActionResult } from '@etsoo/shared';
 
 interface UserMenuProps {
   name: string;

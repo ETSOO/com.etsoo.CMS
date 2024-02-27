@@ -16,15 +16,18 @@ namespace com.etsoo.CMS.Controllers
     public class PublicController : ControllerBase
     {
         private readonly IPublicService service;
+        private readonly CancellationToken CancellationToken;
 
         /// <summary>
         /// Constructor
         /// 构造函数
         /// </summary>
         /// <param name="service">Service</param>
-        public PublicController(IPublicService service)
+        /// <param name="httpContextAccessor">Http context accessor</param>
+        public PublicController(IPublicService service, IHttpContextAccessor httpContextAccessor)
         {
             this.service = service;
+            CancellationToken = httpContextAccessor.HttpContext?.RequestAborted ?? default;
         }
 
         /// <summary>
@@ -36,7 +39,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("CreateJsApiSignature")]
         public async Task<IActionResult> CreateJsApiSignature(CreateJsApiSignatureRQ rq)
         {
-            return new JsonResult(await service.CreateJsApiSignatureAsync(rq));
+            return new JsonResult(await service.CreateJsApiSignatureAsync(rq, CancellationToken));
         }
 
         /// <summary>
@@ -48,7 +51,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("SendEmail")]
         public async Task<IActionResult> SendEmail(SendEmailRQ rq)
         {
-            return new JsonResult(await service.SendEmailAsync(rq));
+            return new JsonResult(await service.SendEmailAsync(rq, CancellationToken));
         }
     }
 }

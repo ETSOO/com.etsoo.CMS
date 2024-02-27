@@ -1,5 +1,5 @@
 ﻿using com.etsoo.CMS.Application;
-using com.etsoo.CMS.Repo;
+using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Services;
 using com.etsoo.Utils.Storage;
 using com.etsoo.Web;
@@ -20,7 +20,7 @@ namespace com.etsoo.CMS.Controllers
     {
         readonly IMyApp app;
         readonly IStorage storage;
-        readonly ILogger<StorageController> _logger;
+        readonly IDriveService driveService;
 
         /// <summary>
         /// Constructor
@@ -29,13 +29,12 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Accessor</param>
         /// <param name="storage">Storage</param>
-        /// <param name="logger">Logger</param>
-        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, ILogger<StorageController> logger)
+        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, IDriveService driveService)
             : base(app, httpContextAccessor)
         {
             this.app = app;
             this.storage = storage;
-            _logger = logger;
+            this.driveService = driveService;
         }
 
         /// <summary>
@@ -47,8 +46,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("OnlineDrive/{id}")]
         public async Task OnlineDrive([StringLength(32, MinimumLength = 12)] string id, [FromQuery] string? key = null)
         {
-            var repo = new DriveRepo(app, null);
-            var file = await repo.ReadAsync(id);
+            var file = await driveService.ReadAsync(id, CancellationToken);
             if (file == null)
             {
                 await Response.WriteAsync("No file matched (没有找到匹配的文件)");
@@ -69,7 +67,7 @@ namespace com.etsoo.CMS.Controllers
             }
             else
             {
-                await stream.CopyToAsync(Response.Body);
+                await stream.CopyToAsync(Response.Body, CancellationToken);
             }
         }
 
@@ -84,7 +82,7 @@ namespace com.etsoo.CMS.Controllers
         {
             using var stream = await storage.ReadAsync($"/Resources/{path}");
             if (stream != null)
-                await stream.CopyToAsync(Response.Body);
+                await stream.CopyToAsync(Response.Body, CancellationToken);
         }
     }
 }

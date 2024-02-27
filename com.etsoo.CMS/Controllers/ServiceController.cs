@@ -26,17 +26,15 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
         /// <param name="service">Service</param>
-        public ServiceController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger, IExternalService service)
+        public ServiceController(IMyApp app, IHttpContextAccessor httpContextAccessor, IExternalService service)
             : base(app, httpContextAccessor)
         {
             // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ACCESS_TOKEN)
             var authorization = httpContextAccessor.HttpContext?.Request.Headers.Authorization;
-            if (authorization.HasValue && AuthenticationHeaderValue.TryParse(authorization.ToString(), out var auth) && auth.Scheme == "NextStatic")
+            if (authorization.HasValue && AuthenticationHeaderValue.TryParse(authorization.ToString(), out var auth) && auth.Scheme == "ETSOOCMS")
             {
-                var token = app.Section.GetValue<string>("NextStaticToken");
-                if (token?.Equals(auth.Parameter) == true)
+                if (app.Configuration.PublicStaticToken?.Equals(auth.Parameter) == true)
                 {
                     this.service = service;
                     return;
@@ -55,7 +53,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("GetArticle")]
         public async Task GetArticle(GetArticleRQ rq)
         {
-            await service.GetArticleAsync(rq, Response);
+            await service.GetArticleAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -67,7 +65,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("GetArticles")]
         public async Task GetArticles(GetArticlesRQ rq)
         {
-            await service.GetArticlesAsync(rq, Response);
+            await service.GetArticlesAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("GetSlideshows")]
         public async Task GetSlideshows()
         {
-            await service.GetSlideshowsAsync(Response);
+            await service.GetSlideshowsAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -89,7 +87,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("GetSiteData")]
         public async Task GetSiteData()
         {
-            await service.GetSiteDataAsync(Response);
+            await service.GetSiteDataAsync(Response, CancellationToken);
         }
     }
 }

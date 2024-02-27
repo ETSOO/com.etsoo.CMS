@@ -42,7 +42,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Create")]
         public async Task Create(ArticleCreateRQ rq)
         {
-            var result = await service.CreateAsync(rq, Ip);
+            var result = await service.CreateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -56,7 +56,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task Delete(int id)
         {
-            var result = await service.DeleteAsync(id);
+            var result = await service.DeleteAsync(id, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -70,7 +70,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task DeletePhoto(ArticleDeletePhotoRQ rq)
         {
-            var result = await service.DeletePhotoAsync(rq, Ip);
+            var result = await service.DeletePhotoAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -83,7 +83,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Query")]
         public async Task<DbArticleQuery[]> Query(ArticleQueryRQ rq)
         {
-            return await service.QueryAsync(rq);
+            return await service.QueryAsync(rq, CancellationToken);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("QueryHistory/{id:int}")]
         public async Task QueryHistory(int id)
         {
-            await service.QueryHistoryAsync(id, Response);
+            await service.QueryHistoryAsync(id, Response, CancellationToken);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("SortPhotos")]
         public async Task SortPhotos(ArticleSortPhotosRQ rq)
         {
-            var result = await service.SortPhotosAsync(rq, Ip);
+            var result = await service.SortPhotosAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -120,7 +120,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Translate")]
         public async Task<string> Translate(TranslateRQ rq)
         {
-            return await service.TranslateAsync(rq.Text);
+            return await service.TranslateAsync(rq.Text, CancellationToken);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Update")]
         public async Task Update(ArticleUpdateRQ rq)
         {
-            var result = await service.UpdateAsync(rq, Ip);
+            var result = await service.UpdateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -147,7 +147,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.User | UserRole.Founder | UserRole.Admin)]
         public async Task UpdatePhoto(ArticleUpdatePhotoRQ rq)
         {
-            var result = await service.UpdatePhotoAsync(rq, Ip);
+            var result = await service.UpdatePhotoAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -163,7 +163,7 @@ namespace com.etsoo.CMS.Controllers
         public async Task<string> UploadLogo([FromRoute] int id, IFormFile logo)
         {
             using var stream = logo.OpenReadStream();
-            var url = await service.UploadLogoAsync(id, stream, logo.ContentType, Ip) ?? throw new ApplicationException();
+            var url = await service.UploadLogoAsync(id, stream, logo.ContentType, CancellationToken) ?? throw new ApplicationException();
             return url;
         }
 
@@ -185,7 +185,7 @@ namespace com.etsoo.CMS.Controllers
                 return;
             }
 
-            var result = await service.UploadPhotosAsync(id, files, Ip);
+            var result = await service.UploadPhotosAsync(id, files, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -198,7 +198,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("UpdateRead/{id:int}")]
         public async Task UpdateRead(int id)
         {
-            await service.UpdateReadAsync(id, Response);
+            await service.UpdateReadAsync(id, Response, CancellationToken);
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("ViewGallery/{id:int}")]
         public async Task ViewGallery(int id)
         {
-            await service.ViewGalleryAsync(id, Response);
+            await service.ViewGalleryAsync(id, Response, CancellationToken);
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("ViewRead/{id:int}")]
         public async Task ViewRead(int id)
         {
-            await service.ViewReadAsync(id, Response);
+            await service.ViewReadAsync(id, Response, CancellationToken);
         }
     }
 }

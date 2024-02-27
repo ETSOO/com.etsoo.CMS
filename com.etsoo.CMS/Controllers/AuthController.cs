@@ -4,9 +4,12 @@ using com.etsoo.CMS.Models;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.ServiceApp.Application;
+using com.etsoo.Utils;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using System.Text.Json;
 
 namespace com.etsoo.CMS.Controllers
 {
@@ -17,6 +20,7 @@ namespace com.etsoo.CMS.Controllers
     {
         // Service
         readonly IAuthService service;
+        readonly ILogger<AuthController> logger;
 
         /// <summary>
         /// Constructor
@@ -24,12 +28,27 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
         /// <param name="service">Service</param>
-        public AuthController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<AuthController> logger, IAuthService service)
+        /// <param name="logger">Logger</param>
+        public AuthController(IMyApp app, IHttpContextAccessor httpContextAccessor, IAuthService service, ILogger<AuthController> logger)
             : base(app, httpContextAccessor)
         {
             this.service = service;
+            this.logger = logger;
+        }
+
+        /// <summary>
+        /// Log frontend error
+        /// 记录前端错误
+        /// </summary>
+        /// <param name="rq">Rquest data</param>
+        [HttpPost("LogFrontendError")]
+        public async Task LogFrontendError(ErrorLogData rq)
+        {
+            await using var stream = SharedUtils.GetStream();
+            await JsonSerializer.SerializeAsync(stream, rq, ModelJsonSerializerContext.Default.ErrorLogData, CancellationToken);
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+            logger.LogWarning(json);
         }
 
         /// <summary>
@@ -71,7 +90,7 @@ namespace com.etsoo.CMS.Controllers
             var data = new LoginDto(id, pwd, Ip, deviceCore, model.Region, model.Timezone);
 
             // Login
-            var (result, token) = await service.LoginAsync(data);
+            var (result, token) = await service.LoginAsync(data, CancellationToken);
 
             // Pass the token through header
             if (token != null)
@@ -126,7 +145,7 @@ namespace com.etsoo.CMS.Controllers
             }
 
             // Result & refresh token
-            var (result, refreshToken) = await service.RefreshTokenAsync(token, new RefreshTokenDto(deviceCore, Ip, pwd, model.Timezone));
+            var (result, refreshToken) = await service.RefreshTokenAsync(token, new RefreshTokenDto(deviceCore, Ip, pwd, model.Timezone), CancellationToken);
 
             // Pass the token through header
             if (refreshToken != null)

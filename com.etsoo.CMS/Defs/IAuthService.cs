@@ -1,6 +1,5 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.CoreFramework.Services;
 using com.etsoo.Utils.Actions;
 
 namespace com.etsoo.CMS.Defs
@@ -11,32 +10,12 @@ namespace com.etsoo.CMS.Defs
     /// 授权服务接口
     /// </summary>
     /// </summary>
-    public interface IAuthService : IServiceBase
+    public interface IAuthService : ICommonService
     {
-        /// <summary>
-        /// User login
-        /// 用户登录
-        /// </summary>
-        /// <param name="data">Login data</param>
-        /// <returns>Result</returns>
-        ValueTask<(IActionResult Result, string? RefreshToken)> LoginAsync(LoginDto data);
+        ValueTask<(IActionResult Result, string? RefreshToken)> LoginAsync(LoginDto data, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Refresh token (Related with Login, make sure the logic is consistent)
-        /// 刷新令牌 (和登录相关，确保逻辑一致)
-        /// </summary>
-        /// <param name="token">Refresh token</param>
-        /// <param name="model">Model</param>
-        /// <returns>Result</returns>
-        ValueTask<(IActionResult, string?)> RefreshTokenAsync(string token, RefreshTokenDto model);
+        ValueTask<(IActionResult, string?)> RefreshTokenAsync(string token, RefreshTokenDto model, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Web init call
-        /// Web初始化调用
-        /// </summary>
-        /// <param name="rq">Rquest data</param>
-        /// <param name="identifier">User identifier</param>
-        /// <returns>Result</returns>
         ValueTask<IActionResult> WebInitCallAsync(InitCallRQ rq, string identifier);
     }
 }

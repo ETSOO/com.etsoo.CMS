@@ -1,8 +1,7 @@
-﻿using com.etsoo.CMS.RQ.Tab;
+﻿using com.etsoo.CMS.Models;
+using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.CoreFramework.Services;
 using com.etsoo.Utils.Actions;
-using System.Net;
 
 namespace com.etsoo.CMS.Defs
 {
@@ -10,87 +9,26 @@ namespace com.etsoo.CMS.Defs
     /// Website tab service interface
     /// 网站栏目业务逻辑服务接口
     /// </summary>
-    public interface ITabService : IServiceBase
+    public interface ITabService : ICommonService
     {
-        /// <summary>
-        /// Create tab
-        /// 创建栏目
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="ip">IP address</param>
-        /// <returns>Result</returns>
-        Task<IActionResult> CreateAsync(TabCreateRQ rq, IPAddress ip);
+        Task<IActionResult> CreateAsync(TabCreateRQ rq, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Delete single user
-        /// 删除单个用户
-        /// </summary>
-        /// <param name="id">User id</param>
-        /// <returns>Action result</returns>
-        ValueTask<IActionResult> DeleteAsync(int id);
+        ValueTask<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// List
-        /// 列表
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="response">Response</param>
-        /// <returns>Task</returns>
-        Task ListAsync(TiplistRQ<int> rq, HttpResponse response);
+        Task ListAsync(TiplistRQ<int> rq, HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Query tab
-        /// 查询栏目
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="response">Response</param>
-        /// <returns>Task</returns>
-        Task QueryAsync(TabQueryRQ rq, HttpResponse response);
+        Task QueryAsync(TabQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Sort data
-        /// 数据排序
-        /// </summary>
-        /// <param name="sortData">Data to sort</param>
-        /// <returns>Rows affected</returns>
-        Task<int> SortAsync(Dictionary<int, short> sortData);
+        Task<int> SortAsync(Dictionary<int, short> sortData, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Update tab
-        /// 更新栏目
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="ip">IP address</param>
-        /// <returns>Result</returns>
-        Task<IActionResult> UpdateAsync(TabUpdateRQ rq, IPAddress ip);
+        Task<IActionResult> UpdateAsync(TabUpdateRQ rq, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Update logo
-        /// 更新照片
-        /// </summary>
-        /// <param name="id">Tab id</param>
-        /// <param name="logoStream">Logo stream</param>
-        /// <param name="contentType">Cotent type</param>
-        /// <param name="ip">IP address</param>
-        /// <returns>New URL</returns>
-        ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, IPAddress ip);
+        ValueTask<string?> UploadLogoAsync(int id, Stream logoStream, string contentType, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Read for updae
-        /// 更新浏览
-        /// </summary>
-        /// <param name="id">Id</param>
-        /// <param name="response">HTTP Response</param>
-        /// <returns>Task</returns>
-        Task UpdateReadAsync(int id, HttpResponse response);
+        Task UpdateReadAsync(int id, HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Read for ancestors
-        /// 上层栏目浏览
-        /// </summary>
-        /// <param name="id">Id</param>
-        /// <param name="response">HTTP Response</param>
-        /// <returns>Task</returns>
-        Task AncestorReadAsync(int id, HttpResponse response);
+        Task<ParentTab[]> AncestorReadAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default);
+
+        Task AncestorReadAsync(int id, HttpResponse response, CancellationToken cancellationToken = default);
     }
 }

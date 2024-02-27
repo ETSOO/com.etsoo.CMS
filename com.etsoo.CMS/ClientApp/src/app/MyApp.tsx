@@ -5,7 +5,6 @@ import {
   ApiAuthorizationScheme,
   AddressUtils,
   ExternalSettings,
-  DynamicActionResult,
   UserRole,
   LoginRQ
 } from '@etsoo/appscript';
@@ -17,7 +16,7 @@ import {
   TextFieldExMethods,
   VBox
 } from '@etsoo/materialui';
-import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
+import { DataTypes, DomUtils, DynamicActionResult, Utils } from '@etsoo/shared';
 import React from 'react';
 import { AuditKind } from '../api/dto/AuditKind';
 import {
@@ -397,6 +396,7 @@ const settings: IServiceAppSettings = {
  * Application
  */
 export const app = new MyServiceApp(settings, 'etsooCMS');
+app.setupLogging();
 
 /**
  * Notifier provider

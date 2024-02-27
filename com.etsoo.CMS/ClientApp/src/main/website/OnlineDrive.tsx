@@ -7,7 +7,6 @@ import {
   Switch,
   OptionBool,
   VBox,
-  HBox,
   TooltipClick
 } from '@etsoo/materialui';
 import {
@@ -177,7 +176,7 @@ function AllUsers() {
         labels.shareHours,
         async (result) => {
           if (!result) return false;
-          const hours = NumberUtils.parse(result);
+          const hours = NumberUtils.parse(result) ?? 0;
           if (hours < 1 || hours > 720) return false;
           await doShareFile(data.id, hours);
         },

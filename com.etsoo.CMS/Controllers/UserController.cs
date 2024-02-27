@@ -26,9 +26,8 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
         /// <param name="service">Service</param>
-        public UserController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<UserController> logger, IUserService service)
+        public UserController(IMyApp app, IHttpContextAccessor httpContextAccessor, IUserService service)
             : base(app, httpContextAccessor)
         {
             this.service = service;
@@ -68,7 +67,7 @@ namespace com.etsoo.CMS.Controllers
             var dto = new ChangePasswordDto(oldPassword, password);
 
             // Action result
-            var changeResult = await service.ChangePasswordAsync(dto, Ip);
+            var changeResult = await service.ChangePasswordAsync(dto, CancellationToken);
 
             // Output
             await WriteResultAsync(changeResult);
@@ -84,7 +83,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Create")]
         public async Task Create(UserCreateRQ rq)
         {
-            var result = await service.CreateAsync(rq, Ip);
+            var result = await service.CreateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -98,7 +97,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task Delete(string id)
         {
-            var result = await service.DeleteAsync(id);
+            var result = await service.DeleteAsync(id, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -112,7 +111,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("History")]
         public async Task History(UserHistoryQueryRQ rq)
         {
-            await service.HistoryAsync(rq, Response);
+            await service.HistoryAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -125,7 +124,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Query")]
         public async Task Query(UserQueryRQ rq)
         {
-            await service.QueryAsync(rq, Response);
+            await service.QueryAsync(rq, Response, CancellationToken);
         }
 
         [Roles(UserRole.Founder | UserRole.Admin)]
@@ -140,7 +139,7 @@ namespace com.etsoo.CMS.Controllers
             }
             var deviceCore = cd.Value.DeviceCore;
 
-            var result = await service.ResetPasswordAsync(rq.Id, deviceCore, Ip);
+            var result = await service.ResetPasswordAsync(rq.Id, deviceCore, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -161,7 +160,7 @@ namespace com.etsoo.CMS.Controllers
             }
             var deviceCore = cd.Value.DeviceCore;
 
-            await service.SignoutAsync(deviceCore);
+            await service.SignoutAsync(deviceCore, CancellationToken);
             return true;
         }
 
@@ -175,7 +174,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Update")]
         public async Task Update(UserUpdateRQ rq)
         {
-            var result = await service.UpdateAsync(rq, Ip);
+            var result = await service.UpdateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -189,7 +188,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("UpdateRead/{id}")]
         public async Task UpdateRead(string id)
         {
-            await service.UpdateReadAsync(id, Response);
+            await service.UpdateReadAsync(id, Response, CancellationToken);
         }
     }
 }

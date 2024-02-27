@@ -1,7 +1,7 @@
 ﻿using com.etsoo.CoreFramework.Models;
 using com.etsoo.SourceGenerators.Attributes;
-using com.etsoo.Utils.Serialization;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace com.etsoo.CMS.RQ.Website
 {
@@ -34,7 +34,7 @@ namespace com.etsoo.CMS.RQ.Website
         /// App secret
         /// 程序密码
         /// </summary>
-        [PII]
+        [JsonIgnore]
         public string? Secret { get; set; }
 
         /// <summary>

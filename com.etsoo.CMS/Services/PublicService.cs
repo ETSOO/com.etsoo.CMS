@@ -2,7 +2,6 @@
 using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
-using com.etsoo.CMS.Repo;
 using com.etsoo.CMS.RQ.Public;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.DI;
@@ -26,12 +25,12 @@ namespace com.etsoo.CMS.Services
     /// </summary>
     public class PublicService : IPublicService
     {
-        private readonly IMyApp app;
-        private readonly ILogger<ExternalService> logger;
-        private readonly IHttpClientFactory clientFactory;
-        private readonly IConfiguration configuration;
-        private readonly IFireAndForgetService fireService;
-        private readonly IPAddress ip;
+        readonly IMyApp app;
+        readonly ILogger<ExternalService> logger;
+        readonly IHttpClientFactory clientFactory;
+        readonly IFireAndForgetService fireService;
+        readonly IPAddress ip;
+        readonly IWebsiteService websiteService;
 
         /// <summary>
         /// Constructor
@@ -40,9 +39,10 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="logger">Logger</param>
         /// <param name="clientFactory">Client factory</param>
-        /// <param name="configuration">Configuration</param>
         /// <param name="fireService">Fire service</param>
-        public PublicService(IMyApp app, ILogger<ExternalService> logger, IHttpClientFactory clientFactory, IConfiguration configuration, IFireAndForgetService fireService, IHttpContextAccessor httpContextAccessor)
+        /// <param name="httpContextAccessor">Http context accessor</param>
+        /// <param name="websiteService">Website service</param>
+        public PublicService(IMyApp app, ILogger<ExternalService> logger, IHttpClientFactory clientFactory, IFireAndForgetService fireService, IHttpContextAccessor httpContextAccessor, IWebsiteService websiteService)
         {
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
             if (ip == null)
@@ -54,8 +54,8 @@ namespace com.etsoo.CMS.Services
             this.app = app;
             this.logger = logger;
             this.clientFactory = clientFactory;
-            this.configuration = configuration;
             this.fireService = fireService;
+            this.websiteService = websiteService;
         }
 
         /// <summary>
@@ -63,19 +63,12 @@ namespace com.etsoo.CMS.Services
         /// 异步创建微信 Js 接口签名
         /// </summary>
         /// <param name="rq">Request data</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Json data</returns>
-        public async Task<WXJsApiSignatureResult> CreateJsApiSignatureAsync(CreateJsApiSignatureRQ rq)
+        public async Task<WXJsApiSignatureResult> CreateJsApiSignatureAsync(CreateJsApiSignatureRQ rq, CancellationToken cancellationToken = default)
         {
-            // Repo
-            var repo = new WebsiteRepo(app, null);
-
             // Plugin
-            var wx = await repo.ReadServiceAsync(WXClientOptions.Name);
-
-            if (wx == null)
-            {
-                throw new NotSupportedException("WeiXin Client Not Supported");
-            }
+            var wx = await websiteService.ReadServiceAsync(WXClientOptions.Name, cancellationToken) ?? throw new NotSupportedException("WeiXin Client Not Supported");
 
             // Options
             var secret = app.DecriptData(wx.Secret);
@@ -97,14 +90,12 @@ namespace com.etsoo.CMS.Services
         /// 异步发送邮件
         /// </summary>
         /// <param name="rq">Request data</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<IActionResult> SendEmailAsync(SendEmailRQ rq)
+        public async Task<IActionResult> SendEmailAsync(SendEmailRQ rq, CancellationToken cancellationToken = default)
         {
-            // Repo
-            var repo = new WebsiteRepo(app, null);
-
             // Plugin
-            var recap = await repo.ReadServiceAsync(RecaptchaOptions.Name);
+            var recap = await websiteService.ReadServiceAsync(RecaptchaOptions.Name, cancellationToken);
 
             // Valid token
             if (recap != null)
@@ -124,11 +115,13 @@ namespace com.etsoo.CMS.Services
                     BaseAddress = baseAddress,
                     Secret = secret
                 });
+
                 var result = await recapApi.SiteVerifyAsync(new()
                 {
                     Response = rq.Token,
                     RemoteIp = ip.ToString()
-                });
+                }, cancellationToken);
+
                 if (!result.Success)
                 {
                     logger.LogDebug("SiteVerifyAsync {@result}", result);
@@ -142,7 +135,7 @@ namespace com.etsoo.CMS.Services
                 return ApplicationErrors.InvalidEmail.AsResult("Recipient");
             }
 
-            var smtp = await repo.ReadServiceAsync("SMTP");
+            var smtp = await websiteService.ReadServiceAsync("SMTP", cancellationToken);
             if (smtp == null)
             {
                 return ApplicationErrors.NoValidData.AsResult("SMTP");

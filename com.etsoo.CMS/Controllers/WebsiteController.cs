@@ -26,9 +26,8 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
         /// <param name="service">Service</param>
-        public WebsiteController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger, IWebsiteService service)
+        public WebsiteController(IMyApp app, IHttpContextAccessor httpContextAccessor, IWebsiteService service)
             : base(app, httpContextAccessor)
         {
             this.service = service;
@@ -44,7 +43,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("CreateOrUpdateResource")]
         public async Task CreateOrUpdateResource(ResourceCreateRQ rq)
         {
-            var result = await service.CreateOrUpdateResourceAsync(rq, Ip);
+            var result = await service.CreateOrUpdateResourceAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -77,7 +76,7 @@ namespace com.etsoo.CMS.Controllers
                 rq.Secret = secret;
             }
 
-            var result = await service.CreateServiceAsync(rq, Ip);
+            var result = await service.CreateServiceAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -89,7 +88,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("Dashboard")]
         public async Task Dashboard()
         {
-            await service.DashboardAsync(Response);
+            await service.DashboardAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -100,7 +99,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Initialize")]
         public async Task Initialize(InitializeRQ rq)
         {
-            var result = await service.InitializeAsync(rq);
+            var result = await service.InitializeAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -121,7 +120,7 @@ namespace com.etsoo.CMS.Controllers
 
             url += "?loginid={id}";
 
-            return await service.QRCodeAsync(url);
+            return await service.QRCodeAsync(url, CancellationToken);
         }
 
         /// <summary>
@@ -132,7 +131,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("ReadJsonData")]
         public async Task ReadJsonData()
         {
-            await service.ReadJsonDataAsync(Response);
+            await service.ReadJsonDataAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -144,7 +143,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("ReadService/{id}")]
         public async Task<IActionResult> ReadService([Required] string id)
         {
-            return new JsonResult(await service.ReadServiceAsync(id));
+            return new JsonResult(await service.ReadServiceAsync(id, CancellationToken));
         }
 
         /// <summary>
@@ -155,7 +154,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("ReadSettings")]
         public async Task ReadSettings()
         {
-            await service.ReadSettingsAsync(Response);
+            await service.ReadSettingsAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -166,7 +165,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("RegenerateTabUrls")]
         public async Task RegenerateTabUrls()
         {
-            var result = await service.RegenerateTabUrlsAsync();
+            var result = await service.RegenerateTabUrlsAsync(CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -178,7 +177,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("RegenerateUrl")]
         public async Task RegenerateUrl(IEnumerable<string> urls)
         {
-            var result = await service.OnDemandRevalidateAsync(urls.ToArray());
+            var result = await service.OnDemandRevalidateAsync(urls.ToArray(), CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -191,7 +190,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("QueryResources")]
         public async Task QueryResources()
         {
-            await service.QueryResourcesAsync(Response);
+            await service.QueryResourcesAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -203,7 +202,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("QueryServices")]
         public async Task QueryServices()
         {
-            await service.QueryServicesAsync(Response);
+            await service.QueryServicesAsync(Response, CancellationToken);
         }
 
         /// <summary>
@@ -215,7 +214,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("UpdateResourceUrl")]
         public async Task UpdateResourceUrl(WebsiteUpdateResurceUrlRQ rq)
         {
-            var result = await service.UpdateResurceUrlAsync(rq, Ip);
+            var result = await service.UpdateResurceUrlAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -229,7 +228,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("UpdateSettings")]
         public async Task UpdateSettings(WebsiteUpdateSettingsRQ rq)
         {
-            var result = await service.UpdateSettingsAsync(rq, Ip);
+            var result = await service.UpdateSettingsAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -262,7 +261,7 @@ namespace com.etsoo.CMS.Controllers
                 rq.Secret = secret;
             }
 
-            var result = await service.UpdateServiceAsync(rq, Ip);
+            var result = await service.UpdateServiceAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -274,7 +273,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("UpgradeSystem")]
         public async Task UpgradeSystem()
         {
-            var result = await service.UpgradeSystemAsync();
+            var result = await service.UpgradeSystemAsync(CancellationToken);
             await WriteResultAsync(result);
         }
     }

@@ -7,7 +7,7 @@ namespace com.etsoo.CMS.Defs
 {
     public interface IPublicService
     {
-        Task<WXJsApiSignatureResult> CreateJsApiSignatureAsync(CreateJsApiSignatureRQ rq);
-        Task<IActionResult> SendEmailAsync(SendEmailRQ rq);
+        Task<WXJsApiSignatureResult> CreateJsApiSignatureAsync(CreateJsApiSignatureRQ rq, CancellationToken cancellationToken = default);
+        Task<IActionResult> SendEmailAsync(SendEmailRQ rq, CancellationToken cancellationToken = default);
     }
 }

@@ -1,6 +1,6 @@
-﻿using com.etsoo.Utils.Serialization;
-using com.etsoo.WebUtils.Attributes;
+﻿using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace com.etsoo.CMS.RQ.Public
 {
@@ -16,7 +16,7 @@ namespace com.etsoo.CMS.RQ.Public
         /// </summary>
         [EmailAddress]
         [Required]
-        [PII]
+        [JsonIgnore]
         public required string Recipient { get; init; }
 
         /// <summary>

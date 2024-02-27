@@ -42,7 +42,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task Delete(string id)
         {
-            var result = await service.DeleteAsync(id, Ip);
+            var result = await service.DeleteAsync(id, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -55,7 +55,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("DownloadFile/{id}")]
         public async Task<IActionResult> DownloadFile(string id)
         {
-            var result = await service.DownloadFileAsync(id);
+            var result = await service.DownloadFileAsync(id, CancellationToken);
             if (result == null) return NoContent();
             return File(result.Value.data, result.Value.contentType, result.Value.fileName);
         }
@@ -69,7 +69,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Query")]
         public async Task Query(DriveQueryRQ rq)
         {
-            await service.QueryAsync(rq, Response);
+            await service.QueryAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("ShareFile")]
         public async Task ShareFile(DriveShareFileRQ rq)
         {
-            var result = await service.ShareFileAsync(rq, Ip);
+            var result = await service.ShareFileAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -103,7 +103,7 @@ namespace com.etsoo.CMS.Controllers
                 return;
             }
 
-            var result = await service.UploadFilesAsync(files, Ip);
+            var result = await service.UploadFilesAsync(files, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -116,7 +116,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("RemoveShare/{id}")]
         public async Task RemoveShare(string id)
         {
-            var result = await service.RemoveShareAsync(id);
+            var result = await service.RemoveShareAsync(id, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -129,7 +129,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Update")]
         public async Task Update(DriveUpdateRQ rq)
         {
-            var result = await service.UpdateAsync(rq, Ip);
+            var result = await service.UpdateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
     }

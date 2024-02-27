@@ -2,7 +2,7 @@ window.settings = {
   /**
    * Endpoint of the API service
    */
-  endpoint: '/api/',
+  endpoint: 'https://localhost:7174/api/',
 
   /**
    * App root url

@@ -1,4 +1,5 @@
 ﻿using com.etsoo.CoreFramework.Business;
+using com.etsoo.SourceGenerators;
 using com.etsoo.SourceGenerators.Attributes;
 using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ namespace com.etsoo.CMS.RQ.Article
     /// Article create request data
     /// 文章创建请求数据
     /// </summary>
-    [AutoToParameters]
+    [SqlInsertCommand("article", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
     [AutoToJson]
     public partial record ArticleCreateRQ
     {
@@ -17,8 +18,7 @@ namespace com.etsoo.CMS.RQ.Article
         /// Tab 1
         /// 栏目1，主栏目
         /// </summary>
-        [Required]
-        public int Tab1 { get; init; }
+        public required int Tab1 { get; init; }
 
         /// <summary>
         /// Title
@@ -26,7 +26,6 @@ namespace com.etsoo.CMS.RQ.Article
         /// </summary>
         [Property(Length = 256)]
         [StringLength(256)]
-        [Required]
         public required string Title { get; init; }
 
         /// <summary>
@@ -59,14 +58,12 @@ namespace com.etsoo.CMS.RQ.Article
         /// </summary>
         [Property(Length = 128)]
         [StringLength(128)]
-        [Required]
         public required string Url { get; set; }
 
         /// <summary>
         /// Content
         /// 内容
         /// </summary>
-        [Required]
         [Property(Length = -1)]
         public required string Content { get; set; }
 

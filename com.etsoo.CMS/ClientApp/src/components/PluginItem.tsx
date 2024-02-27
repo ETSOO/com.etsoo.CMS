@@ -1,5 +1,4 @@
-import { IActionResult } from '@etsoo/appscript';
-import { DomUtils, Utils } from '@etsoo/shared';
+import { DomUtils, IActionResult, Utils } from '@etsoo/shared';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import HelpIcon from '@mui/icons-material/Help';

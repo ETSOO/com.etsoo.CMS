@@ -25,9 +25,8 @@ namespace com.etsoo.CMS.Controllers
         /// </summary>
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
-        /// <param name="logger">Logger</param>
         /// <param name="service">Service</param>
-        public TabController(IMyApp app, IHttpContextAccessor httpContextAccessor, ILogger<WebsiteController> logger, ITabService service)
+        public TabController(IMyApp app, IHttpContextAccessor httpContextAccessor, ITabService service)
             : base(app, httpContextAccessor)
         {
             this.service = service;
@@ -43,7 +42,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Create")]
         public async Task Create(TabCreateRQ rq)
         {
-            var result = await service.CreateAsync(rq, Ip);
+            var result = await service.CreateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -57,7 +56,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task Delete(int id)
         {
-            var result = await service.DeleteAsync(id);
+            var result = await service.DeleteAsync(id, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -68,9 +67,9 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="rq">Request data</param>
         /// <returns>Task</returns>
         [HttpPost("List")]
-        public async Task List(TiplistRQ<int> rq)
+        public async Task List(TiplistRQ rq)
         {
-            await service.ListAsync(rq, Response);
+            await service.ListAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -83,7 +82,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPost("Query")]
         public async Task Query(TabQueryRQ rq)
         {
-            await service.QueryAsync(rq, Response);
+            await service.QueryAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>
@@ -96,7 +95,7 @@ namespace com.etsoo.CMS.Controllers
         [Roles(UserRole.Founder | UserRole.Admin)]
         public async Task<int> Sort(Dictionary<int, short> data)
         {
-            return await service.SortAsync(data);
+            return await service.SortAsync(data, CancellationToken);
         }
 
         /// <summary>
@@ -109,7 +108,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("Update")]
         public async Task Update(TabUpdateRQ rq)
         {
-            var result = await service.UpdateAsync(rq, Ip);
+            var result = await service.UpdateAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 
@@ -125,7 +124,7 @@ namespace com.etsoo.CMS.Controllers
         public async Task<string> UploadLogo([FromRoute] int id, IFormFile logo)
         {
             using var stream = logo.OpenReadStream();
-            var url = await service.UploadLogoAsync(id, stream, logo.ContentType, Ip) ?? throw new ApplicationException();
+            var url = await service.UploadLogoAsync(id, stream, logo.ContentType, CancellationToken) ?? throw new ApplicationException();
             return url;
         }
 
@@ -139,7 +138,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("UpdateRead/{id:int}")]
         public async Task UpdateRead(int id)
         {
-            await service.UpdateReadAsync(id, Response);
+            await service.UpdateReadAsync(id, Response, CancellationToken);
         }
 
         /// <summary>
@@ -151,7 +150,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("AncestorRead/{id:int}")]
         public async Task AncestorRead(int id)
         {
-            await service.AncestorReadAsync(id, Response);
+            await service.AncestorReadAsync(id, Response, CancellationToken);
         }
     }
 }

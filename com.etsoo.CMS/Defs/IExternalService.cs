@@ -1,5 +1,4 @@
 ﻿using com.etsoo.CMS.RQ.Service;
-using com.etsoo.CoreFramework.Services;
 
 namespace com.etsoo.CMS.Defs
 {
@@ -7,40 +6,14 @@ namespace com.etsoo.CMS.Defs
     /// External service interface
     /// 外部服务接口
     /// </summary>
-    public interface IExternalService : IServiceBase
+    public interface IExternalService : ICommonService
     {
-        /// <summary>
-        /// Get article
-        /// 获取文章
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="response"></param>
-        /// <returns>Result</returns>
-        Task GetArticleAsync(GetArticleRQ rq, HttpResponse response);
+        Task GetArticleAsync(GetArticleRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Get articles
-        /// 获取文章列表
-        /// </summary>
-        /// <param name="rq">Request data</param>
-        /// <param name="response"></param>
-        /// <returns>Result</returns>
-        Task GetArticlesAsync(GetArticlesRQ rq, HttpResponse response);
+        Task GetArticlesAsync(GetArticlesRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Get slideshow articles
-        /// 获取幻灯片文章
-        /// </summary>
-        /// <param name="response"></param>
-        /// <returns>Result</returns>
-        Task GetSlideshowsAsync(HttpResponse response);
+        Task GetSlideshowsAsync(HttpResponse response, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Get website data
-        /// 获取网站数据
-        /// </summary>
-        /// <param name="response">HTTP Response</param>
-        /// <returns>Task</returns>
-        Task GetSiteDataAsync(HttpResponse response);
+        Task GetSiteDataAsync(HttpResponse response, CancellationToken cancellationToken = default);
     }
 }

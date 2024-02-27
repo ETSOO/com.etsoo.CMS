@@ -1,15 +1,19 @@
 using AspNetCoreRateLimit;
+using com.etsoo.ApiModel;
 using com.etsoo.ApiProxy.Configs;
 using com.etsoo.ApiProxy.Defs;
 using com.etsoo.ApiProxy.Proxy;
+using com.etsoo.CMS;
 using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Services;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
 using com.etsoo.DI;
 using com.etsoo.Logs.Policies;
 using com.etsoo.ServiceApp.Application;
 using com.etsoo.Utils.Actions;
+using com.etsoo.Utils.Serialization;
 using com.etsoo.Utils.Storage;
 using com.etsoo.Web;
 using com.etsoo.WebUtils;
@@ -18,6 +22,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.IO.Compression;
+using System.Text.Json.Serialization.Metadata;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
@@ -47,7 +52,11 @@ services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 services.AddSingleton<IFireAndForgetService, FireAndForgetService>();
 
 // Service app
-var serviceApp = new MyApp(services, configuration.GetSection("EtsooWebsite"), true);
+var appSection = configuration.GetSection("EtsooWebsite");
+
+var settings = appSection.GetSection("Jwt").Get<com.etsoo.CoreFramework.Authentication.JwtSettings>();
+
+var serviceApp = new MyApp(services, appSection, true);
 
 // Localization cultures
 var Cultures = serviceApp.Configuration.Cultures;
@@ -67,7 +76,7 @@ services.Configure<BridgeOptions>(configuration.GetSection(BridgeOptions.Section
 services.AddHttpClient<IBridgeProxy, BridgeProxy>();
 
 // Storage
-var storageSection = serviceApp.Section.GetSection("Storage");
+var storageSection = appSection.GetSection("Storage");
 services.AddSingleton<IStorage>((provider) =>
 {
     var context = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
@@ -83,11 +92,11 @@ services.AddSingleton<IStorage>((provider) =>
 
     var urlRoot = storageSection.GetValue<string>("URLRoot")
         ?? (context == null ? throw new Exception("No HttpContext") : $"{context.Request.Scheme}://{context.Request.Host}/api/Storage");
-    return new LocalStorage(root, urlRoot);
+    return new LocalStorage(new LocalStorageSettings { Root = root, URLRoot = urlRoot });
 });
 
 // Business services
-services.AddScoped<IServiceUserAccessor, ServiceUserAccessor>();
+services.AddScoped<IMyUserAccessor, UserAccessor<ServiceUser>>();
 services.AddScoped<IArticleService, ArticleService>();
 services.AddScoped<ITabService, TabService>();
 services.AddScoped<IAuthService, AuthService>();
@@ -99,6 +108,13 @@ services.AddScoped<IDriveService, DriveService>();
 
 services.AddControllers().AddJsonOptions(configure =>
 {
+    // Use source generation
+    configure.JsonSerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(
+            CommonJsonSerializerContext.Default,
+            ModelJsonSerializerContext.Default,
+            ApiModelJsonSerializerContext.Default,
+            MyJsonSerializerContext.Default);
+
     // Configure and hold the default options
     serviceApp.DefaultJsonSerializerOptions = configure.JsonSerializerOptions;
 });
@@ -160,7 +176,7 @@ services.AddResponseCompression(options =>
 // Configue CORS
 var corsOptions = new CorsPolicySetupOptions(Cors, builder.Environment.IsDevelopment())
 {
-    ExposedHeaders = new[] { Constants.RefreshTokenHeaderName }
+    ExposedHeaders = [Constants.RefreshTokenHeaderName]
 };
 
 if (corsOptions.Required)
@@ -183,11 +199,11 @@ ActionResult.UtcDateTime = true;
 var localizationOptions = new RequestLocalizationOptions
 {
     ApplyCurrentCultureToResponseHeaders = true,
-    RequestCultureProviders = new IRequestCultureProvider[] {
+    RequestCultureProviders = [
                     new QueryStringRequestCultureProvider(),
                     new ContentLanguageHeaderRequestCultureProvider(),
                     new AcceptLanguageHeaderRequestCultureProvider()
-                }
+                ]
 }.SetDefaultCulture(Cultures[0])
     .AddSupportedCultures(Cultures)
     .AddSupportedUICultures(Cultures);

@@ -18,8 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import MoreIcon from '@mui/icons-material/More';
 import HistoryIcon from '@mui/icons-material/History';
-import { DomUtils } from '@etsoo/shared';
-import { IActionResult } from '@etsoo/appscript';
+import { DomUtils, IActionResult } from '@etsoo/shared';
 
 function Dashboard() {
   // Route

@@ -1,12 +1,11 @@
 import {
   EntityApi,
-  IActionResult,
   IApiPayload,
   IdResultPayload,
   ResultPayload
 } from '@etsoo/appscript';
 import { ReactAppType } from '@etsoo/materialui';
-import { DataTypes } from '@etsoo/shared';
+import { DataTypes, IActionResult } from '@etsoo/shared';
 import { UserDto } from './dto/user/UserDto';
 import { UserHistoryDto } from './dto/user/UserHistoryDto';
 import { UserUpdateDto } from './dto/user/UserUpdateDto';

@@ -1,6 +1,8 @@
-﻿using com.etsoo.CoreFramework.User;
+﻿using com.etsoo.CoreFramework.Authentication;
+using com.etsoo.CoreFramework.User;
 using com.etsoo.Database;
 using com.etsoo.ServiceApp.Application;
+using Microsoft.Data.Sqlite;
 
 namespace com.etsoo.CMS.Application
 {
@@ -8,7 +10,7 @@ namespace com.etsoo.CMS.Application
     /// My app
     /// 我的程序
     /// </summary>
-    public record MyApp : SqliteApp, IMyApp
+    public class MyApp : ServiceCommonApp<MyAppConfiguration, SqliteConnection>, IMyApp
     {
         /// <summary>
         /// Constructor
@@ -17,7 +19,10 @@ namespace com.etsoo.CMS.Application
         /// <param name="services">Services dependency injection</param>
         /// <param name="configurationSection">Configuration section</param>
         /// <param name="modelValidated">Model DataAnnotations are validated or not</param>
-        public MyApp(IServiceCollection services, IConfigurationSection configurationSection, bool modelValidated = false) : base(services, configurationSection, null, modelValidated)
+        public MyApp(IServiceCollection services, IConfigurationSection configurationSection, bool modelValidated = false)
+            : base(SetupApp(configurationSection, null, (data, connectionString) => (data.Get<MyAppConfiguration>(), new SqliteDatabase(connectionString))),
+                  SetupAuth(services, configurationSection, null, null, (data) => data.Get<JwtSettings>()),
+                  modelValidated)
         {
         }
 

@@ -28,6 +28,7 @@
         SortGalleryPhoto = 19,
         UpdateResurceUrl = 20,
         UpdateGalleryItem = 21,
-        OnlineDrive = 22
+        OnlineDrive = 22,
+        DeleteArticle = 23
     }
 }

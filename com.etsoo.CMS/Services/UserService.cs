@@ -1,11 +1,10 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
-using com.etsoo.CMS.Repo;
+using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.User;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
-using com.etsoo.CoreFramework.Repositories;
-using com.etsoo.CoreFramework.User;
+using com.etsoo.Database;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Crypto;
 using System.Net;
@@ -16,8 +15,10 @@ namespace com.etsoo.CMS.Services
     /// Logined user business logic service
     /// 已登录用户业务逻辑服务
     /// </summary>
-    public class UserService : CommonService<UserRepo>, IUserService
+    public class UserService : CommonService, IUserService
     {
+        readonly IPAddress ip;
+
         /// <summary>
         /// Constructor
         /// 构造函数
@@ -25,9 +26,10 @@ namespace com.etsoo.CMS.Services
         /// <param name="app">Application</param>
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
-        public UserService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<UserService> logger)
-            : base(app, new UserRepo(app, userAccessor.UserSafe), logger)
+        public UserService(IMyApp app, IMyUserAccessor userAccessor, ILogger<UserService> logger)
+            : base(app, userAccessor.UserSafe, "user", logger)
         {
+            ip = userAccessor.Ip;
         }
 
         /// <summary>
@@ -35,12 +37,12 @@ namespace com.etsoo.CMS.Services
         /// 修改密码
         /// </summary>
         /// <param name="model">Data model</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async ValueTask<IActionResult> ChangePasswordAsync(ChangePasswordDto model, IPAddress ip)
+        public async ValueTask<IActionResult> ChangePasswordAsync(ChangePasswordDto model, CancellationToken cancellationToken = default)
         {
             // Current user
-            var user = await Repo.GetCurrentUserAsync();
+            var user = await GetCurrentUserAsync(cancellationToken);
 
             // User check
             if (!ServiceUtils.CheckUser(user, out var checkResult))
@@ -60,10 +62,10 @@ namespace com.etsoo.CMS.Services
             var password = await App.HashPasswordAsync(user.Id + model.Password);
 
             // Update password
-            await Repo.UpdatePasswordAsync(password);
+            await UpdatePasswordAsync(password, cancellationToken);
 
             // Add audit
-            await Repo.AddAuditAsync(AuditKind.ChangePassword, user.Id, "Change self password", null, ip);
+            await AddAuditAsync<string?>(AuditKind.ChangePassword, user.Id, "Change self password", null, null, ip, cancellationToken: cancellationToken);
 
             // Return
             return ActionResult.Success;
@@ -74,13 +76,22 @@ namespace com.etsoo.CMS.Services
         /// 创建用户
         /// </summary>
         /// <param name="rq">Request data</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<IActionResult> CreateAsync(UserCreateRQ rq, IPAddress ip)
+        public async Task<IActionResult> CreateAsync(UserCreateRQ rq, CancellationToken cancellationToken = default)
         {
             rq.Id = rq.Id.ToLower();
-            var result = await Repo.CreateAsync(rq);
-            await Repo.AddAuditAsync(AuditKind.CreateUser, rq.Id, $"Create user {rq.Id}", ip, result, rq);
+
+            var parameters = FormatParameters(rq);
+
+            var command = CreateCommand($@"INSERT INTO users (id, password, role, status, creation)
+                VALUES (@{nameof(rq.Id)}, '', @{nameof(rq.Role)}, IIF(@{nameof(rq.Enabled)}, 0, 200), DATETIME('now', 'utc'))", parameters, cancellationToken: cancellationToken);
+
+            await ExecuteAsync(command);
+
+            var result = ActionResult.Success;
+            await AddAuditAsync(AuditKind.CreateUser, rq.Id, $"Create user {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.UserCreateRQ, cancellationToken);
+
             return result;
         }
 
@@ -89,10 +100,38 @@ namespace com.etsoo.CMS.Services
         /// 删除单个用户
         /// </summary>
         /// <param name="id">User id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Action result</returns>
-        public async ValueTask<IActionResult> DeleteAsync(string id)
+        public async ValueTask<IActionResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await Repo.DeleteAsync(id);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+
+            var command = CreateCommand($"DELETE FROM users WHERE id = @{nameof(id)} AND refreshTime IS NULL", parameters, cancellationToken: cancellationToken);
+
+            var result = await ExecuteAsync(command);
+
+            if (result > 0)
+                return ActionResult.Success;
+            else
+                return ApplicationErrors.NoId.AsResult();
+        }
+
+        /// <summary>
+        /// Get current user data
+        /// 获取当前用户数据
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Result</returns>
+        private async Task<DbUser?> GetCurrentUserAsync(CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"SELECT id, password, role, status, frozenTime FROM users WHERE id = {SysUserField}", parameters, cancellationToken: cancellationToken);
+
+            return await QueryAsAsync<DbUser>(command);
         }
 
         /// <summary>
@@ -101,10 +140,30 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="rq">Request data</param>
         /// <param name="response">Response</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task HistoryAsync(UserHistoryQueryRQ rq, HttpResponse response)
+        public async Task HistoryAsync(UserHistoryQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            await Repo.HistoryAsync(rq, response);
+            var parameters = FormatParameters(rq);
+
+            var fields = "id, kind, title, content, creation, ip, flag";
+            var json = fields.ToJsonCommand();
+
+            var items = new List<string>
+            {
+                $"author = @{nameof(rq.Author)}"
+            };
+            if (rq.Kind != null) items.Add($"kind = @{nameof(rq.Kind)}");
+            if (rq.CreationStart != null) items.Add($"creation >= @{nameof(rq.CreationStart)}");
+            if (rq.CreationEnd != null) items.Add($"creation < @{nameof(rq.CreationEnd)}");
+            var conditions = App.DB.JoinConditions(items);
+
+            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+
+            // Sub-select, otherwise 'order by' fails
+            var command = CreateCommand($"SELECT {json} FROM (SELECT {"rowid AS " + fields} FROM audits {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
+
+            await ReadJsonToStreamAsync(command, response);
         }
 
         /// <summary>
@@ -113,10 +172,28 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="rq">Request data</param>
         /// <param name="response">Response</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task QueryAsync(UserQueryRQ rq, HttpResponse response)
+        public async Task QueryAsync(UserQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            await Repo.QueryAsync(rq, response);
+            var parameters = FormatParameters(rq);
+
+            AddSystemParameters(parameters);
+
+            var fields = "id, role, status, creation, refreshTime";
+            var json = $"{fields}, {$"id = {SysUserField}".ToJsonBool()} AS isSelf".ToJsonCommand();
+
+            var items = new List<string>();
+            if (!string.IsNullOrEmpty(rq.Sid)) items.Add($"id = @{nameof(rq.Sid)}");
+            if (rq.Role is not null) items.Add($"role = @{nameof(rq.Role)}");
+            var conditions = App.DB.JoinConditions(items);
+
+            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+
+            // Sub-select, otherwise 'order by' fails
+            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM users {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
+
+            await ReadJsonToStreamAsync(command, response);
         }
 
         /// <summary>
@@ -125,12 +202,12 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="id">User id</param>
         /// <param name="passphrase">For encription of the password</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async ValueTask<ActionResult> ResetPasswordAsync(string id, string passphrase, IPAddress ip)
+        public async ValueTask<ActionResult> ResetPasswordAsync(string id, string passphrase, CancellationToken cancellationToken = default)
         {
             // Forbid reset current user's password
-            if (Repo.User?.Id.Equals(id, StringComparison.OrdinalIgnoreCase) == true) return ApplicationErrors.NoValidData.AsResult("id");
+            if (User?.Id.Equals(id, StringComparison.OrdinalIgnoreCase) == true) return ApplicationErrors.NoValidData.AsResult("id");
 
             // New password
             var password = CryptographyUtils.CreateRandString(RandStringKind.DigitAndLetter, 6).ToString();
@@ -138,15 +215,22 @@ namespace com.etsoo.CMS.Services
             // Hash password
             var passwordHashed = await App.HashPasswordAsync(id + password);
 
-            // Update
-            await Repo.ResetPasswordAsync(id, passwordHashed);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+
+            var passwordParam = passwordHashed.ToDbString(true, 256);
+            parameters.Add(nameof(password), passwordParam);
+
+            var command = CreateCommand($"UPDATE users SET password = @{nameof(password)} WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+
+            await ExecuteAsync(command);
 
             // Return with encription
             var result = ActionResult.Success;
             result.Data["password"] = EncryptWeb(password, passphrase);
 
             // Log
-            await Repo.AddAuditAsync(AuditKind.ResetUserPassword, id, $"Reset user {id} password", ip, result);
+            await AddAuditAsync<string?>(AuditKind.ResetUserPassword, id, $"Reset user {id} password", ip, result, cancellationToken: cancellationToken);
 
             return result;
         }
@@ -156,10 +240,18 @@ namespace com.etsoo.CMS.Services
         /// 退出
         /// </summary>
         /// <param name="deviceId">Device id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task SignoutAsync(string deviceId)
+        public async Task SignoutAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            await Repo.SignoutAsync(deviceId);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(deviceId), deviceId);
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"DELETE FROM devices WHERE user = {SysUserField} AND device = @{nameof(deviceId)}", parameters, cancellationToken: cancellationToken);
+
+            await ExecuteAsync(command);
         }
 
         /// <summary>
@@ -167,17 +259,36 @@ namespace com.etsoo.CMS.Services
         /// 更新用户
         /// </summary>
         /// <param name="rq">Request data</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<IActionResult> UpdateAsync(UserUpdateRQ rq, IPAddress ip)
+        public async Task<IActionResult> UpdateAsync(UserUpdateRQ rq, CancellationToken cancellationToken = default)
         {
-            var (result, _) = await Repo.InlineUpdateAsync(rq, new QuickUpdateConfigs(new[] { "role", "status AS enabled=IIF(@Enabled, 0, 200)" })
+            var (result, _) = await InlineUpdateAsync(rq, new QuickUpdateConfigs(["role", "status AS enabled=IIF(@Enabled, 0, 200)"])
             {
                 TableName = "users",
                 IdField = "id"
-            });
-            await Repo.AddAuditAsync(AuditKind.UpdateUser, rq.Id, $"Update user {rq.Id}", ip, result, rq);
+            }, cancellationToken: cancellationToken);
+            await AddAuditAsync(AuditKind.UpdateUser, rq.Id, $"Update user {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.UserUpdateRQ, cancellationToken);
             return result;
+        }
+
+        /// <summary>
+        /// Update user password
+        /// 更新用户密码
+        /// </summary>
+        /// <param name="password">New password</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Task</returns>
+        private async Task UpdatePasswordAsync(string password, CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(password), password.ToDbString(true, 256));
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"UPDATE users SET password = @{nameof(password)} WHERE id = {SysUserField}", parameters, cancellationToken: cancellationToken);
+
+            await ExecuteAsync(command);
         }
 
         /// <summary>
@@ -186,10 +297,17 @@ namespace com.etsoo.CMS.Services
         /// </summary>
         /// <param name="id">Id</param>
         /// <param name="response">HTTP Response</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task UpdateReadAsync(string id, HttpResponse response)
+        public async Task UpdateReadAsync(string id, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            await Repo.UpdateReadAsync(response, id);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 128));
+
+            var json = $"id, role, refreshTime, {"status < 200".ToJsonBool()} AS enabled".ToJsonCommand(true);
+            var command = CreateCommand($"SELECT {json} FROM users WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+
+            await ReadJsonToStreamAsync(command, response);
         }
     }
 }

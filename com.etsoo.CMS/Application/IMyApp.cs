@@ -6,7 +6,7 @@ namespace com.etsoo.CMS.Application
     /// My app interface
     /// 我的程序接口
     /// </summary>
-    public interface IMyApp : ISqliteApp
+    public interface IMyApp : ISqliteApp<MyAppConfiguration>
     {
     }
 }

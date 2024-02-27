@@ -1,10 +1,10 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
-using com.etsoo.CMS.Repo;
+using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Drive;
 using com.etsoo.CoreFramework.Application;
-using com.etsoo.CoreFramework.Repositories;
-using com.etsoo.CoreFramework.User;
+using com.etsoo.CoreFramework.Models;
+using com.etsoo.Database;
 using com.etsoo.HTTP;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Storage;
@@ -19,7 +19,7 @@ namespace com.etsoo.CMS.Services
     /// Online drive service
     /// 网络硬盘服务
     /// </summary>
-    public class DriveService : CommonService<DriveRepo>, IDriveService
+    public class DriveService : CommonService, IDriveService
     {
         /// <summary>
         /// Encrypt access key
@@ -62,7 +62,9 @@ namespace com.etsoo.CMS.Services
             }
         }
 
+        readonly IPAddress ip;
         readonly IStorage storage;
+        private static readonly string[] updatableFields = ["name", "shared"];
 
         /// <summary>
         /// Constructor
@@ -72,9 +74,11 @@ namespace com.etsoo.CMS.Services
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
         /// <param name="storage">Storage</param>
-        public DriveService(IMyApp app, IServiceUserAccessor userAccessor, ILogger<ArticleService> logger, IStorage storage)
-            : base(app, new DriveRepo(app, userAccessor.UserSafe), logger)
+        public DriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<ArticleService> logger, IStorage storage)
+            : base(app, userAccessor.UserSafe, "drive", logger)
         {
+            ip = userAccessor.Ip;
+
             // Optional injection
             // IEnumerable<IStorage> storages
             // storage = storages.FirstOrDefault();
@@ -82,16 +86,41 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Create file
+        /// 创建文件
+        /// </summary>
+        /// <param name="rq">Request data</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Action result</returns>
+        private async Task<int> CreateAsync(DriveCreateRQ rq, CancellationToken cancellationToken = default)
+        {
+            var parameters = FormatParameters(rq);
+
+            // versus DATETIME('now', 'utc')
+            // var now = DateTime.UtcNow.ToString("u");
+            // parameters.Add(nameof(now), now);
+
+            AddSystemParameters(parameters);
+
+            var sql = @$"INSERT INTO files (id, name, path, size, contentType, author, creation)
+                VALUES (@{nameof(rq.Id)}, @{nameof(rq.Name)}, @{nameof(rq.Path)}, @{nameof(rq.Size)}, @{nameof(rq.ContentType)}, {SysUserField}, DATETIME('now', 'utc'))";
+
+            var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
+
+            return await ExecuteAsync(command);
+        }
+
+        /// <summary>
         /// Delete file
         /// 删除文件
         /// </summary>
         /// <param name="id">File id</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Action result</returns>
-        public async ValueTask<IActionResult> DeleteAsync(string id, IPAddress ip)
+        public async ValueTask<IActionResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             // Query the file
-            var file = await Repo.ReadAsync(id);
+            var file = await ReadAsync(id, cancellationToken);
             if (file == null)
             {
                 return ApplicationErrors.NoId.AsResult();
@@ -101,10 +130,19 @@ namespace com.etsoo.CMS.Services
             await storage.DeleteAsync(file.Path);
 
             // Delete from database
-            var result = await Repo.DeleteAsync(id);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 30));
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"DELETE FROM files WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+
+            var recordsAffected = await ExecuteAsync(command);
+
+            var result = recordsAffected > 0 ? ActionResult.Success : ApplicationErrors.NoId.AsResult();
 
             // Audit
-            await Repo.AddAuditAsync(AuditKind.OnlineDrive, id, $"Delete file {file.Name}", ip, result, new { Id = id });
+            await AddAuditAsync(AuditKind.OnlineDrive, id, $"Delete file {file.Name}", ip, result, id, null, cancellationToken);
 
             return result;
         }
@@ -114,10 +152,11 @@ namespace com.etsoo.CMS.Services
         /// 下载文件
         /// </summary>
         /// <param name="id">File id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async ValueTask<(Stream data, string fileName, string contentType)?> DownloadFileAsync(string id)
+        public async ValueTask<(Stream data, string fileName, string contentType)?> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
         {
-            var file = await Repo.ReadAsync(id);
+            var file = await ReadAsync(id, cancellationToken);
             if (file == null) return null;
 
             var stream = await storage.ReadAsync(file.Path);
@@ -127,15 +166,54 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Read file
+        /// 读取文件
+        /// </summary>
+        /// <param name="id">File id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Result</returns>
+        public async Task<DriveFile?> ReadAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 30));
+
+            var command = CreateCommand($"SELECT id, name, path, contentType, shared FROM files WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+
+            return await QueryAsAsync<DriveFile>(command);
+        }
+
+        /// <summary>
         /// Query files
         /// 查询文件
         /// </summary>
         /// <param name="rq">Request data</param>
         /// <param name="response">Response</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task QueryAsync(DriveQueryRQ rq, HttpResponse response)
+        public async Task QueryAsync(DriveQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            await Repo.QueryAsync(rq, response);
+            var parameters = FormatParameters(rq);
+
+            var fields = $"id, name, size, author, shared, creation";
+            var json = $"id, name, size, author, {"shared = 1".ToJsonBool()} AS shared, creation".ToJsonCommand();
+
+            var items = new List<string>();
+            if (!string.IsNullOrEmpty(rq.Name)) items.Add($"name LIKE '%' || @{nameof(rq.Name)} || '%'");
+            if (!string.IsNullOrEmpty(rq.Author)) items.Add($"author = @{nameof(rq.Author)}");
+            if (rq.CreationStart.HasValue) items.Add($"creation >= @{nameof(rq.CreationStart)}");
+            if (rq.CreationEnd.HasValue) items.Add($"creation < @{nameof(rq.CreationEnd)} + 1");
+            if (rq.Shared is true) items.Add($"shared = 1");
+            else if (rq.Shared is false) items.Add($"shared = 0");
+
+            var conditions = App.DB.JoinConditions(items);
+
+            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+
+            // Sub-select, otherwise 'order by' fails
+            var sql = $"SELECT {json} FROM (SELECT {fields} FROM files {conditions} {rq.GetOrderCommand()} {limit})";
+            var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
+
+            await ReadJsonToStreamAsync(command, response);
         }
 
         /// <summary>
@@ -143,11 +221,11 @@ namespace com.etsoo.CMS.Services
         /// 分享文件
         /// </summary>
         /// <param name="rq">Request data</param>
-        /// <param name="ip">IP</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<IActionResult> ShareFileAsync(DriveShareFileRQ rq, IPAddress ip)
+        public async Task<IActionResult> ShareFileAsync(DriveShareFileRQ rq, CancellationToken cancellationToken = default)
         {
-            var file = await Repo.ReadAsync(rq.Id);
+            var file = await ReadAsync(rq.Id, cancellationToken);
             if (file == null) return ApplicationErrors.NoId.AsResult("");
 
             if (!file.Shared && !rq.Hours.HasValue)
@@ -166,7 +244,7 @@ namespace com.etsoo.CMS.Services
                 result.Data.Add("Id", storage.GetUrl($"/OnlineDrive/{rq.Id}?key={HttpUtility.UrlEncode(cipher)}"));
             }
 
-            await Repo.AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Share file {file.Name}", ip, result, rq);
+            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Share file {file.Name}", ip, result, rq, MyJsonSerializerContext.Default.DriveShareFileRQ, cancellationToken);
 
             return result;
         }
@@ -176,10 +254,10 @@ namespace com.etsoo.CMS.Services
         /// 上传文件
         /// </summary>
         /// <param name="files">Files</param>
-        /// <param name="ip">IP</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
         /// <exception cref="InvalidDataException"></exception>
-        public async ValueTask<IActionResult> UploadFilesAsync(IEnumerable<IFormFile> files, IPAddress ip)
+        public async ValueTask<IActionResult> UploadFilesAsync(IEnumerable<IFormFile> files, CancellationToken cancellationToken = default)
         {
             // File path
             var path = $"/Resources/OnlineDrive/{DateTime.UtcNow:yyyyMM}";
@@ -187,7 +265,7 @@ namespace com.etsoo.CMS.Services
             // Upload result
             var results = new ConcurrentQueue<(string fileName, IActionResult result)>();
 
-            await Parallel.ForEachAsync(files, CancellationToken, async (file, CancellationToken) =>
+            await Parallel.ForEachAsync(files, cancellationToken, async (file, CancellationToken) =>
             {
                 var fileName = file.FileName;
                 var fileSize = file.Length;
@@ -216,11 +294,11 @@ namespace com.etsoo.CMS.Services
                 try
                 {
                     // Save the stream to file directly
-                    var saveResult = await storage.WriteAsync(filePath, file.OpenReadStream(), WriteCase.CreateNew);
+                    var saveResult = await storage.WriteAsync(filePath, file.OpenReadStream(), WriteCase.CreateNew, CancellationToken);
 
                     if (saveResult)
                     {
-                        await Repo.CreateAsync(rq);
+                        await CreateAsync(rq, cancellationToken);
 
                         result = ActionResult.Success;
                     }
@@ -240,7 +318,7 @@ namespace com.etsoo.CMS.Services
                 // Hide sensitive file path data
                 rq.Path = StringUtils.HideData(rq.Path);
 
-                await Repo.AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Upload file {fileName}", ip, result, rq);
+                await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Upload file {fileName}", ip, result, rq, MyJsonSerializerContext.Default.DriveCreateRQ, CancellationToken);
 
                 results.Enqueue((fileName, result));
             });
@@ -255,10 +333,24 @@ namespace com.etsoo.CMS.Services
         /// 移除文件分享
         /// </summary>
         /// <param name="id">File id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Action result</returns>
-        public async ValueTask<IActionResult> RemoveShareAsync(string id)
+        public async ValueTask<IActionResult> RemoveShareAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await Repo.RemoveShareAsync(id);
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id.ToDbString(true, 30));
+            parameters.Add("newid", Path.GetRandomFileName());
+
+            AddSystemParameters(parameters);
+
+            var command = CreateCommand($"UPDATE files SET id = @newid, shared = 0 WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+
+            var result = await ExecuteAsync(command);
+
+            if (result > 0)
+                return ActionResult.Success;
+            else
+                return ApplicationErrors.NoId.AsResult();
         }
 
         /// <summary>
@@ -266,11 +358,11 @@ namespace com.etsoo.CMS.Services
         /// 更新文件
         /// </summary>
         /// <param name="rq">Request data</param>
-        /// <param name="ip">IP address</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<IActionResult> UpdateAsync(DriveUpdateRQ rq, IPAddress ip)
+        public async Task<IActionResult> UpdateAsync(DriveUpdateRQ rq, CancellationToken cancellationToken = default)
         {
-            var fields = rq.ChangedFields ?? Enumerable.Empty<string>();
+            var fields = rq.ChangedFields ?? [];
             var removeShare = fields.Contains("removeShare", StringComparer.OrdinalIgnoreCase);
 
             IActionResult actionResult = new ActionResult();
@@ -278,23 +370,23 @@ namespace com.etsoo.CMS.Services
             var fieldCount = removeShare ? 2 : 1;
             if (fields.Count() >= fieldCount)
             {
-                var (result, _) = await Repo.InlineUpdateAsync(
+                var (result, _) = await InlineUpdateAsync(
                     rq,
-                    new QuickUpdateConfigs(new[] { "name", "shared" })
+                    new QuickUpdateConfigs(updatableFields)
                     {
                         TableName = "files",
                         IdField = "id"
-                    }, null, null, Logger
+                    }, null, null, cancellationToken
                  );
                 actionResult = result;
             }
 
             if (removeShare)
             {
-                actionResult = await RemoveShareAsync(rq.Id);
+                actionResult = await RemoveShareAsync(rq.Id, cancellationToken);
             }
 
-            await Repo.AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Update file {rq.Id}", ip, actionResult, rq);
+            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Update file {rq.Id}", ip, actionResult, rq, MyJsonSerializerContext.Default.DriveUpdateRQ, cancellationToken);
 
             return actionResult;
         }

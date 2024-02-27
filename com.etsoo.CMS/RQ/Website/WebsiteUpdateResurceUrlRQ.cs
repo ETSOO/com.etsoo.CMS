@@ -10,5 +10,11 @@ namespace com.etsoo.CMS.RQ.Website
         /// 旧资源路径
         /// </summary>
         public required string OldResourceUrl { get; init; }
+
+        /// <summary>
+        /// New resource URL
+        /// 新资源路径
+        /// </summary>
+        public required string ResourceUrl { get; init; }
     }
 }
