@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b88de755-eede-4fa6-ab0b-00cb8e3c07b5</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Company>ETSOO / 亿速思维</Company>
+    <Copyright>Copyright © ETSOO 2004 - 2024</Copyright>
+    <PackageProjectUrl>https://github.com/ETSOO/com.etsoo.CMS</PackageProjectUrl>
+    <Description>ETSOO Website Content Management System (CMS)
+亿速思维网站内容管理系统 (CMS)</Description>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <SatelliteResourceLanguages>en;zh-Hans;zh-Hant</SatelliteResourceLanguages>
+    <Version>1.0.5</Version>
+    <SpaRoot>..\com.etsoo.cms.client</SpaRoot>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+    <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+      <Version>8.*-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="com.etsoo.DI" Version="1.0.13" />
+    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.15" />
+    <PackageReference Include="com.etsoo.Logs" Version="1.0.4" />
+    <PackageReference Include="com.etsoo.ServiceApp" Version="1.1.87" />
+    <PackageReference Include="com.etsoo.SMTP" Version="1.0.43" />
+    <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.77" />
+    <PackageReference Include="com.etsoo.Web" Version="1.1.62" />
+    <PackageReference Include="com.etsoo.WeiXin" Version="1.0.30" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\com.etsoo.cms.client\com.etsoo.cms.client.esproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
+</Project>
