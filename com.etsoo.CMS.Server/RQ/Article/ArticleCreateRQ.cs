@@ -11,7 +11,7 @@ namespace com.etsoo.CMS.RQ.Article
     /// Article create request data
     /// 文章创建请求数据
     /// </summary>
-    [SqlInsertCommand("articles", NamingPolicy.CamelCase, Database = DatabaseName.SQLite, Debug = true)]
+    [SqlInsertCommand("articles", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
     public partial record ArticleCreateRQ
     {
         /// <summary>
@@ -107,13 +107,13 @@ namespace com.etsoo.CMS.RQ.Article
         /// Order index
         /// 排序数
         /// </summary>
-        public byte OrderIndex { get; } = 0;
+        public byte OrderIndex => 0;
 
         /// <summary>
         /// Creation
         /// 创建时间
         /// </summary>
-        public DateTimeOffset Creation { get; } = DateTime.Now;
+        public DateTimeOffset Creation => DateTime.Now;
 
         /// <summary>
         /// Year
@@ -125,7 +125,7 @@ namespace com.etsoo.CMS.RQ.Article
         /// Refresh time
         /// 刷新时间
         /// </summary>
-        public DateTimeOffset RefreshTime { get; } = DateTime.Now;
+        public DateTimeOffset RefreshTime => DateTime.Now;
 
         /// <summary>
         /// Author

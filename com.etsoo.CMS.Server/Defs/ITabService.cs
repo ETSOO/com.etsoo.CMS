@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Utils.Actions;
 
@@ -9,7 +10,7 @@ namespace com.etsoo.CMS.Defs
     /// Website tab service interface
     /// 网站栏目业务逻辑服务接口
     /// </summary>
-    public interface ITabService : ICommonService
+    public interface ITabService : ICommonUserService
     {
         Task<IActionResult> CreateAsync(TabCreateRQ rq, CancellationToken cancellationToken = default);
 

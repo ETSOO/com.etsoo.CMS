@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.Utils.Actions;
 using System.Text.Json.Serialization.Metadata;
 
@@ -9,7 +10,7 @@ namespace com.etsoo.CMS.Defs
     /// Website service interface
     /// 网站业务逻辑服务接口
     /// </summary>
-    public interface IWebsiteService : ICommonService
+    public interface IWebsiteService : ICommonUserService
     {
         Task<IActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ rq, CancellationToken cancellationToken = default);
 

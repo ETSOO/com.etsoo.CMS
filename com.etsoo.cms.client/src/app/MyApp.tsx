@@ -396,7 +396,7 @@ const settings: IServiceAppSettings = {
  * Application
  */
 export const app = new MyServiceApp(settings, "etsooCMS");
-app.setupLogging(undefined, true);
+app.setupLogging(undefined, import.meta.env.PROD);
 
 /**
  * Notifier provider

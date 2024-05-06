@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Drive;
+using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Database;
@@ -19,7 +20,7 @@ namespace com.etsoo.CMS.Services
     /// Online drive service
     /// 网络硬盘服务
     /// </summary>
-    public class DriveService : CommonService, IDriveService
+    public class DriveService : CommonUserService, IDriveService
     {
         /// <summary>
         /// Encrypt access key
@@ -36,32 +37,6 @@ namespace com.etsoo.CMS.Services
             return cipher;
         }
 
-        /// <summary>
-        /// Validate access key
-        /// 验证访问密匙
-        /// </summary>
-        /// <param name="app">Application</param>
-        /// <param name="id">File id</param>
-        /// <param name="key">Access key</param>
-        /// <returns>Result</returns>
-        public static bool ValidateAccessKey(IMyApp app, string id, string? key)
-        {
-            if (string.IsNullOrEmpty(key)) return false;
-
-            try
-            {
-                var binaryText = app.DecriptData(key, $"sharefile-{id}");
-                if (!long.TryParse(binaryText, out var binary)) return false;
-
-                if (DateTime.FromBinary(binary) < DateTime.UtcNow) return false;
-                else return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         readonly IPAddress ip;
         readonly IStorage storage;
         private static readonly string[] updatableFields = ["name", "shared"];
@@ -74,7 +49,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
         /// <param name="storage">Storage</param>
-        public DriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<ArticleService> logger, IStorage storage)
+        public DriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<DriveService> logger, IStorage storage)
             : base(app, userAccessor.UserSafe, "drive", logger)
         {
             ip = userAccessor.Ip;
@@ -92,13 +67,10 @@ namespace com.etsoo.CMS.Services
         /// <param name="rq">Request data</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Action result</returns>
-        private async Task<int> CreateAsync(DriveCreateRQ rq, CancellationToken cancellationToken = default)
+        private async Task<ActionResult> CreateAsync(DriveCreateRQ rq, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
-
-            // versus DATETIME('now', 'utc')
-            // var now = DateTime.UtcNow.ToString("u");
-            // parameters.Add(nameof(now), now);
 
             AddSystemParameters(parameters);
 
@@ -108,6 +80,12 @@ namespace com.etsoo.CMS.Services
             var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
 
             return await ExecuteAsync(command);
+            */
+
+            var id = await SqlInsertAsync<DriveCreateRQ, string>(rq, cancellationToken);
+            var result = id == null ? new ActionResult() { } : ActionResult.Success;
+
+            return result;
         }
 
         /// <summary>
@@ -298,9 +276,7 @@ namespace com.etsoo.CMS.Services
 
                     if (saveResult)
                     {
-                        await CreateAsync(rq, cancellationToken);
-
-                        result = ActionResult.Success;
+                        result = await CreateAsync(rq, cancellationToken);
                     }
                     else
                     {

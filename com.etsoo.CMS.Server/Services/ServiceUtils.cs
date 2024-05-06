@@ -1,6 +1,7 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Business;
+using com.etsoo.Utils;
 using com.etsoo.Utils.Actions;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -12,7 +13,7 @@ namespace com.etsoo.CMS.Services
     /// Service utilities
     /// 服务工具
     /// </summary>
-    public static class ServiceUtils
+    public static partial class ServiceUtils
     {
         /// <summary>
         /// Check user
@@ -57,7 +58,7 @@ namespace com.etsoo.CMS.Services
         public static string FormatKeywords(string keywords)
         {
             // Unify the format
-            var items = new Regex(@"\s*[;；,，]+\s*", RegexOptions.Multiline).Split(keywords);
+            var items = MyRegex().Split(keywords);
             return string.Join(", ", items);
         }
 
@@ -70,8 +71,11 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public static T? ParseOptions<T>(string? options) where T : class
         {
-            if (string.IsNullOrEmpty(options) || !options.StartsWith("{") || !options.EndsWith("}")) return default;
-            return JsonSerializer.Deserialize<T>(options, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            if (string.IsNullOrEmpty(options) || !options.StartsWith('{') || !options.EndsWith('}')) return default;
+            return JsonSerializer.Deserialize<T>(options, SharedUtils.JsonDefaultSerializerOptions);
         }
+
+        [GeneratedRegex(@"\s*[;；,，]+\s*", RegexOptions.Multiline)]
+        private static partial Regex MyRegex();
     }
 }

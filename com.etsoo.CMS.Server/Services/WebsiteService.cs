@@ -4,6 +4,7 @@ using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Database;
@@ -24,7 +25,7 @@ namespace com.etsoo.CMS.Services
     /// Website service
     /// 网站业务逻辑服务
     /// </summary>
-    public class WebsiteService : CommonService, IWebsiteService
+    public class WebsiteService : CommonUserService, IWebsiteService
     {
         readonly IPAddress ip;
         readonly IFireAndForgetService fireService;
@@ -179,7 +180,7 @@ namespace com.etsoo.CMS.Services
             if (nextJs != null)
             {
                 var nextJsAddress = nextJs.App.TrimEnd('/');
-                var nextJsToken = App.DecriptData(nextJs.Secret);
+                var nextJsToken = nextJs.Secret;
 
                 var fUrls = urls.Select(url =>
                 {

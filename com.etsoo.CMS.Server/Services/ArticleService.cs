@@ -3,6 +3,7 @@ using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
+using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.DB;
 using com.etsoo.CoreFramework.Models;
@@ -24,7 +25,7 @@ namespace com.etsoo.CMS.Services
     /// Website article service
     /// 网站文章业务逻辑服务
     /// </summary>
-    public class ArticleService : CommonService, IArticleService
+    public class ArticleService : CommonUserService, IArticleService
     {
         readonly IPAddress ip;
         readonly IBridgeProxy bridgeProxy;
@@ -73,7 +74,7 @@ namespace com.etsoo.CMS.Services
             }
             rq.Url = rq.Url.Trim('/');
             rq.Content = await FormatContentAsync(rq.Content, cancellationToken);
-            rq.Author = User?.Id;
+            rq.Author = User.Id;
 
             /*
             var parameters = FormatParameters(rq);
@@ -109,7 +110,7 @@ namespace com.etsoo.CMS.Services
 
             var result = new ActionDataResult<int>(ActionResult.Success, id);
 
-            await AddAuditAsync(AuditKind.CreateArticle, id.ToString(), $"Create article {id}", ip, result.Result, rq, MyJsonSerializerContext.Default.ArticleCreateRQ, cancellationToken);
+            await AddAuditAsync(AuditKind.CreateArticle, id.ToString(), $"Create article {id} - {rq.Title}", ip, result.Result, rq, MyJsonSerializerContext.Default.ArticleCreateRQ, cancellationToken);
 
             await OnDemandRevalidateAsync(id, cancellationToken);
 
@@ -324,7 +325,7 @@ namespace com.etsoo.CMS.Services
             var fields = "id, kind, title, content, creation, ip, flag";
             var json = fields.ToJsonCommand();
 
-            var command = CreateCommand($"SELECT {json} FROM audits WHERE kind IN (12, 13) AND target = @{nameof(id)} ORDER BY id DESC LIMIT 8)", parameters, cancellationToken: cancellationToken);
+            var command = CreateCommand($"SELECT {json} FROM audits WHERE kind IN (12, 13) AND target = @{nameof(id)} ORDER BY id DESC LIMIT 8", parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
         }

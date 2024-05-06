@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
+using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Database;
@@ -17,7 +18,7 @@ namespace com.etsoo.CMS.Services
     /// Website tab service
     /// 网站栏目业务逻辑服务
     /// </summary>
-    public class TabService : CommonService, ITabService
+    public class TabService : CommonUserService, ITabService
     {
         readonly IPAddress ip;
         readonly IStorage storage;

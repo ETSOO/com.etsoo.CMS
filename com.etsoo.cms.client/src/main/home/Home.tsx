@@ -6,14 +6,14 @@ import {
   Toolbar,
   Typography,
   useMediaQuery
-} from '@mui/material';
-import React from 'react';
-import MenuIcon from '@mui/icons-material/Menu';
-import { app } from '../../app/MyApp';
-import { UserMenu } from './UserMenu';
-import { Outlet } from 'react-router-dom';
-import { LeftDrawerLocal } from './LeftDrawerLocal';
-import { DrawerHeader } from '@etsoo/materialui';
+} from "@mui/material";
+import React from "react";
+import MenuIcon from "@mui/icons-material/Menu";
+import { app } from "../../app/MyApp";
+import { UserMenu } from "./UserMenu";
+import { Outlet } from "react-router-dom";
+import { LeftDrawerLocal } from "./LeftDrawerLocal";
+import { DrawerHeader } from "@etsoo/materialui";
 
 // Size
 const width = 220;
@@ -24,12 +24,15 @@ function Home() {
 
   // User context / state
   const { state } = React.useContext(app.userState.context);
+  if (state == null) {
+    return <React.Fragment />;
+  }
 
   // Theme
-  const smDown = useMediaQuery<Theme>((theme) => theme.breakpoints.down('sm'));
+  const smDown = useMediaQuery<Theme>((theme) => theme.breakpoints.down("sm"));
   app.smDown = smDown;
 
-  const mdUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up('md'));
+  const mdUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("md"));
   app.mdUp = mdUp;
 
   const { authorized } = state;
@@ -60,7 +63,7 @@ function Home() {
             edge="start"
             color="inherit"
             onClick={() => setOpen(true)}
-            sx={{ ...(open && { display: 'none' }) }}
+            sx={{ ...(open && { display: "none" }) }}
           >
             <MenuIcon />
           </IconButton>
@@ -74,7 +77,7 @@ function Home() {
                   <Typography
                     variant="caption"
                     noWrap
-                    sx={{ marginLeft: '8px', marginTop: '8px' }}
+                    sx={{ marginLeft: "8px", marginTop: "8px" }}
                   >
                     {state.subtitle}
                   </Typography>
@@ -86,7 +89,7 @@ function Home() {
           <UserMenu name={state.name} avatar={state.avatar} smDown={smDown} />
         </Toolbar>
       </AppBar>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: "flex" }}>
         <LeftDrawerLocal
           mdUp={mdUp}
           organization={state.organization}

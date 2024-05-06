@@ -1,4 +1,5 @@
 ﻿using com.etsoo.CMS.RQ.User;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Utils.Actions;
 
@@ -8,7 +9,7 @@ namespace com.etsoo.CMS.Defs
     /// Logined user business logic service interface
     /// 已登录用户业务逻辑服务接口
     /// </summary>
-    public interface IUserService : ICommonService
+    public interface IUserService : ICommonUserService
     {
         ValueTask<IActionResult> ChangePasswordAsync(ChangePasswordDto model, CancellationToken cancellationToken = default);
 

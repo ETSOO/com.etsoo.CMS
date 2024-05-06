@@ -1,4 +1,4 @@
-import { CommonPage, DnDItemStyle, MUGlobal } from '@etsoo/materialui';
+import { CommonPage, DnDItemStyle, MUGlobal } from "@etsoo/materialui";
 import {
   Button,
   Card,
@@ -8,17 +8,17 @@ import {
   IconButton,
   TextField,
   useTheme
-} from '@mui/material';
-import React from 'react';
-import { app } from '../../app/MyApp';
-import { ResourceDto } from '../../api/dto/website/ResourceDto';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import AddToDriveIcon from '@mui/icons-material/AddToDrive';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import { UserRole } from '@etsoo/appscript';
-import { DomUtils } from '@etsoo/shared';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/material";
+import React from "react";
+import { app } from "../../app/MyApp";
+import { ResourceDto } from "../../api/dto/website/ResourceDto";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import AddToDriveIcon from "@mui/icons-material/AddToDrive";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import { UserRole } from "@etsoo/appscript";
+import { DomUtils } from "@etsoo/shared";
+import { useNavigate } from "react-router-dom";
 
 function Resources() {
   // Route
@@ -29,13 +29,13 @@ function Resources() {
 
   // Labels
   const labels = app.getLabels(
-    'add',
-    'edit',
-    'id',
-    'resourceValue',
-    'onlineDrive',
-    'regenerateLink',
-    'confirmAction'
+    "add",
+    "edit",
+    "id",
+    "resourceValue",
+    "onlineDrive",
+    "regenerateLink",
+    "confirmAction"
   );
 
   // State
@@ -57,7 +57,7 @@ function Resources() {
   const showModal = (item?: ResourceDto) => {
     app.showInputDialog({
       title: item ? labels.edit : labels.add,
-      message: '',
+      message: "",
       fullScreen: app.smDown,
       inputs: (
         <React.Fragment>
@@ -80,7 +80,7 @@ function Resources() {
             required
             fullWidth
             multiline
-            rows={2}
+            rows={6}
             defaultValue={item?.value}
             inputProps={{ maxLength: 1280 }}
           />
@@ -94,18 +94,18 @@ function Resources() {
 
         // Form data
         const { id, value } = DomUtils.dataAs(new FormData(form), {
-          id: 'string',
-          value: 'string'
+          id: "string",
+          value: "string"
         });
 
         // Validation
         if (id == null) {
-          DomUtils.setFocus('id', form);
+          DomUtils.setFocus("id", form);
           return false;
         }
 
         if (value == null) {
-          DomUtils.setFocus('value', form);
+          DomUtils.setFocus("value", form);
           return false;
         }
 
@@ -127,7 +127,7 @@ function Resources() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('resources');
+    app.setPageKey("resources");
   }, []);
 
   return (
@@ -136,7 +136,7 @@ function Resources() {
         {adminPermission ? (
           <CardActions
             sx={{
-              justifyContent: 'space-between',
+              justifyContent: "space-between",
               paddingLeft: 2,
               paddingRight: 2
             }}
@@ -144,7 +144,7 @@ function Resources() {
             <Button
               color="primary"
               variant="outlined"
-              onClick={() => navigate('./../onlinedrive')}
+              onClick={() => navigate("./../onlinedrive")}
               startIcon={<AddToDriveIcon />}
             >
               {labels.onlineDrive}
@@ -188,7 +188,7 @@ function Resources() {
         </CardContent>
         <CardActions
           sx={{
-            justifyContent: 'space-between',
+            justifyContent: "space-between",
             paddingLeft: 2,
             paddingRight: 2
           }}

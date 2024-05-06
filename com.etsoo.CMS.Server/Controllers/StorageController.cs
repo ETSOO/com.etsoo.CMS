@@ -1,5 +1,5 @@
 ﻿using com.etsoo.CMS.Application;
-using com.etsoo.CMS.Defs;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CMS.Services;
 using com.etsoo.Utils.Storage;
 using com.etsoo.Web;
@@ -20,7 +20,7 @@ namespace com.etsoo.CMS.Controllers
     {
         readonly IMyApp app;
         readonly IStorage storage;
-        readonly IDriveService driveService;
+        readonly IPublicDriveService driveService;
 
         /// <summary>
         /// Constructor
@@ -29,7 +29,7 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Accessor</param>
         /// <param name="storage">Storage</param>
-        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, IDriveService driveService)
+        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, IPublicDriveService driveService)
             : base(app, httpContextAccessor)
         {
             this.app = app;
@@ -46,6 +46,13 @@ namespace com.etsoo.CMS.Controllers
         [HttpGet("OnlineDrive/{id}")]
         public async Task OnlineDrive([StringLength(32, MinimumLength = 12)] string id, [FromQuery] string? key = null)
         {
+            // Validate key first to avoid massive requests for the db to check the file
+            if (!PublicDriveService.ValidateAccessKey(app, id, key))
+            {
+                await Response.WriteAsync("Not passing the correct access key (没有传递正确的访问密匙)");
+                return;
+            }
+
             var file = await driveService.ReadAsync(id, CancellationToken);
             if (file == null)
             {
@@ -53,9 +60,9 @@ namespace com.etsoo.CMS.Controllers
                 return;
             }
 
-            if (!file.Shared && !DriveService.ValidateAccessKey(app, id, key))
+            if (!file.Shared)
             {
-                await Response.WriteAsync("Not passing the correct access key (没有传递正确的访问密匙)");
+                await Response.WriteAsync("File sharing is not allowed (文件不允许分享)");
                 return;
             }
 

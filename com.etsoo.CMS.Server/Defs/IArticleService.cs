@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.Utils.Actions;
 
 namespace com.etsoo.CMS.Defs
@@ -8,7 +9,7 @@ namespace com.etsoo.CMS.Defs
     /// Website article service interface
     /// 网站文章业务逻辑服务接口
     /// </summary>
-    public interface IArticleService : ICommonService
+    public interface IArticleService : ICommonUserService
     {
         Task<IActionResult> CreateAsync(ArticleCreateRQ rq, CancellationToken cancellationToken = default);
 

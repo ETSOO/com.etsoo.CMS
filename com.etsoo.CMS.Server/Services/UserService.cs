@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.User;
+using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Database;
@@ -15,7 +16,7 @@ namespace com.etsoo.CMS.Services
     /// Logined user business logic service
     /// 已登录用户业务逻辑服务
     /// </summary>
-    public class UserService : CommonService, IUserService
+    public class UserService : CommonUserService, IUserService
     {
         readonly IPAddress ip;
 
@@ -142,8 +143,9 @@ namespace com.etsoo.CMS.Services
         /// <param name="response">Response</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task HistoryAsync(UserHistoryQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
+        public Task HistoryAsync(UserHistoryQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
 
             var fields = "id, kind, title, content, creation, ip, flag";
@@ -164,6 +166,9 @@ namespace com.etsoo.CMS.Services
             var command = CreateCommand($"SELECT {json} FROM (SELECT {"rowid AS " + fields} FROM audits {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
+            */
+
+            return SqlSelectJsonAsync(rq, ["id", "kind", "title", "content", "creation", "ip", "flag"], response, cancellationToken);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Defs;
 using com.etsoo.CoreFramework.Models;
+using com.etsoo.SourceGenerators;
 using com.etsoo.SourceGenerators.Attributes;
 
 namespace com.etsoo.CMS.RQ.User
@@ -8,7 +9,7 @@ namespace com.etsoo.CMS.RQ.User
     /// User audits query data
     /// 用户操作历史查询参数
     /// </summary>
-    [AutoToParameters]
+    [SqlSelectCommand("audits", NamingPolicy.SnakeCase, Database = DatabaseName.SQLite)]
     public partial record UserHistoryQueryRQ : QueryRQ<int>
     {
         /// <summary>

@@ -6,6 +6,7 @@ using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS;
 using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CMS.Services;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
@@ -105,6 +106,7 @@ services.AddScoped<IUserService, UserService>();
 services.AddScoped<IWebsiteService, WebsiteService>();
 services.AddScoped<IPublicService, PublicService>();
 services.AddScoped<IDriveService, DriveService>();
+services.AddScoped<IPublicDriveService, PublicDriveService>();
 
 services.AddControllers().AddJsonOptions(configure =>
 {

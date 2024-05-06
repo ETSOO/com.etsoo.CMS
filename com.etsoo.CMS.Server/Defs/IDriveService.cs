@@ -1,5 +1,6 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Drive;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.Utils.Actions;
 
 namespace com.etsoo.CMS.Defs
@@ -8,7 +9,7 @@ namespace com.etsoo.CMS.Defs
     /// Online drive service interface
     /// 网络硬盘服务接口
     /// </summary>
-    public interface IDriveService : ICommonService
+    public interface IDriveService : ICommonUserService
     {
         ValueTask<IActionResult> DeleteAsync(string id, CancellationToken cancellationToken = default);
 

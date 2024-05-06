@@ -1,4 +1,5 @@
-﻿using com.etsoo.SourceGenerators.Attributes;
+﻿using com.etsoo.SourceGenerators;
+using com.etsoo.SourceGenerators.Attributes;
 
 namespace com.etsoo.CMS.RQ.Drive
 {
@@ -6,8 +7,7 @@ namespace com.etsoo.CMS.RQ.Drive
     /// Online drive file create request data
     /// 网络硬盘文件创建请求数据
     /// </summary>
-    [AutoToParameters]
-    [AutoToJson]
+    [SqlInsertCommand("files", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
     public partial record DriveCreateRQ
     {
         /// <summary>
@@ -43,5 +43,11 @@ namespace com.etsoo.CMS.RQ.Drive
         /// </summary>
         [Property(Length = 128)]
         public required string ContentType { get; init; }
+
+        /// <summary>
+        /// Creation
+        /// 创建时间
+        /// </summary>
+        public DateTimeOffset Creation => DateTime.Now;
     }
 }
