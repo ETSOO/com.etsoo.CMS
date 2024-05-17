@@ -1,8 +1,8 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.Tab;
+using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.CoreFramework.Authentication;
-using com.etsoo.CoreFramework.Models;
 using com.etsoo.Web;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,7 +67,7 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="rq">Request data</param>
         /// <returns>Task</returns>
         [HttpPost("List")]
-        public async Task List(TiplistRQ rq)
+        public async Task List(TabTiplistRQ rq)
         {
             await service.ListAsync(rq, Response, CancellationToken);
         }

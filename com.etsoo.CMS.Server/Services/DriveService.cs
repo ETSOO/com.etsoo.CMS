@@ -82,7 +82,7 @@ namespace com.etsoo.CMS.Services
             return await ExecuteAsync(command);
             */
 
-            var id = await SqlInsertAsync<DriveCreateRQ, string>(rq, cancellationToken);
+            var id = await SqlInsertAsync<DriveCreateRQ, string>(rq, null, cancellationToken);
             var result = id == null ? new ActionResult() { } : ActionResult.Success;
 
             return result;
@@ -185,10 +185,10 @@ namespace com.etsoo.CMS.Services
 
             var conditions = App.DB.JoinConditions(items);
 
-            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+            var limit = App.DB.QueryLimit(rq.QueryPaging);
 
             // Sub-select, otherwise 'order by' fails
-            var sql = $"SELECT {json} FROM (SELECT {fields} FROM files {conditions} {rq.GetOrderCommand()} {limit})";
+            var sql = $"SELECT {json} FROM (SELECT {fields} FROM files {conditions} {rq.QueryPaging.GetOrderCommand()} {limit})";
             var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);

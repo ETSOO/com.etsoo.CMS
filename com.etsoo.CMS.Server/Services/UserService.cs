@@ -83,14 +83,23 @@ namespace com.etsoo.CMS.Services
         {
             rq.Id = rq.Id.ToLower();
 
+            // Hash password
+            var passwordHashed = await App.HashPasswordAsync(rq.Id + rq.Password);
+            rq.Password = passwordHashed;
+
+            /*
             var parameters = FormatParameters(rq);
 
             var command = CreateCommand($@"INSERT INTO users (id, password, role, status, creation)
                 VALUES (@{nameof(rq.Id)}, '', @{nameof(rq.Role)}, IIF(@{nameof(rq.Enabled)}, 0, 200), DATETIME('now', 'utc'))", parameters, cancellationToken: cancellationToken);
 
             await ExecuteAsync(command);
+            */
 
-            var result = ActionResult.Success;
+            var id = await SqlInsertAsync<UserCreateRQ, string>(rq, cancellationToken: cancellationToken);
+
+            var result = string.IsNullOrEmpty(id) ? ApplicationErrors.ItemExists.AsResult() : ActionResult.Success;
+
             await AddAuditAsync(AuditKind.CreateUser, rq.Id, $"Create user {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.UserCreateRQ, cancellationToken);
 
             return result;
@@ -136,8 +145,8 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
-        /// Query history user
-        /// 查询操作历史用户
+        /// Query user history
+        /// 查询用户操作历史
         /// </summary>
         /// <param name="rq">Request data</param>
         /// <param name="response">Response</param>
@@ -168,7 +177,7 @@ namespace com.etsoo.CMS.Services
             await ReadJsonToStreamAsync(command, response);
             */
 
-            return SqlSelectJsonAsync(rq, ["id", "kind", "title", "content", "creation", "ip", "flag"], response, cancellationToken);
+            return SqlSelectJsonAsync(rq, ["rowid AS id", "kind", "title", "content", "creation", "ip", "flag"], response, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -181,6 +190,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task QueryAsync(UserQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
 
             AddSystemParameters(parameters);
@@ -193,12 +203,18 @@ namespace com.etsoo.CMS.Services
             if (rq.Role is not null) items.Add($"role = @{nameof(rq.Role)}");
             var conditions = App.DB.JoinConditions(items);
 
-            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+            var limit = App.DB.QueryLimit(rq.QueryPaging);
 
             // Sub-select, otherwise 'order by' fails
-            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM users {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
+            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM users {conditions} {rq.QueryPaging.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
+            */
+
+            await SqlSelectJsonAsync(rq, ["id", "role", "status", "creation", "refreshTime"], response, true, (mappings) =>
+            {
+                mappings.Add("isSelf", $"id = {SysUserField}".ToJsonBool());
+            }, cancellationToken: cancellationToken);
         }
 
         /// <summary>

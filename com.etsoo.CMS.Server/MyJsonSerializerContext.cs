@@ -6,6 +6,8 @@ using com.etsoo.CMS.RQ.Service;
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CMS.RQ.User;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CMS.Server.RQ.Article;
+using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.WeiXin.RQ;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
@@ -23,6 +25,7 @@ namespace com.etsoo.CMS
     )]
     [JsonSerializable(typeof(ArticleCreateRQ))]
     [JsonSerializable(typeof(ArticleDeletePhotoRQ))]
+    [JsonSerializable(typeof(ArticleHistoryQueryRQ))]
     [JsonSerializable(typeof(ArticleQueryRQ))]
     [JsonSerializable(typeof(ArticleSortPhotosRQ))]
     [JsonSerializable(typeof(ArticleUpdateRQ))]
@@ -45,6 +48,7 @@ namespace com.etsoo.CMS
     [JsonSerializable(typeof(SendEmailRQ))]
     [JsonSerializable(typeof(TabCreateRQ))]
     [JsonSerializable(typeof(TabQueryRQ))]
+    [JsonSerializable(typeof(TabTiplistRQ))]
     [JsonSerializable(typeof(TranslateRQ))]
     [JsonSerializable(typeof(Dictionary<int, short>))]
     [JsonSerializable(typeof(TabUpdateRQ))]

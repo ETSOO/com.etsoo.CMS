@@ -27,6 +27,9 @@ const ArticleLogo = React.lazy(() => import("./main/article/ArticleLogo"));
 const ArticleGallery = React.lazy(
   () => import("./main/article/ArticleGallery")
 );
+const ArticleHistory = React.lazy(
+  () => import("./main/article/ArticleHistory")
+);
 
 const ChangePassword = React.lazy(() => import("./main/user/ChangePassword"));
 const AllUsers = React.lazy(() => import("./main/user/AllUsers"));
@@ -126,6 +129,7 @@ function MyRouter() {
             <Route path="article/view/:id" element={<ViewArticle />} />
             <Route path="article/logo/:id" element={<ArticleLogo />} />
             <Route path="article/gallery/:id" element={<ArticleGallery />} />
+            <Route path="article/history/:id" element={<ArticleHistory />} />
 
             <Route path="tab/all" element={<AllTabs />} />
             <Route path="tab/add" element={<AddTab />} />

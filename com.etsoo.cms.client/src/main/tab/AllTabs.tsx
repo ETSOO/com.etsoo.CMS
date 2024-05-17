@@ -1,4 +1,4 @@
-import { UserRole } from '@etsoo/appscript';
+import { UserRole } from "@etsoo/appscript";
 import {
   CommonPage,
   DnDItemStyle,
@@ -6,7 +6,7 @@ import {
   DnDListRef,
   IconButtonLink,
   SelectEx
-} from '@etsoo/materialui';
+} from "@etsoo/materialui";
 import {
   Button,
   Card,
@@ -16,25 +16,25 @@ import {
   IconButton,
   Typography,
   useTheme
-} from '@mui/material';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { app } from '../../app/MyApp';
-import { TabDto } from '../../api/dto/tab/TabDto';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import PhotoIcon from '@mui/icons-material/Photo';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { TabQueryRQ } from '../../api/rq/tab/TabQueryRQ';
-import { Utils } from '@etsoo/shared';
-import { useSearchParamsEx } from '@etsoo/react';
-import { LocalUtils } from '../../app/LocalUtils';
+} from "@mui/material";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { app } from "../../app/MyApp";
+import { TabDto } from "../../api/dto/tab/TabDto";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import PhotoIcon from "@mui/icons-material/Photo";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import { TabQueryRQ } from "../../api/rq/tab/TabQueryRQ";
+import { Utils } from "@etsoo/shared";
+import { useSearchParamsEx } from "@etsoo/react";
+import { LocalUtils } from "../../app/LocalUtils";
 
 function AllTabs() {
   // Route
   const navigate = useNavigate();
 
-  const defaultParent = useSearchParamsEx({ parent: 'number' }).parent;
+  const defaultParent = useSearchParamsEx({ parent: "number" }).parent;
 
   // State
   const [parent, setParent] = React.useState<number>();
@@ -45,13 +45,13 @@ function AllTabs() {
 
   // Labels
   const labels = app.getLabels(
-    'add',
-    'sortTip',
-    'parentTab',
-    'dragIndicator',
-    'edit',
-    'delete',
-    'tabLogo'
+    "add",
+    "sortTip",
+    "parentTab",
+    "dragIndicator",
+    "edit",
+    "delete",
+    "tabLogo"
   );
 
   // Permissions
@@ -72,7 +72,7 @@ function AllTabs() {
     if (data.length > 0) {
       if (tabsRef.current == null) {
         const tabs = [...data];
-        Utils.addBlankItem(tabs, 'id', 'name');
+        Utils.addBlankItem(tabs, "id", "name");
         setTabs(tabs);
         tabsRef.current = tabs;
         return;
@@ -95,7 +95,10 @@ function AllTabs() {
   };
 
   const queryTabs = React.useCallback(async (parent?: number) => {
-    const rq: TabQueryRQ = { currentPage: 0, batchSize: 100, parent };
+    const rq: TabQueryRQ = {
+      queryPaging: { currentPage: 0, batchSize: 100 },
+      parent
+    };
     const data = await app.tabApi.query(rq);
     if (data == null || !isMounted.current) return;
     updateTabs(data);
@@ -112,7 +115,7 @@ function AllTabs() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('tabs');
+    app.setPageKey("tabs");
 
     return () => {
       isMounted.current = false;
@@ -133,7 +136,7 @@ function AllTabs() {
           Promise.all(
             data.map((d) =>
               app.tabApi.query(
-                { currentPage: 0, batchSize: 100, parent: d },
+                { queryPaging: { currentPage: 0, batchSize: 100 }, parent: d },
                 { showLoading: false }
               )
             )
@@ -160,7 +163,7 @@ function AllTabs() {
         options={tabs}
         onChange={(event) => {
           const p = event.target.value;
-          const parent = p === '' ? undefined : (p as number);
+          const parent = p === "" ? undefined : (p as number);
           setParent(parent);
           queryTabs(parent);
         }}
@@ -200,7 +203,7 @@ function AllTabs() {
                       alignItems="center"
                     >
                       <IconButton
-                        style={{ cursor: 'move' }}
+                        style={{ cursor: "move" }}
                         size="small"
                         title={labels.dragIndicator}
                         {...actionNodeRef}
@@ -224,7 +227,7 @@ function AllTabs() {
                         size="small"
                       >
                         <PhotoIcon
-                          color={item.logo ? 'secondary' : undefined}
+                          color={item.logo ? "secondary" : undefined}
                         />
                       </IconButtonLink>
                       <IconButtonLink
@@ -267,7 +270,7 @@ function AllTabs() {
             <Button
               color="primary"
               variant="outlined"
-              onClick={() => navigate(`./../add/?parent=${parent ?? ''}`)}
+              onClick={() => navigate(`./../add/?parent=${parent ?? ""}`)}
               startIcon={<AddIcon />}
             >
               {labels.add}

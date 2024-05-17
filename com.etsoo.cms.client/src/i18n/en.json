@@ -39,6 +39,7 @@
   "link": "URL",
   "mobileAccess": "Mobile access",
   "mobileAccessTip": "Open the camera app on your Apple or Android phone or scan the QR code with WeChat and Alipay to access",
+  "noChildTab": "Adding a child tab is not supported",
   "oldResourceUrl": "Old resource URL",
   "onlineDrive": "Online drive",
   "onlineDriveTip": "There are no anti-download measures for the files, please do not place sensitive information files here.",

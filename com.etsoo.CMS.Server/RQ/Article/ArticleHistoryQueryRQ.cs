@@ -1,28 +1,21 @@
-﻿using com.etsoo.CMS.Defs;
-using com.etsoo.CoreFramework.Models;
+﻿using com.etsoo.CoreFramework.Models;
 using com.etsoo.SourceGenerators;
 using com.etsoo.SourceGenerators.Attributes;
 
-namespace com.etsoo.CMS.RQ.User
+namespace com.etsoo.CMS.Server.RQ.Article
 {
     /// <summary>
-    /// User audits query data
-    /// 用户操作历史查询参数
+    /// Article audits query data
+    /// 文章操作历史查询参数
     /// </summary>
     [SqlSelectCommand("audits", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
-    public partial record UserHistoryQueryRQ : QueryRQ<int>
+    public partial record ArticleHistoryQueryRQ : QueryRQ<int>
     {
         /// <summary>
-        /// Author
-        /// 作者
+        /// Article id
+        /// 文章编号
         /// </summary>
-        public required string Author { get; init; }
-
-        /// <summary>
-        /// Kind
-        /// 类型
-        /// </summary>
-        public AuditKind? Kind { get; init; }
+        public required int Target { get; init; }
 
         /// <summary>
         /// Creation start

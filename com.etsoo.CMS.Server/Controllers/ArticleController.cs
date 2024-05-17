@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
+using com.etsoo.CMS.Server.RQ.Article;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Authentication;
 using com.etsoo.Web;
@@ -90,12 +91,12 @@ namespace com.etsoo.CMS.Controllers
         /// Query history
         /// 查询操作历史
         /// </summary>
-        /// <param name="id">Article id</param>
+        /// <param name="rq">Request data</param>
         /// <returns>Task</returns>
-        [HttpPost("QueryHistory/{id:int}")]
-        public async Task QueryHistory(int id)
+        [HttpPost("History")]
+        public async Task QueryHistory(ArticleHistoryQueryRQ rq)
         {
-            await service.QueryHistoryAsync(id, Response, CancellationToken);
+            await service.HistoryAsync(rq, Response, CancellationToken);
         }
 
         /// <summary>

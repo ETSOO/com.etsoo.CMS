@@ -3,6 +3,7 @@ using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
+using com.etsoo.CMS.Server.RQ.Article;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.DB;
@@ -106,7 +107,7 @@ namespace com.etsoo.CMS.Services
             var id = await ExecuteScalarAsync<int>(command);
             */
 
-            var id = await SqlInsertAsync<ArticleCreateRQ, int>(rq, cancellationToken);
+            var id = await SqlInsertAsync<ArticleCreateRQ, int>(rq, cancellationToken: cancellationToken);
 
             var result = new ActionDataResult<int>(ActionResult.Success, id);
 
@@ -140,7 +141,7 @@ namespace com.etsoo.CMS.Services
             var link = await QueryLinkAsync(id, cancellationToken);
             if (link == null) return ApplicationErrors.NoId.AsResult();
 
-            var result = await SqlDeleteAsync<SqlArticleDelete>(new() { Id = id, Status = 255 }, cancellationToken);
+            var result = await SqlDeleteAsync<SqlArticleDelete>(new() { Id = id, Status = 255 }, cancellationToken: cancellationToken);
 
             if (result.Ok)
             {
@@ -261,6 +262,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task<DbArticleQuery[]> QueryAsync(ArticleQueryRQ rq, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
 
             AddSystemParameters(parameters);
@@ -274,11 +276,15 @@ namespace com.etsoo.CMS.Services
 
             var conditions = App.DB.JoinConditions(items);
 
-            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+            var limit = App.DB.QueryLimit(rq.QueryPaging);
 
-            var command = CreateCommand(@$"SELECT * FROM (SELECT {fields} FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
+            var command = CreateCommand(@$"SELECT * FROM (SELECT {fields} FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id {conditions} {rq.QueryPaging.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
 
             var list = await QueryAsListAsync<DbArticleQuery>(command);
+            */
+
+            var list = await SqlSelectAsync<ArticleQueryRQ, DbArticleQuery>(rq, true, cancellationToken: cancellationToken);
+
             var tabIds = new List<int>();
             foreach (var a in list)
             {
@@ -310,24 +316,16 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
-        /// Query history
-        /// 查询操作历史
+        /// Query article history
+        /// 查询文章操作历史
         /// </summary>
-        /// <param name="id">Article id</param>
+        /// <param name="rq">Request data</param>
         /// <param name="response">Response</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task QueryHistoryAsync(int id, HttpResponse response, CancellationToken cancellationToken = default)
+        public Task HistoryAsync(ArticleHistoryQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            var parameters = new DbParameters();
-            parameters.Add(nameof(id), id);
-
-            var fields = "id, kind, title, content, creation, ip, flag";
-            var json = fields.ToJsonCommand();
-
-            var command = CreateCommand($"SELECT {json} FROM audits WHERE kind IN (12, 13) AND target = @{nameof(id)} ORDER BY id DESC LIMIT 8", parameters, cancellationToken: cancellationToken);
-
-            await ReadJsonToStreamAsync(command, response);
+            return SqlSelectJsonAsync(rq, ["rowid AS id", "author", "kind", "title", "content", "creation", "ip", "flag"], response, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -825,9 +823,14 @@ namespace com.etsoo.CMS.Services
             var basic = $"a.id, a.title, a.subtitle, a.keywords, a.description, a.url, a.logo, a.creation, a.weight, a.author, a.release, a.status, a.slideshow, a.year, t.layout AS tabLayout, t.url AS tabUrl".ToJsonCommand(true);
             basic = basic.Trim(')') + ", 'tabName1', @tab1, 'tabName2', @tab2, 'tabName3', @tab3)";
 
-            var command = CreateCommand($"SELECT {basic} FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id WHERE a.id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
+            var audits = $"rowid, title, creation, author".ToJsonCommand();
 
-            await ReadJsonToStreamAsync(command, response);
+            // Kinds = UpdateArticle(13), UpdateArticleLogo(16)
+            var command = CreateCommand(@$"SELECT {basic} FROM articles AS a INNER JOIN tabs AS t ON a.tab1 = t.id WHERE a.id = @{nameof(id)};
+            SELECT {audits} FROM (SELECT rowid, * FROM audits WHERE target = @{nameof(id)} AND kind IN (13, 16) ORDER BY rowid DESC LIMIT 6)
+            ", parameters, cancellationToken: cancellationToken);
+
+            await ReadJsonToStreamAsync(command, response, ["data", "audits"]);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { ArticleLink } from './ArticleLink';
+import { ArticleLink } from "./ArticleLink";
 
 export type ArticleViewDto = ArticleLink & {
   id: number;
@@ -15,4 +15,16 @@ export type ArticleViewDto = ArticleLink & {
   tabName2?: string;
   tabName3?: string;
   logo?: string;
+};
+
+export type ArticleViewHistoryDto = {
+  rowid: number;
+  title: string;
+  creation: string | Date;
+  author: string;
+};
+
+export type ArticleViewAllDto = {
+  data: ArticleViewDto;
+  audits: ArticleViewHistoryDto[];
 };

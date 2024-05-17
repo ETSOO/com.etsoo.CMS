@@ -1,4 +1,6 @@
-﻿using com.etsoo.SourceGenerators.Attributes;
+﻿using com.etsoo.CoreFramework.Business;
+using com.etsoo.SourceGenerators;
+using com.etsoo.SourceGenerators.Attributes;
 using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,8 +10,7 @@ namespace com.etsoo.CMS.RQ.Tab
     /// Tab create request data
     /// 网址栏目创建请求数据
     /// </summary>
-    [AutoToParameters]
-    [AutoToJson]
+    [SqlInsertCommand("tabs", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
     public partial record TabCreateRQ
     {
         /// <summary>
@@ -24,7 +25,6 @@ namespace com.etsoo.CMS.RQ.Tab
         /// </summary>
         [Property(Length = 64)]
         [StringLength(64)]
-        [Required]
         public required string Name { get; init; }
 
         /// <summary>
@@ -33,14 +33,22 @@ namespace com.etsoo.CMS.RQ.Tab
         /// </summary>
         [Property(Length = 128)]
         [StringLength(128)]
-        [Required]
         public required string Url { get; set; }
 
         /// <summary>
         /// Enabled or not
         /// 是否启用
         /// </summary>
-        public bool Enabled { get; init; } = true;
+        public bool? Enabled
+        {
+            set
+            {
+                if (value.HasValue)
+                {
+                    Status = value.Value ? EntityStatus.Normal : EntityStatus.Inactivated;
+                }
+            }
+        }
 
         /// <summary>
         /// Layout
@@ -73,5 +81,29 @@ namespace com.etsoo.CMS.RQ.Tab
         /// </summary>
         [IsJson]
         public string? JsonData { get; init; }
+
+        /// <summary>
+        /// Status
+        /// 状态
+        /// </summary>
+        public EntityStatus Status { get; set; } = EntityStatus.Normal;
+
+        /// <summary>
+        /// Refresh time
+        /// 刷新时间
+        /// </summary>
+        public DateTimeOffset RefreshTime => DateTime.Now;
+
+        /// <summary>
+        /// Order index
+        /// 排序数
+        /// </summary>
+        public int OrderIndex => 0;
+
+        /// <summary>
+        /// Articles
+        /// 文章数
+        /// </summary>
+        public int Articles => 0;
     }
 }

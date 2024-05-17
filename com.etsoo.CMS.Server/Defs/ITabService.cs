@@ -1,7 +1,7 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CMS.Server.Defs;
-using com.etsoo.CoreFramework.Models;
+using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.Utils.Actions;
 
 namespace com.etsoo.CMS.Defs
@@ -16,7 +16,7 @@ namespace com.etsoo.CMS.Defs
 
         ValueTask<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
-        Task ListAsync(TiplistRQ<int> rq, HttpResponse response, CancellationToken cancellationToken = default);
+        Task ListAsync(TabTiplistRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 
         Task QueryAsync(TabQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 

@@ -3,17 +3,22 @@ import {
   IApiPayload,
   IdResultPayload,
   ResultPayload
-} from '@etsoo/appscript';
-import { ReactAppType } from '@etsoo/materialui';
-import { DataTypes } from '@etsoo/shared';
-import { ArticleQueryDto } from './dto/article/ArticleQueryDto';
-import { ArticleUpdateDto } from './dto/article/ArticleUpdateDto';
-import { ArticleViewDto } from './dto/article/ArticleViewDto';
-import { GalleryPhotoDto } from './dto/article/GalleryPhotoDto';
-import { ArticleDeletePhotoRQ } from './rq/article/ArticleDeletePhotoRQ';
-import { ArticleQueryRQ } from './rq/article/ArticleQueryRQ';
-import { ArticleSortPhotosRQ } from './rq/article/ArticleSortPhotosRQ';
-import { ArticleUpdatePhotoRQ } from './rq/article/ArticleUpdatePhotoRQ';
+} from "@etsoo/appscript";
+import { ReactAppType } from "@etsoo/materialui";
+import { DataTypes } from "@etsoo/shared";
+import { ArticleQueryDto } from "./dto/article/ArticleQueryDto";
+import { ArticleUpdateDto } from "./dto/article/ArticleUpdateDto";
+import {
+  ArticleViewAllDto,
+  ArticleViewDto
+} from "./dto/article/ArticleViewDto";
+import { GalleryPhotoDto } from "./dto/article/GalleryPhotoDto";
+import { ArticleDeletePhotoRQ } from "./rq/article/ArticleDeletePhotoRQ";
+import { ArticleQueryRQ } from "./rq/article/ArticleQueryRQ";
+import { ArticleSortPhotosRQ } from "./rq/article/ArticleSortPhotosRQ";
+import { ArticleUpdatePhotoRQ } from "./rq/article/ArticleUpdatePhotoRQ";
+import { ArticleHistoryQueryRQ } from "./rq/article/ArticleHistoryQueryRQ";
+import { ArticleHistoryDto } from "./dto/article/ArticleHistoryDto";
 
 /**
  * Article API
@@ -24,7 +29,7 @@ export class ArticleApi extends EntityApi {
    * @param app Application
    */
   constructor(app: ReactAppType) {
-    super('Article', app);
+    super("Article", app);
   }
 
   /**
@@ -57,7 +62,20 @@ export class ArticleApi extends EntityApi {
    * @returns Result
    */
   deletePhoto(rq: ArticleDeletePhotoRQ, payload?: ResultPayload) {
-    return this.api.put('Article/DeletePhoto', rq, payload);
+    return this.api.put("Article/DeletePhoto", rq, payload);
+  }
+
+  /**
+   * Operation history
+   * @param rq Request data
+   * @param payload Payload
+   * @returns Result
+   */
+  history(
+    rq: ArticleHistoryQueryRQ,
+    payload?: IApiPayload<ArticleHistoryDto[]>
+  ) {
+    return this.api.post("Article/History", rq, payload);
   }
 
   /**
@@ -77,7 +95,7 @@ export class ArticleApi extends EntityApi {
    * @returns Result
    */
   sortPhotos(rq: ArticleSortPhotosRQ, payload?: ResultPayload) {
-    return this.api.put('Article/SortPhotos', rq, payload);
+    return this.api.put("Article/SortPhotos", rq, payload);
   }
 
   /**
@@ -87,7 +105,7 @@ export class ArticleApi extends EntityApi {
    * @returns Result
    */
   translate(text: string, payload?: IApiPayload<string>) {
-    return this.api.post('Article/Translate', { text }, payload);
+    return this.api.post("Article/Translate", { text }, payload);
   }
 
   /**
@@ -161,7 +179,7 @@ export class ArticleApi extends EntityApi {
    * @param id Id
    * @returns Result
    */
-  viewRead(id: number, payload?: IApiPayload<ArticleViewDto>) {
+  viewRead(id: number, payload?: IApiPayload<ArticleViewAllDto>) {
     return this.api.get(`Article/ViewRead/${id}`, undefined, payload);
   }
 }

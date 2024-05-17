@@ -10,6 +10,11 @@ export type UserUpdateDto = {
   role: number;
 
   /**
+   * Password
+   */
+  password: string;
+
+  /**
    * Refresh time
    */
   refreshTime?: Date;

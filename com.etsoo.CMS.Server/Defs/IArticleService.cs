@@ -1,6 +1,7 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
 using com.etsoo.CMS.Server.Defs;
+using com.etsoo.CMS.Server.RQ.Article;
 using com.etsoo.Utils.Actions;
 
 namespace com.etsoo.CMS.Defs
@@ -19,7 +20,7 @@ namespace com.etsoo.CMS.Defs
 
         Task<DbArticleQuery[]> QueryAsync(ArticleQueryRQ rq, CancellationToken cancellationToken = default);
 
-        Task QueryHistoryAsync(int id, HttpResponse response, CancellationToken cancellationToken = default);
+        Task HistoryAsync(ArticleHistoryQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default);
 
         Task<IActionResult> SortPhotosAsync(ArticleSortPhotosRQ rq, CancellationToken cancellationToken = default);
 

@@ -1,6 +1,5 @@
 ﻿using com.etsoo.CoreFramework.Business;
 using com.etsoo.SourceGenerators.Attributes;
-using com.etsoo.Utils.String;
 
 namespace com.etsoo.CMS.Models
 {
@@ -47,29 +46,109 @@ namespace com.etsoo.CMS.Models
     /// <param name="Layout">Tab layout</param>
     /// <param name="TabUrl">Tab URL</param>
     [AutoDataReaderGenerator(UtcDateTime = true)]
-    public partial record DbArticleQuery(int Id, string Title, bool IsSelf, EntityStatus Status, DateTime Creation, int Tab1, int? Tab2, int? Tab3, string Url, int Year, int TabLayout, string TabUrl, string? Logo)
+    public partial record DbArticleQuery
     {
+        /// <summary>
+        /// Article id
+        /// 文章编号
+        /// </summary>
+        [SqlSelectColumn(Prefix = "a")]
+        public required int Id { get; init; }
+
+        /// <summary>
+        /// Title
+        /// 标题
+        /// </summary>
+        public required string Title { get; init; }
+
+        /// <summary>
+        /// Author is self or not
+        /// 作者是否自己
+        /// </summary>
+        [SqlSelectColumn(Function = "IIF(a.author = @CurrentUser, true, false)")]
+        public bool IsSelf { get; init; }
+
+        /// <summary>
+        /// Status
+        /// 状态
+        /// </summary>
+        public EntityStatus Status { get; init; }
+
+        /// <summary>
+        /// Creation
+        /// 登记时间
+        /// </summary>
+        public DateTime Creation { get; init; }
+
+        /// <summary>
+        /// Primary tab id
+        /// 主栏目编号
+        /// </summary>
+        public int Tab1 { get; init; }
+
+        /// <summary>
+        /// Tab 2 id    
+        /// 第二栏目编号
+        /// </summary>
+        public int? Tab2 { get; init; }
+
+        /// <summary>
+        /// Tab 3 id
+        /// 第三栏目编号
+        /// </summary>
+        public int? Tab3 { get; init; }
+
+        /// <summary>
+        /// Article URL
+        /// 文章网址
+        /// </summary>
+        public required string Url { get; init; }
+
+        /// <summary>
+        /// Article release year
+        /// 文章发布年份
+        /// </summary>
+        public int Year { get; init; }
+
+        /// <summary>
+        /// Article logo
+        /// </summary>
+        public string? Logo { get; init; }
+
+        /// <summary>
+        /// Tab layout
+        /// 栏目布局
+        /// </summary>
+        [SqlSelectColumn(Prefix = "t")]
+        [SqlColumn(ColumnName = "layout")]
+        public int TabLayout { get; init; }
+
+        /// <summary>
+        /// Tab URL
+        /// 栏目网址
+        /// </summary>
+        [SqlColumn(ColumnName = "url")]
+        public required string TabUrl { get; init; }
+
         /// <summary>
         /// Primary tab
         /// 第一栏目
         /// </summary>
+        [SqlColumn(Ignore = true)]
         public string? TabName1 { get; set; }
 
         /// <summary>
         /// Tab 2 name
         /// 第二栏目
         /// </summary>
+        [SqlColumn(Ignore = true)]
         public string? TabName2 { get; set; }
 
         /// <summary>
         /// Tab 3 name
         /// 第三栏目
         /// </summary>
+        [SqlColumn(Ignore = true)]
         public string? TabName3 { get; set; }
-
-        public DbArticleQuery(int id, string title, bool isSelf, int status, string creation, int tab1, int? tab2, int? tab3, string url, int year, int tabLayout, string tabUrl, string? logo)
-            : this(id, title, isSelf, (EntityStatus)status, StringUtils.TryParse<DateTime>(creation).GetValueOrDefault(), tab1, tab2, tab3, url, year, tabLayout, tabUrl, logo)
-        {
-        }
     }
 }

@@ -1,26 +1,26 @@
-import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
-import { FormControlLabel, Grid, Switch } from '@mui/material';
-import React from 'react';
-import { useFormik } from 'formik';
-import { DataTypes, IdActionResult, Utils } from '@etsoo/shared';
-import { useNavigate } from 'react-router-dom';
-import { app } from '../../app/MyApp';
-import { TabSelector } from '../../components/TabSelector';
+import { ComboBox, EditPage, InputField } from "@etsoo/materialui";
+import { FormControlLabel, Grid, Switch } from "@mui/material";
+import React from "react";
+import { useFormik } from "formik";
+import { DataTypes, IdActionResult, Utils } from "@etsoo/shared";
+import { useNavigate } from "react-router-dom";
+import { app } from "../../app/MyApp";
+import { TabSelector } from "../../components/TabSelector";
 import {
   ReactUtils,
   useParamsEx,
   useRefs,
   useSearchParamsEx
-} from '@etsoo/react';
-import { TabDto } from '../../api/dto/tab/TabDto';
-import { TabUpdateDto } from '../../api/dto/tab/TabUpdateDto';
+} from "@etsoo/react";
+import { TabDto } from "../../api/dto/tab/TabDto";
+import { TabUpdateDto } from "../../api/dto/tab/TabUpdateDto";
 
 function AddTab() {
   // Route
   const navigate = useNavigate();
-  const { id } = useParamsEx({ id: 'number' });
+  const { id } = useParamsEx({ id: "number" });
 
-  const { parent } = useSearchParamsEx({ parent: 'number' });
+  const { parent } = useSearchParamsEx({ parent: "number" });
   const [parents, setParents] = React.useState<number[]>();
   const currentTab = React.useRef<TabDto>();
 
@@ -30,24 +30,25 @@ function AddTab() {
 
   // Labels
   const labels = app.getLabels(
-    'noChanges',
-    'enabled',
-    'id',
-    'tab',
-    'deleteConfirm',
-    'tabName',
-    'tabUrl',
-    'tabLayout',
-    'parentTab',
-    'articleDescription',
-    'tabLogo',
-    'tabIcon'
+    "noChanges",
+    "enabled",
+    "id",
+    "tab",
+    "deleteConfirm",
+    "tabName",
+    "tabUrl",
+    "tabLayout",
+    "parentTab",
+    "articleDescription",
+    "tabLogo",
+    "tabIcon",
+    "noChildTab"
   );
 
   // Edit data
   const [data, setData] = React.useState<DataType>({
-    name: '',
-    url: '',
+    name: "",
+    url: "",
     enabled: true,
     articles: 0,
     layout: 0
@@ -57,7 +58,7 @@ function AddTab() {
   const layouts = app.getTabLayouts();
 
   // Input refs
-  const refFields = ['name', 'url', 'logo', 'description', 'icon'] as const;
+  const refFields = ["name", "url", "logo", "description", "icon"] as const;
   const refs = useRefs(refFields);
 
   // Formik
@@ -94,8 +95,8 @@ function AddTab() {
 
       if (result.ok) {
         navigate(
-          `${isEditing ? './../../all' : './../all'}?parent=${
-            values.parent ?? ''
+          `${isEditing ? "./../../all" : "./../all"}?parent=${
+            values.parent ?? ""
           }`
         );
         return;
@@ -108,16 +109,16 @@ function AddTab() {
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const urlInput = refs.url.current;
     if (urlInput == null) return;
-    if (!isEditing || urlInput.value === '') {
+    if (!isEditing || urlInput.value === "") {
       const name = event.target.value;
       app.formatUrl(name).then((url) => {
         if (url == null) return;
 
         if (currentTab.current == null) {
-          if (url === 'home' || url === 'fontpage') url = '';
-          urlInput.value = '/' + url;
+          if (url === "home" || url === "fontpage") url = "";
+          urlInput.value = "/" + url;
         } else {
-          urlInput.value = currentTab.current.url + '/' + url;
+          urlInput.value = currentTab.current.url + "/" + url;
         }
       });
     }
@@ -126,7 +127,7 @@ function AddTab() {
   // Load data
   const loadData = async () => {
     if (id == null) return;
-    app.api.get<TabUpdateDto>('Tab/UpdateRead/' + id).then((data) => {
+    app.api.get<TabUpdateDto>("Tab/UpdateRead/" + id).then((data) => {
       if (data == null) return;
       setData(data);
 
@@ -137,7 +138,7 @@ function AddTab() {
   };
 
   const ancestorRead = (parent: number) => {
-    app.api.get<number[]>('Tab/AncestorRead/' + parent).then((data) => {
+    app.api.get<number[]>("Tab/AncestorRead/" + parent).then((data) => {
       if (data == null) return;
       setParents(data.reverse());
     });
@@ -151,7 +152,7 @@ function AddTab() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey(isEditing ? 'editTab' : 'addTab');
+    app.setPageKey(isEditing ? "editTab" : "addTab");
 
     return () => {
       app.pageExit();
@@ -162,7 +163,7 @@ function AddTab() {
     <EditPage
       isEditing={isEditing}
       onDelete={
-        (data?.articles ?? 1) > 0 || data?.url === '/'
+        (data?.articles ?? 1) > 0 || data?.url === "/"
           ? undefined
           : () => {
               app.notifier.confirm(
@@ -176,7 +177,7 @@ function AddTab() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    navigate('./../../all');
+                    navigate("./../../all");
                     return;
                   }
 
@@ -195,7 +196,7 @@ function AddTab() {
           name="parent"
           label={labels.parentTab}
           values={parents}
-          onChange={(value) => formik.setFieldValue('parent', value)}
+          onChange={(value) => formik.setFieldValue("parent", value)}
           onItemChange={(option) => (currentTab.current = option)}
         />
       </Grid>
@@ -208,6 +209,10 @@ function AddTab() {
           label={labels.tabName}
           inputRef={refs.name}
           onBlur={handleBlur}
+          disabled={currentTab.current?.url === "/"}
+          helperText={
+            currentTab.current?.url === "/" ? labels.noChildTab : undefined
+          }
         />
       </Grid>
       <Grid item xs={12} sm={12}>
@@ -218,6 +223,7 @@ function AddTab() {
           inputProps={{ maxLength: 128 }}
           inputRef={refs.url}
           label={labels.tabUrl}
+          disabled={currentTab.current?.url === "/"}
         />
       </Grid>
       <Grid item xs={12} sm={6}>

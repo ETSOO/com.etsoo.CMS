@@ -1,27 +1,27 @@
-import { CommonPage, TextFieldEx, VBox } from '@etsoo/materialui';
-import { DomUtils } from '@etsoo/shared';
-import { Button } from '@mui/material';
-import { useFormik } from 'formik';
-import React from 'react';
-import * as Yup from 'yup';
-import { app } from '../../app/MyApp';
+import { CommonPage, TextFieldEx, VBox } from "@etsoo/materialui";
+import { DomUtils } from "@etsoo/shared";
+import { Button } from "@mui/material";
+import { useFormik } from "formik";
+import React from "react";
+import * as Yup from "yup";
+import { app } from "../../app/MyApp";
 
 // Change password
 // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill
 function ChangePassword() {
   // Labels
   const labels = app.getLabels(
-    'currentPasswordRequired',
-    'passwordTip',
-    'newPasswordRequired',
-    'newPasswordTip',
-    'repeatPasswordRequired',
-    'passwordRepeatError',
-    'passwordChangeSuccess',
-    'currentPassword',
-    'newPassword',
-    'repeatPassword',
-    'submit'
+    "currentPasswordRequired",
+    "passwordTip",
+    "newPasswordRequired",
+    "newPasswordTip",
+    "repeatPasswordRequired",
+    "passwordRepeatError",
+    "passwordChangeSuccess",
+    "currentPassword",
+    "newPassword",
+    "repeatPassword",
+    "submit"
   );
 
   // Form validation schema
@@ -35,22 +35,22 @@ function ChangePassword() {
         return true;
       })
       .required(labels.newPasswordRequired)
-      .notOneOf([Yup.ref('oldPassword')], labels.newPasswordTip),
+      .notOneOf([Yup.ref("oldPassword")], labels.newPasswordTip),
     rePassword: Yup.string()
       .required(labels.repeatPasswordRequired)
       // oneOf([Yup.ref('newPassword'), null], "Passwords mush match") will fail
       // ref is not proper for reach validation, ref field value is not ready
-      .oneOf([Yup.ref('password')], labels.passwordRepeatError)
+      .oneOf([Yup.ref("password")], labels.passwordRepeatError)
   });
 
   // Formik
   const formik = useFormik({
     initialValues: {
-      oldPassword: '',
-      password: '',
-      rePassword: ''
+      oldPassword: "",
+      password: "",
+      rePassword: ""
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values) => {
       // Submit data
       const { oldPassword, password } = values;
@@ -62,7 +62,7 @@ function ChangePassword() {
         app.notifier.succeed(labels.passwordChangeSuccess, undefined, () => {
           // Sign out
           app.api
-            .put<boolean>('User/Signout', undefined, {
+            .put<boolean>("User/Signout", undefined, {
               onError: (error) => {
                 console.log(error);
                 // Prevent further processing
@@ -78,15 +78,15 @@ function ChangePassword() {
             });
         });
       } else {
-        formik.setFieldError('oldPassword', result.title);
-        DomUtils.setFocus('oldPassword');
+        formik.setFieldError("oldPassword", result.title);
+        DomUtils.setFocus("oldPassword");
       }
     }
   });
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('changePassword');
+    app.setPageKey("changePassword");
   }, []);
 
   return (

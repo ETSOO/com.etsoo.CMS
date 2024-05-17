@@ -1,11 +1,12 @@
-import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
-import { FormControlLabel, Grid, Switch } from '@mui/material';
-import React from 'react';
-import { useFormik } from 'formik';
-import { DataTypes, IdActionResult, Utils } from '@etsoo/shared';
-import { useNavigate, useParams } from 'react-router-dom';
-import { app } from '../../app/MyApp';
-import { UserUpdateDto } from '../../api/dto/user/UserUpdateDto';
+import { ComboBox, EditPage, InputField, TextFieldEx } from "@etsoo/materialui";
+import { FormControlLabel, Grid, Switch } from "@mui/material";
+import React from "react";
+import { useFormik } from "formik";
+import { DataTypes, IdActionResult, Utils } from "@etsoo/shared";
+import { useNavigate, useParams } from "react-router-dom";
+import { app } from "../../app/MyApp";
+import { UserUpdateDto } from "../../api/dto/user/UserUpdateDto";
+import * as Yup from "yup";
 
 function AddUser() {
   // Route
@@ -21,18 +22,31 @@ function AddUser() {
 
   // Labels
   const labels = app.getLabels(
-    'noChanges',
-    'role',
-    'enabled',
-    'id',
-    'deleteConfirm',
-    'user'
+    "noChanges",
+    "role",
+    "enabled",
+    "id",
+    "deleteConfirm",
+    "user",
+    "password",
+    "passwordTip"
   );
 
   // Edit data
   const [data, setData] = React.useState<DataType>({
     role: 0,
+    password: "",
     enabled: true
+  });
+
+  // Form validation schema
+  const validationSchema = Yup.object({
+    password: Yup.string().test((value, context) => {
+      if (!isEditing && (value == null || !app.isValidPassword(value))) {
+        return context.createError({ message: labels.passwordTip });
+      }
+      return true;
+    })
   });
 
   // Formik
@@ -41,13 +55,14 @@ function AddUser() {
   const formik = useFormik<DataType>({
     initialValues: data,
     enableReinitialize: true,
+    validationSchema,
     onSubmit: async (values) => {
       // Request data
       const rq = { ...values };
 
       // Correct for types safety
       Utils.correctTypes(rq, {
-        role: 'number'
+        role: "number"
       });
 
       let result: IdActionResult | undefined;
@@ -70,12 +85,9 @@ function AddUser() {
 
       if (result.ok) {
         if (isEditing) {
-          navigate('./../../all');
+          navigate("./../../all");
         } else {
-          // Reset password
-          app.resetPassword(rq.id!, () => {
-            navigate('./../all');
-          });
+          navigate("./../all");
         }
         return;
       }
@@ -94,7 +106,7 @@ function AddUser() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey(isEditing ? 'editUser' : 'addUser');
+    app.setPageKey(isEditing ? "editUser" : "addUser");
 
     return () => {
       app.pageExit();
@@ -119,7 +131,7 @@ function AddUser() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    navigate('./../../all');
+                    navigate("./../../all");
                     return;
                   }
 
@@ -141,7 +153,7 @@ function AddUser() {
           disabled={isEditing}
           inputProps={{ maxLength: 128 }}
           label={labels.id}
-          value={formik.values.id ?? ''}
+          value={formik.values.id ?? ""}
           onChange={formik.handleChange}
         />
       </Grid>
@@ -155,6 +167,22 @@ function AddUser() {
           inputOnChange={formik.handleChange}
         />
       </Grid>
+      {!isEditing && (
+        <Grid item xs={12} sm={6}>
+          <TextFieldEx
+            name="password"
+            label={labels.password}
+            showPassword
+            autoComplete="new-password"
+            variant="outlined"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            required
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+          />
+        </Grid>
+      )}
       <Grid item xs={12} sm={6}>
         <FormControlLabel
           control={

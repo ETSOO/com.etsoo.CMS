@@ -39,6 +39,7 @@
   "link": "連結位址",
   "mobileAccess": "手機訪問",
   "mobileAccessTip": "蘋果或安卓手機開啟拍照程式或微信支付寶掃碼訪問",
+  "noChildTab": "不允許新增下級欄目",
   "oldResourceUrl": "舊資源網址",
   "onlineDrive": "網絡硬盤",
   "onlineDriveTip": "網絡硬盤文件無任何防下載措施，請不要放置包含敏感信息的文件",

@@ -39,6 +39,7 @@
   "link": "链接地址",
   "mobileAccess": "手机访问",
   "mobileAccessTip": "苹果或者安卓手机打开拍照程序或者微信支付宝扫码访问",
+  "noChildTab": "不允许添加下级栏目",
   "oldResourceUrl": "旧资源网址",
   "onlineDrive": "网络硬盘",
   "onlineDriveTip": "网络硬盘文件无任何防下载措施，请不要放置包含敏感信息的文件",

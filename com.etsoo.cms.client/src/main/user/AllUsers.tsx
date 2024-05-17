@@ -1,4 +1,4 @@
-import { EntityStatus } from '@etsoo/appscript';
+import { EntityStatus } from "@etsoo/appscript";
 import {
   MUGlobal,
   ResponsivePage,
@@ -6,58 +6,58 @@ import {
   ComboBox,
   IconButtonLink,
   MobileListItemRenderer
-} from '@etsoo/materialui';
-import { Box, BoxProps, Fab, IconButton, Typography } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import LockResetIcon from '@mui/icons-material/LockReset';
-import BlockIcon from '@mui/icons-material/Block';
-import HistoryIcon from '@mui/icons-material/History';
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { DomUtils } from '@etsoo/shared';
-import { app } from '../../app/MyApp';
-import { UserDto } from '../../api/dto/user/UserDto';
+} from "@etsoo/materialui";
+import { Box, BoxProps, Fab, IconButton, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import BlockIcon from "@mui/icons-material/Block";
+import HistoryIcon from "@mui/icons-material/History";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { DomUtils } from "@etsoo/shared";
+import { app } from "../../app/MyApp";
+import { UserDto } from "../../api/dto/user/UserDto";
 import {
   GridCellRendererProps,
   GridDataType,
   ScrollerListForwardRef
-} from '@etsoo/react';
+} from "@etsoo/react";
 
 function AllUsers() {
   // Route
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = DomUtils.dataAs(location.state, { id: 'string' });
+  const { id } = DomUtils.dataAs(location.state, { id: "string" });
 
   // Roles
   const roles = app.getLocalRoles();
 
   const getRoleLabel = (data?: UserDto) => {
     var role = data?.role;
-    if (role == null) return '';
+    if (role == null) return "";
     return app
       .getRoles(role)
       .map((r) => r.label)
-      .join(', ');
+      .join(", ");
   };
 
   // Labels
   const labels = app.getLabels(
-    'id',
-    'name',
-    'organization',
-    'actions',
-    'role',
-    'add',
-    'edit',
-    'inactivated',
-    'entityStatus',
-    'confirmAction',
-    'lastActive',
-    'resetPassword',
-    'confirmAction',
-    'audits'
+    "id",
+    "name",
+    "organization",
+    "actions",
+    "role",
+    "add",
+    "edit",
+    "inactivated",
+    "entityStatus",
+    "confirmAction",
+    "lastActive",
+    "resetPassword",
+    "confirmAction",
+    "audits"
   );
 
   const resetPassword = (id: string) => {
@@ -83,7 +83,7 @@ function AllUsers() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('users');
+    app.setPageKey("users");
   }, []);
 
   return (
@@ -98,16 +98,16 @@ function AllUsers() {
               title={labels.add}
               size="medium"
               color="primary"
-              onClick={() => navigate('./../add')}
+              onClick={() => navigate("./../add")}
             >
               <AddIcon />
             </Fab>
           </React.Fragment>
         )
       }}
-      fieldTemplate={{ role: 'number' }}
+      fieldTemplate={{ sid: "string", role: "number" }}
       fields={[
-        <SearchField label={labels.id} name="sid" defaultValue={id} />,
+        <SearchField label={labels.id} name="id" defaultValue={id} />,
         <ComboBox options={roles} name="role" label={labels.role} search />
       ]}
       loadData={async (data) =>
@@ -118,19 +118,19 @@ function AllUsers() {
       }
       columns={[
         {
-          field: 'id',
+          field: "id",
           header: labels.id,
           sortable: true
         },
         {
-          field: 'role',
+          field: "role",
           width: 180,
           header: labels.role,
           valueFormatter: ({ data }) => getRoleLabel(data),
           sortable: false
         },
         {
-          field: 'status',
+          field: "status",
           width: 90,
           header: labels.entityStatus,
           cellRenderer: ({
@@ -141,8 +141,8 @@ function AllUsers() {
               return undefined;
 
             cellProps.sx = {
-              paddingTop: '14px!important',
-              paddingBottom: '10px!important'
+              paddingTop: "14px!important",
+              paddingBottom: "10px!important"
             };
 
             return (
@@ -153,7 +153,7 @@ function AllUsers() {
           }
         },
         {
-          field: 'refreshTime',
+          field: "refreshTime",
           type: GridDataType.Date,
           width: 116,
           header: labels.lastActive,
@@ -170,8 +170,8 @@ function AllUsers() {
             if (data == null) return undefined;
 
             cellProps.sx = {
-              paddingTop: '6px!important',
-              paddingBottom: '6px!important'
+              paddingTop: "6px!important",
+              paddingBottom: "6px!important"
             };
 
             return (
@@ -208,7 +208,7 @@ function AllUsers() {
         MobileListItemRenderer(props, (data) => {
           return [
             data.id,
-            app.formatDate(data.refreshTime, 'd'),
+            app.formatDate(data.refreshTime, "d"),
             [
               {
                 label: labels.edit,
@@ -230,7 +230,7 @@ function AllUsers() {
               {data.status >= EntityStatus.Inactivated && (
                 <React.Fragment>
                   <Typography variant="caption">
-                    {labels.entityStatus + ': '}
+                    {labels.entityStatus + ": "}
                   </Typography>
                   <Typography
                     variant="caption"

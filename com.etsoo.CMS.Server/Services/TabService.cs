@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
+using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
@@ -50,12 +51,16 @@ namespace com.etsoo.CMS.Services
             if (rq.Url != "/")
                 rq.Url = rq.Url.TrimEnd('/');
 
+            /*
             var parameters = FormatParameters(rq);
 
             var command = CreateCommand(@$"INSERT INTO tabs (parent, name, description, logo, icon, url, layout, orderIndex, status, articles, refreshTime, jsonData)
                 VALUES (@{nameof(rq.Parent)}, @{nameof(rq.Name)}, @{nameof(rq.Description)}, @{nameof(rq.Logo)}, @{nameof(rq.Icon)}, @{nameof(rq.Url)}, @{nameof(rq.Layout)}, 0, IIF(@{nameof(rq.Enabled)}, 0, 200), 0, DATETIME('now', 'utc'), @{nameof(rq.JsonData)}); SELECT last_insert_rowid();", parameters, cancellationToken: cancellationToken);
 
             var tabId = await ExecuteScalarAsync<int>(command);
+            */
+
+            var tabId = await SqlInsertAsync<TabCreateRQ, int>(rq, cancellationToken: cancellationToken);
 
             var result = new ActionDataResult<int>(ActionResult.Success, tabId);
 
@@ -94,8 +99,9 @@ namespace com.etsoo.CMS.Services
         /// <param name="response">Response</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task ListAsync(TiplistRQ<int> rq, HttpResponse response, CancellationToken cancellationToken = default)
+        public async Task ListAsync(TabTiplistRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = rq.AsParameters(App);
 
             var fields = "id, name";
@@ -114,6 +120,9 @@ namespace com.etsoo.CMS.Services
             var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM tabs {conditions} ORDER BY orderIndex ASC, name ASC {limit})", parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
+            */
+
+            await SqlSelectJsonAsync(rq, ["id", "name AS label"], response, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -126,6 +135,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task QueryAsync(TabQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
 
             var fields = "id, parent, name, url, logo, articles";
@@ -140,12 +150,24 @@ namespace com.etsoo.CMS.Services
 
             var conditions = App.DB.JoinConditions(items);
 
-            var limit = App.DB.QueryLimit(rq.BatchSize, rq.CurrentPage);
+            var limit = App.DB.QueryLimit(rq.QueryPaging);
 
             // Sub-select, otherwise 'order by' fails
-            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM tabs {conditions} {rq.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
+            var command = CreateCommand($"SELECT {json} FROM (SELECT {fields} FROM tabs {conditions} {rq.QueryPaging.GetOrderCommand()} {limit})", parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
+            */
+
+            await SqlSelectJsonAsync(rq, ["id", "parent", "name", "url", "logo", "articles"], response, conditionDelegate: (conditions) =>
+            {
+                if (rq.Enabled.HasValue)
+                {
+                    if (rq.Enabled.Value)
+                        conditions.Add("status < 200");
+                    else
+                        conditions.Add("status >= 200");
+                }
+            }, cancellationToken: cancellationToken);
         }
 
         /// <summary>

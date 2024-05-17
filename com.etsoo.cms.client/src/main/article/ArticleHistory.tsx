@@ -4,7 +4,6 @@ import {
   SearchField,
   ResponsivePage,
   MobileListItemRenderer,
-  ComboBox,
   IsAuditLineUpdateData,
   ShowDataComparison
 } from "@etsoo/materialui";
@@ -16,16 +15,17 @@ import WarningIcon from "@mui/icons-material/Warning";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import React from "react";
 import { app } from "../../app/MyApp";
-import { UserHistoryDto } from "../../api/dto/user/UserHistoryDto";
 import { useParams } from "react-router-dom";
 import { AuditFlag } from "../../api/dto/user/AuditFlag";
 import {
   GridCellRendererProps,
   GridDataType,
-  ScrollerListForwardRef
+  ScrollerListForwardRef,
+  useParamsEx
 } from "@etsoo/react";
+import { ArticleHistoryDto } from "../../api/dto/article/ArticleHistoryDto";
 
-function formatData(data: UserHistoryDto) {
+function formatData(data: ArticleHistoryDto) {
   const content = data.content;
   let auditData = data.auditData;
   if (typeof content === "string") {
@@ -56,11 +56,13 @@ function formatJsonData(data: any) {
   );
 }
 
-function UserHistory() {
-  const { id } = useParams<{ id: string }>();
+function ArticleHistory() {
+  const { id } = useParamsEx({ id: "number" });
 
   // Labels
   const labels = app.getLabels(
+    "audits",
+    "article",
     "device",
     "successLogin",
     "no",
@@ -82,7 +84,7 @@ function UserHistory() {
   );
 
   // Refs
-  const ref = React.useRef<ScrollerListForwardRef<UserHistoryDto>>();
+  const ref = React.useRef<ScrollerListForwardRef<ArticleHistoryDto>>();
 
   // Load data
   const reloadData = async () => {
@@ -94,28 +96,21 @@ function UserHistory() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey("audits");
+    app.setPageTitle(labels.audits, labels.article);
   }, []);
 
   return (
-    <ResponsivePage<UserHistoryDto>
+    <ResponsivePage<ArticleHistoryDto>
       mRef={ref}
       defaultOrderBy="creation"
       defaultOrderByAsc={false}
       pageProps={{ onRefresh: reloadData }}
       fieldTemplate={{
-        author: "string",
-        kind: "number",
+        target: "number",
         creationStart: "date",
         creationEnd: "date"
       }}
       fields={[
-        <ComboBox
-          options={app.getAuditKinds()}
-          name="kind"
-          label={labels.type}
-          search
-        />,
         <SearchField
           label={labels.startDate}
           name="creationStart"
@@ -139,8 +134,8 @@ function UserHistory() {
       ]}
       loadData={async (data) => {
         if (!id) return null;
-        data.author = id;
-        return await app.userApi.history(data, {
+        data.target = id;
+        return await app.articleApi.history(data, {
           defaultValue: [],
           showLoading: false
         });
@@ -166,7 +161,7 @@ function UserHistory() {
           cellRenderer: ({
             data,
             cellProps
-          }: GridCellRendererProps<UserHistoryDto, BoxProps>) => {
+          }: GridCellRendererProps<ArticleHistoryDto, BoxProps>) => {
             if (data == null) return undefined;
 
             cellProps.sx = {
@@ -253,4 +248,4 @@ function UserHistory() {
   );
 }
 
-export default UserHistory;
+export default ArticleHistory;
