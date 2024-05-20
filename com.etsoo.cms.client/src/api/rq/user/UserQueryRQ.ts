@@ -1,3 +1,3 @@
-import { QueryRQ } from '@etsoo/appscript';
+import { QueryRQ } from "@etsoo/appscript";
 
-export type UserQueryRQ = QueryRQ & {};
+export type UserQueryRQ = QueryRQ<string> & {};

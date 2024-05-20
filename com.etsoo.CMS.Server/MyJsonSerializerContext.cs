@@ -10,6 +10,7 @@ using com.etsoo.CMS.Server.RQ.Article;
 using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.WeiXin.RQ;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 
 namespace com.etsoo.CMS
@@ -30,6 +31,10 @@ namespace com.etsoo.CMS
     [JsonSerializable(typeof(ArticleSortPhotosRQ))]
     [JsonSerializable(typeof(ArticleUpdateRQ))]
     [JsonSerializable(typeof(ArticleUpdatePhotoRQ))]
+
+    [JsonSerializable(typeof(Utils.Actions.ActionResult))]
+    [JsonSerializable(typeof(ConcurrentQueue<(string, Utils.Actions.IActionResult)>))]
+
     [JsonSerializable(typeof(CreateJsApiSignatureRQ))]
     [JsonSerializable(typeof(DbArticleQuery[]))]
     [JsonSerializable(typeof(DriveCreateRQ))]

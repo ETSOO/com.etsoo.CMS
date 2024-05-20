@@ -1,4 +1,5 @@
 ﻿using com.etsoo.CoreFramework.Models;
+using com.etsoo.SourceGenerators;
 using com.etsoo.SourceGenerators.Attributes;
 
 namespace com.etsoo.CMS.RQ.Drive
@@ -7,7 +8,7 @@ namespace com.etsoo.CMS.RQ.Drive
     /// Online drive query data
     /// 网络硬盘查询参数
     /// </summary>
-    [AutoToParameters]
+    [SqlSelectCommand("files", NamingPolicy.CamelCase, Database = DatabaseName.SQLite)]
     public partial record DriveQueryRQ : QueryRQ
     {
         /// <summary>
@@ -32,12 +33,14 @@ namespace com.etsoo.CMS.RQ.Drive
         /// Creation start
         /// 创建开始时间
         /// </summary>
+        [SqlColumn(ColumnName = "creation", QuerySign = SqlQuerySign.GreaterOrEqual)]
         public DateTime? CreationStart { get; init; }
 
         /// <summary>
         /// Creation end
         /// 创建结束时间
         /// </summary>
+        [SqlColumn(ColumnName = "creation", QuerySign = SqlQuerySign.Less)]
         public DateTime? CreationEnd { get; init; }
     }
 }

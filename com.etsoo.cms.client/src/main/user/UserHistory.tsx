@@ -97,19 +97,22 @@ function UserHistory() {
     app.setPageKey("audits");
   }, []);
 
+  const fieldTemplate = {
+    author: "string",
+    kind: "number",
+    creationStart: "date",
+    creationEnd: "date"
+  } as const;
+
   return (
-    <ResponsivePage<UserHistoryDto>
+    <ResponsivePage<UserHistoryDto, typeof fieldTemplate>
       mRef={ref}
       defaultOrderBy="creation"
       defaultOrderByAsc={false}
       pageProps={{ onRefresh: reloadData }}
-      fieldTemplate={{
-        author: "string",
-        kind: "number",
-        creationStart: "date",
-        creationEnd: "date"
-      }}
+      fieldTemplate={fieldTemplate}
       fields={[
+        <input type="hidden" name="author" value={id} />,
         <ComboBox
           options={app.getAuditKinds()}
           name="kind"
@@ -138,8 +141,6 @@ function UserHistory() {
         />
       ]}
       loadData={async (data) => {
-        if (!id) return null;
-        data.author = id;
         return await app.userApi.history(data, {
           defaultValue: [],
           showLoading: false

@@ -86,8 +86,10 @@ function AllUsers() {
     app.setPageKey("users");
   }, []);
 
+  const fieldTemplate = { id: "string", role: "number" } as const;
+
   return (
-    <ResponsivePage<UserDto>
+    <ResponsivePage<UserDto, typeof fieldTemplate>
       mRef={ref}
       defaultOrderBy="creation"
       pageProps={{
@@ -105,7 +107,7 @@ function AllUsers() {
           </React.Fragment>
         )
       }}
-      fieldTemplate={{ sid: "string", role: "number" }}
+      fieldTemplate={fieldTemplate}
       fields={[
         <SearchField label={labels.id} name="id" defaultValue={id} />,
         <ComboBox options={roles} name="role" label={labels.role} search />

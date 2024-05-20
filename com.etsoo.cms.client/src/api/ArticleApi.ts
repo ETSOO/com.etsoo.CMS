@@ -8,10 +8,7 @@ import { ReactAppType } from "@etsoo/materialui";
 import { DataTypes } from "@etsoo/shared";
 import { ArticleQueryDto } from "./dto/article/ArticleQueryDto";
 import { ArticleUpdateDto } from "./dto/article/ArticleUpdateDto";
-import {
-  ArticleViewAllDto,
-  ArticleViewDto
-} from "./dto/article/ArticleViewDto";
+import { ArticleViewAllDto } from "./dto/article/ArticleViewDto";
 import { GalleryPhotoDto } from "./dto/article/GalleryPhotoDto";
 import { ArticleDeletePhotoRQ } from "./rq/article/ArticleDeletePhotoRQ";
 import { ArticleQueryRQ } from "./rq/article/ArticleQueryRQ";
@@ -75,6 +72,7 @@ export class ArticleApi extends EntityApi {
     rq: ArticleHistoryQueryRQ,
     payload?: IApiPayload<ArticleHistoryDto[]>
   ) {
+    if (!rq.target) throw new Error("Article is required");
     return this.api.post("Article/History", rq, payload);
   }
 

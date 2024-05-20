@@ -170,6 +170,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task QueryAsync(DriveQueryRQ rq, HttpResponse response, CancellationToken cancellationToken = default)
         {
+            /*
             var parameters = FormatParameters(rq);
 
             var fields = $"id, name, size, author, shared, creation";
@@ -192,6 +193,9 @@ namespace com.etsoo.CMS.Services
             var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
 
             await ReadJsonToStreamAsync(command, response);
+            */
+
+            await SqlSelectJsonAsync(rq, ["id", "name", "size", "shared:boolean", "author", "creation"], response, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -265,7 +269,8 @@ namespace com.etsoo.CMS.Services
                     Name = fileName,
                     Path = filePath,
                     Size = fileSize,
-                    ContentType = contentType
+                    ContentType = contentType,
+                    Author = User.Id
                 };
 
                 ActionResult result;

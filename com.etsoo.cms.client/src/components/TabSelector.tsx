@@ -1,13 +1,13 @@
-import { HiSelector, HiSelectorProps } from '@etsoo/materialui';
-import { app } from '../app/MyApp';
-import { TabDto } from '../api/dto/tab/TabDto';
+import { HiSelector, HiSelectorProps } from "@etsoo/materialui";
+import { app } from "../app/MyApp";
+import { TabDto } from "../api/dto/tab/TabDto";
 
 /**
  * Tab selector props
  */
 export type TabSelectorProps = Omit<
   HiSelectorProps<TabDto>,
-  'idField' | 'loadData' | 'labelField'
+  "idField" | "loadData" | "labelField"
 >;
 
 /**
@@ -21,7 +21,7 @@ export function TabSelector(props: TabSelectorProps) {
       labelField="name"
       loadData={(parent?: number) =>
         app.tabApi.query(
-          { currentPage: 0, batchSize: 100, parent },
+          { queryPaging: { currentPage: 0, batchSize: 100 }, parent },
           { showLoading: false }
         )
       }

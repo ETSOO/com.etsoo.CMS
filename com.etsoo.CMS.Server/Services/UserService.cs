@@ -211,10 +211,7 @@ namespace com.etsoo.CMS.Services
             await ReadJsonToStreamAsync(command, response);
             */
 
-            await SqlSelectJsonAsync(rq, ["id", "role", "status", "creation", "refreshTime"], response, true, (mappings) =>
-            {
-                mappings.Add("isSelf", $"id = {SysUserField}".ToJsonBool());
-            }, cancellationToken: cancellationToken);
+            await SqlSelectJsonAsync(rq, ["id", "role", "status", "creation", "refreshTime", $"IIF(id = {SysUserField}, TRUE, FALSE):boolean AS isSelf"], response, true, cancellationToken: cancellationToken);
         }
 
         /// <summary>

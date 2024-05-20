@@ -8,55 +8,55 @@ import {
   OptionBool,
   VBox,
   TooltipClick
-} from '@etsoo/materialui';
+} from "@etsoo/materialui";
 import {
   BoxProps,
   Button,
   IconButton,
   TextField,
   Typography
-} from '@mui/material';
-import React from 'react';
-import { app } from '../../app/MyApp';
+} from "@mui/material";
+import React from "react";
+import { app } from "../../app/MyApp";
 import {
   GridCellRendererProps,
   GridDataType,
   ScrollerListForwardRef
-} from '@etsoo/react';
-import { DriveQueryDto } from '../../api/dto/drive/DriveQueryDto';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import EditIcon from '@mui/icons-material/Edit';
-import DownloadIcon from '@mui/icons-material/Download';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ShareIcon from '@mui/icons-material/Share';
-import { DomUtils, NumberUtils, Utils } from '@etsoo/shared';
-import { UserRole } from '@etsoo/appscript';
+} from "@etsoo/react";
+import { DriveQueryDto } from "../../api/dto/drive/DriveQueryDto";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import EditIcon from "@mui/icons-material/Edit";
+import DownloadIcon from "@mui/icons-material/Download";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ShareIcon from "@mui/icons-material/Share";
+import { DomUtils, NumberUtils, Utils } from "@etsoo/shared";
+import { UserRole } from "@etsoo/appscript";
 
 function AllUsers() {
   // Labels
   const labels = app.getLabels(
-    'id',
-    'creation',
-    'actions',
-    'upload',
-    'driveUploadTip',
-    'uploadError1',
-    'uploadError2',
-    'author',
-    'fileName',
-    'fileSize',
-    'shared',
-    'edit',
-    'download',
-    'noChanges',
-    'delete',
-    'deleteConfirm',
-    'share',
-    'removeShare',
-    'shareHours',
-    'copy',
-    'completeTip',
-    'link'
+    "id",
+    "creation",
+    "actions",
+    "upload",
+    "driveUploadTip",
+    "uploadError1",
+    "uploadError2",
+    "author",
+    "fileName",
+    "fileSize",
+    "shared",
+    "edit",
+    "download",
+    "noChanges",
+    "delete",
+    "deleteConfirm",
+    "share",
+    "removeShare",
+    "shareHours",
+    "copy",
+    "completeTip",
+    "link"
   );
 
   // Refs
@@ -95,7 +95,7 @@ function AllUsers() {
   const editFile = (data: DriveQueryDto) => {
     app.showInputDialog({
       title: labels.edit,
-      message: '',
+      message: "",
       fullScreen: app.smDown,
       inputs: (
         <VBox paddingTop={1} paddingBottom={1} gap={2}>
@@ -129,15 +129,15 @@ function AllUsers() {
         const { name, shared, removeShare } = DomUtils.dataAs(
           new FormData(form),
           {
-            name: 'string',
-            shared: 'boolean',
-            removeShare: 'boolean'
+            name: "string",
+            shared: "boolean",
+            removeShare: "boolean"
           }
         );
 
         // Validation
         if (!name) {
-          DomUtils.setFocus('name', form);
+          DomUtils.setFocus("name", form);
           return false;
         }
 
@@ -145,7 +145,7 @@ function AllUsers() {
         const fields: string[] = Utils.getDataChanges(
           rq,
           data,
-          removeShare ? ['id'] : ['id', 'removeShare']
+          removeShare ? ["id"] : ["id", "removeShare"]
         );
         if (fields.length === 0) {
           return labels.noChanges;
@@ -182,7 +182,7 @@ function AllUsers() {
         },
         labels.share,
         {
-          type: 'number',
+          type: "number",
           inputProps: { defaultValue: 3, inputProps: { min: 1, max: 720 } }
         }
       );
@@ -203,7 +203,7 @@ function AllUsers() {
       app.notifier.succeed(labels.link, undefined, undefined, 300, {
         inputs: (
           <VBox gap={1} alignItems="center">
-            <Typography sx={{ wordBreak: 'break-all' }}>{url}</Typography>
+            <Typography sx={{ wordBreak: "break-all" }}>{url}</Typography>
             <TooltipClick title={labels.completeTip.format(labels.copy)}>
               {(openTooltip) => (
                 <Button
@@ -235,11 +235,18 @@ function AllUsers() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('onlineDrive');
+    app.setPageKey("onlineDrive");
   }, []);
 
+  const fieldTemplate = {
+    name: "string",
+    creationStart: "date",
+    creationEnd: "date",
+    shared: "boolean"
+  } as const;
+
   return (
-    <ResponsivePage<DriveQueryDto>
+    <ResponsivePage<DriveQueryDto, typeof fieldTemplate>
       mRef={ref}
       defaultOrderBy="creation"
       pageProps={{
@@ -278,7 +285,7 @@ function AllUsers() {
           </React.Fragment>
         )
       }}
-      fieldTemplate={{ shared: 'boolean' }}
+      fieldTemplate={fieldTemplate}
       fields={[
         <SearchField label={labels.id} name="id" />,
         <SearchField label={labels.fileName} name="name" />,
@@ -298,29 +305,29 @@ function AllUsers() {
       }
       columns={[
         {
-          field: 'name',
+          field: "name",
           header: labels.fileName,
           sortable: true
         },
         {
-          field: 'size',
+          field: "size",
           header: labels.fileSize,
           width: 108,
           valueFormatter: ({ data }) => {
             if (data == null) return;
             return NumberUtils.formatFileSize(data.size);
           },
-          align: 'right',
+          align: "right",
           sortable: false
         },
         {
-          field: 'author',
+          field: "author",
           header: labels.author,
           sortable: false,
           width: 116
         },
         {
-          field: 'creation',
+          field: "creation",
           type: GridDataType.Date,
           width: 116,
           header: labels.creation,
@@ -337,8 +344,8 @@ function AllUsers() {
             if (data == null) return undefined;
 
             cellProps.sx = {
-              paddingTop: '6px!important',
-              paddingBottom: '6px!important'
+              paddingTop: "6px!important",
+              paddingBottom: "6px!important"
             };
 
             return (
@@ -349,12 +356,12 @@ function AllUsers() {
                 <IconButton
                   title={
                     data.shared
-                      ? [labels.shared, labels.share].join(', ')
+                      ? [labels.shared, labels.share].join(", ")
                       : labels.share
                   }
                   onClick={() => shareFile(data)}
                 >
-                  <ShareIcon color={data.shared ? undefined : 'error'} />
+                  <ShareIcon color={data.shared ? "error" : undefined} />
                 </IconButton>
                 {adminPermission && (
                   <IconButton
@@ -380,8 +387,8 @@ function AllUsers() {
         MobileListItemRenderer(props, (data) => {
           return [
             data.name,
-            app.formatDate(data.creation, 'd') +
-              ', ' +
+            app.formatDate(data.creation, "d") +
+              ", " +
               NumberUtils.formatFileSize(data.size),
             [
               {
@@ -391,7 +398,7 @@ function AllUsers() {
               },
               {
                 label: labels.share,
-                icon: <ShareIcon color={data.shared ? undefined : 'error'} />,
+                icon: <ShareIcon color={data.shared ? "error" : undefined} />,
                 action: () => shareFile(data)
               },
               adminPermission && {

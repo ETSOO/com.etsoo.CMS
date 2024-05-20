@@ -1,7 +1,7 @@
 import { QueryRQ } from "@etsoo/appscript";
 
 export type HistoryQueryRQ = QueryRQ & {
-  author: string;
+  author?: string;
   kind?: number;
   creationStart?: string | Date;
   creationEnd?: string | Date;

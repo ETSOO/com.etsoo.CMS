@@ -1,3 +1,6 @@
-import { QueryRQ } from '@etsoo/appscript';
+import { QueryRQ } from "@etsoo/appscript";
 
-export type ArticleQueryRQ = QueryRQ & {};
+export type ArticleQueryRQ = QueryRQ & {
+  title?: string;
+  tab?: number;
+};

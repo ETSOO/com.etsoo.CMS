@@ -13,8 +13,8 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@etsoo/appscript": "^1.4.90",
-    "@etsoo/materialui": "^1.3.58",
-    "@etsoo/react": "^1.7.44",
+    "@etsoo/materialui": "^1.3.63",
+    "@etsoo/react": "^1.7.46",
     "@etsoo/reacteditor": "^1.0.19",
     "@etsoo/shared": "^1.2.40",
     "@mui/icons-material": "^5.15.18",
@@ -26,13 +26,16 @@
     "web-vitals": "^4.0.0",
     "yup": "^1.4.0"
   },
+  "overrides": {
+    "eslint": "^9.3.0"
+  },
   "devDependencies": {
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.57.0",
+    "eslint": "^9.3.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^5.4.5",

@@ -45,6 +45,12 @@ namespace com.etsoo.CMS.RQ.Drive
         public required string ContentType { get; init; }
 
         /// <summary>
+        /// Author
+        /// 作者
+        /// </summary>
+        public required string Author { get; init; }
+
+        /// <summary>
         /// Creation
         /// 创建时间
         /// </summary>

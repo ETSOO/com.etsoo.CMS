@@ -104,7 +104,7 @@ namespace com.etsoo.CMS.Controllers
             }
 
             var result = await service.UploadFilesAsync(files, CancellationToken);
-            await WriteResultAsync(result);
+            await WriteResultAsync(result, MyJsonSerializerContext.Default.ActionResult);
         }
 
         /// <summary>

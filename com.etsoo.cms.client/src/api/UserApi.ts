@@ -3,14 +3,14 @@ import {
   IApiPayload,
   IdResultPayload,
   ResultPayload
-} from '@etsoo/appscript';
-import { ReactAppType } from '@etsoo/materialui';
-import { DataTypes, IActionResult } from '@etsoo/shared';
-import { UserDto } from './dto/user/UserDto';
-import { UserHistoryDto } from './dto/user/UserHistoryDto';
-import { UserUpdateDto } from './dto/user/UserUpdateDto';
-import { HistoryQueryRQ } from './rq/user/HistoryQueryRQ';
-import { UserQueryRQ } from './rq/user/UserQueryRQ';
+} from "@etsoo/appscript";
+import { ReactAppType } from "@etsoo/materialui";
+import { DataTypes, IActionResult } from "@etsoo/shared";
+import { UserDto } from "./dto/user/UserDto";
+import { UserHistoryDto } from "./dto/user/UserHistoryDto";
+import { UserUpdateDto } from "./dto/user/UserUpdateDto";
+import { HistoryQueryRQ } from "./rq/user/HistoryQueryRQ";
+import { UserQueryRQ } from "./rq/user/UserQueryRQ";
 
 /**
  * User API
@@ -21,7 +21,7 @@ export class UserApi extends EntityApi {
    * @param app Application
    */
   constructor(app: ReactAppType) {
-    super('User', app);
+    super("User", app);
   }
 
   /**
@@ -41,7 +41,7 @@ export class UserApi extends EntityApi {
       oldPassword: this.app.encrypt(this.app.hash(oldPassword)),
       password: this.app.encrypt(this.app.hash(password))
     };
-    return this.api.put('User/ChangePassword', rq, payload);
+    return this.api.put("User/ChangePassword", rq, payload);
   }
 
   /**
@@ -74,7 +74,8 @@ export class UserApi extends EntityApi {
    * @returns Result
    */
   history(rq: HistoryQueryRQ, payload?: IApiPayload<UserHistoryDto[]>) {
-    return this.api.post('User/History', rq, payload);
+    if (!rq.author) throw new Error("Author is required");
+    return this.api.post("User/History", rq, payload);
   }
 
   /**
@@ -88,7 +89,7 @@ export class UserApi extends EntityApi {
     payload?: IApiPayload<IActionResult<{ password: string }>>
   ) {
     return this.api.put(
-      'User/ResetPassword/',
+      "User/ResetPassword/",
       { deviceId: this.app.deviceId, id },
       payload
     );

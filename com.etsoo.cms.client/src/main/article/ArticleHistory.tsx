@@ -15,7 +15,6 @@ import WarningIcon from "@mui/icons-material/Warning";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import React from "react";
 import { app } from "../../app/MyApp";
-import { useParams } from "react-router-dom";
 import { AuditFlag } from "../../api/dto/user/AuditFlag";
 import {
   GridCellRendererProps,
@@ -99,18 +98,21 @@ function ArticleHistory() {
     app.setPageTitle(labels.audits, labels.article);
   }, []);
 
+  const fieldTemplate = {
+    target: "number",
+    creationStart: "date",
+    creationEnd: "date"
+  } as const;
+
   return (
-    <ResponsivePage<ArticleHistoryDto>
+    <ResponsivePage<ArticleHistoryDto, typeof fieldTemplate>
       mRef={ref}
       defaultOrderBy="creation"
       defaultOrderByAsc={false}
       pageProps={{ onRefresh: reloadData }}
-      fieldTemplate={{
-        target: "number",
-        creationStart: "date",
-        creationEnd: "date"
-      }}
+      fieldTemplate={fieldTemplate}
       fields={[
+        <input type="hidden" name="target" value={id} />,
         <SearchField
           label={labels.startDate}
           name="creationStart"
@@ -133,8 +135,6 @@ function ArticleHistory() {
         />
       ]}
       loadData={async (data) => {
-        if (!id) return null;
-        data.target = id;
         return await app.articleApi.history(data, {
           defaultValue: [],
           showLoading: false

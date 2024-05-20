@@ -7,47 +7,47 @@ import {
   Tiplist,
   VBox,
   InputField
-} from '@etsoo/materialui';
-import { BoxProps, Fab, IconButton, Typography } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import PageviewIcon from '@mui/icons-material/Pageview';
-import PublicIcon from '@mui/icons-material/Public';
-import PhotoIcon from '@mui/icons-material/Photo';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { DataTypes, DomUtils } from '@etsoo/shared';
-import { app } from '../../app/MyApp';
+} from "@etsoo/materialui";
+import { BoxProps, Fab, IconButton, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import PageviewIcon from "@mui/icons-material/Pageview";
+import PublicIcon from "@mui/icons-material/Public";
+import PhotoIcon from "@mui/icons-material/Photo";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { DataTypes, DomUtils } from "@etsoo/shared";
+import { app } from "../../app/MyApp";
 import {
   GridCellRendererProps,
   GridDataType,
   ScrollerListForwardRef
-} from '@etsoo/react';
-import { ArticleQueryDto } from '../../api/dto/article/ArticleQueryDto';
-import { UserRole } from '@etsoo/appscript';
-import { LocalUtils } from '../../app/LocalUtils';
+} from "@etsoo/react";
+import { ArticleQueryDto } from "../../api/dto/article/ArticleQueryDto";
+import { UserRole } from "@etsoo/appscript";
+import { LocalUtils } from "../../app/LocalUtils";
 
 function AllArticles() {
   // Route
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = DomUtils.dataAs(location.state, { id: 'string' });
+  const { id } = DomUtils.dataAs(location.state, { id: "string" });
 
   // Labels
   const labels = app.getLabels(
-    'id',
-    'creation',
-    'actions',
-    'add',
-    'edit',
-    'view',
-    'articleTitle',
-    'viewWebsite',
-    'tab',
-    'articleLogo',
-    'regenerateLink',
-    'link'
+    "id",
+    "creation",
+    "actions",
+    "add",
+    "edit",
+    "view",
+    "articleTitle",
+    "viewWebsite",
+    "tab",
+    "articleLogo",
+    "regenerateLink",
+    "link"
   );
 
   // Refs
@@ -65,11 +65,17 @@ function AllArticles() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('articles');
+    app.setPageKey("articles");
   }, []);
 
+  const fieldTemplate = {
+    tab: "number",
+    title: "string",
+    id: "number"
+  } as const;
+
   return (
-    <ResponsivePage<ArticleQueryDto>
+    <ResponsivePage<ArticleQueryDto, typeof fieldTemplate>
       mRef={ref}
       defaultOrderBy="creation"
       pageProps={{
@@ -92,11 +98,11 @@ function AllArticles() {
 
                     // Form data
                     const { url } = DomUtils.dataAs(new FormData(form), {
-                      url: 'string'
+                      url: "string"
                     });
 
                     if (!url) {
-                      DomUtils.setFocus('url');
+                      DomUtils.setFocus("url");
                       return false;
                     }
 
@@ -137,7 +143,7 @@ function AllArticles() {
               title={labels.add}
               size="medium"
               color="primary"
-              onClick={() => navigate('./../add')}
+              onClick={() => navigate("./../add")}
             >
               <AddIcon />
             </Fab>
@@ -145,7 +151,6 @@ function AllArticles() {
         )
       }}
       quickAction={(data) => navigate(`./../view/${data.id}`)}
-      fieldTemplate={{ tab: 'number', id: 'number' }}
       fields={[
         <SearchField label={labels.articleTitle} name="title" />,
         <Tiplist
@@ -154,7 +159,7 @@ function AllArticles() {
           search
           loadData={async (keyword, id) => {
             return await app.api.post<DataTypes.IdLabelItem[]>(
-              'Tab/List',
+              "Tab/List",
               {
                 id,
                 keyword
@@ -165,12 +170,13 @@ function AllArticles() {
         />,
         <SearchField label={labels.id} name="id" defaultValue={id} />
       ]}
+      fieldtemplate={fieldTemplate}
       loadData={(data) =>
         app.articleApi.query(data, { defaultValue: [], showLoading: false })
       }
       columns={[
         {
-          field: 'creation',
+          field: "creation",
           type: GridDataType.Date,
           width: 116,
           header: labels.creation,
@@ -178,12 +184,12 @@ function AllArticles() {
           sortAsc: false
         },
         {
-          field: 'title',
+          field: "title",
           header: labels.articleTitle,
           sortable: false
         },
         {
-          field: 'tabName1',
+          field: "tabName1",
           header: labels.tab,
           width: 240,
           sortable: false
@@ -198,8 +204,8 @@ function AllArticles() {
             if (data == null) return undefined;
 
             cellProps.sx = {
-              paddingTop: '6px!important',
-              paddingBottom: '6px!important'
+              paddingTop: "6px!important",
+              paddingBottom: "6px!important"
             };
 
             return (
@@ -219,7 +225,7 @@ function AllArticles() {
                     state={LocalUtils.createLogoState(data)}
                     size="small"
                   >
-                    <PhotoIcon color={data.logo ? 'secondary' : undefined} />
+                    <PhotoIcon color={data.logo ? "secondary" : undefined} />
                   </IconButtonLink>
                 )}
                 <IconButtonLink
@@ -245,7 +251,7 @@ function AllArticles() {
         MobileListItemRenderer(props, (data) => {
           return [
             data.title,
-            app.formatDate(data.creation, 'd'),
+            app.formatDate(data.creation, "d"),
             [
               {
                 label: labels.edit,
