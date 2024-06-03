@@ -1,13 +1,13 @@
-import { EditPage, InputField, VBox } from '@etsoo/materialui';
-import { useFormik } from 'formik';
-import React from 'react';
-import { app } from '../../app/MyApp';
-import { UserRole } from '@etsoo/appscript';
-import { DataTypes, DomUtils, Utils } from '@etsoo/shared';
-import { useNavigate } from 'react-router-dom';
-import { SettingsUpdateDto } from '../../api/dto/website/SettingsUpdateDto';
-import { Button, Grid } from '@mui/material';
-import { ReactUtils, useRefs } from '@etsoo/react';
+import { EditPage, InputField, VBox } from "@etsoo/materialui";
+import { useFormik } from "formik";
+import React from "react";
+import { app } from "../../app/MyApp";
+import { UserRole } from "@etsoo/appscript";
+import { DataTypes, DomUtils, Utils } from "@etsoo/shared";
+import { useNavigate } from "react-router-dom";
+import { SettingsUpdateDto } from "../../api/dto/website/SettingsUpdateDto";
+import { Button, Grid } from "@mui/material";
+import { ReactUtils, useRefs } from "@etsoo/react";
 
 function Settings() {
   // Navigate
@@ -15,20 +15,21 @@ function Settings() {
 
   // Labels
   const labels = app.getLabels(
-    'operationSucceeded',
-    'noChanges',
-    'websiteDomain',
-    'websiteTitle',
-    'websiteDescription',
-    'websiteKeywords',
-    'websiteKeywordsTip',
-    'articleLogoSize',
-    'tabLogoSize',
-    'slideshowLogoSize',
-    'updateResourceUrl',
-    'resourceUrl',
-    'oldResourceUrl',
-    'resourceUrlTip'
+    "operationSucceeded",
+    "noChanges",
+    "websiteDomain",
+    "websiteTitle",
+    "websiteDescription",
+    "websiteKeywords",
+    "websiteKeywordsTip",
+    "articleLogoSize",
+    "tabLogoSize",
+    "slideshowLogoSize",
+    "updateResourceUrl",
+    "resourceUrl",
+    "oldResourceUrl",
+    "resourceUrlTip",
+    "example"
   );
 
   // Permissions
@@ -37,20 +38,19 @@ function Settings() {
   // Data type
   type DataType = DataTypes.AddOrEditType<SettingsUpdateDto, true, never>;
   const [data, setData] = React.useState<DataType>({
-    domain: 'https://',
-    title: ''
+    domain: "https://",
+    title: ""
   });
 
   // Input refs
   const refFields = [
-    'domain',
-    'title',
-    'description',
-    'keywords',
-    'logoSize',
-    'tabLogoSize',
-    'galleryLogoSize',
-    'operationSucceeded'
+    "domain",
+    "title",
+    "description",
+    "keywords",
+    "logoSize",
+    "tabLogoSize",
+    "galleryLogoSize"
   ] as const;
   const refs = useRefs(refFields);
 
@@ -66,35 +66,35 @@ function Settings() {
       ReactUtils.updateRefValues(refs, rq);
 
       const jsonData = rq.jsonData;
-      if (jsonData != null && typeof jsonData === 'object') {
-        if (typeof jsonData.logoSize === 'string') {
-          if (jsonData.logoSize === '') {
+      if (jsonData != null && typeof jsonData === "object") {
+        if (typeof jsonData.logoSize === "string") {
+          if (jsonData.logoSize === "") {
             delete jsonData.logoSize;
           } else {
             const logoSize = Utils.parseJsonArray(jsonData.logoSize, 0);
             if (logoSize == null || logoSize.length < 2) {
-              DomUtils.setFocus('jsonData.logoSize');
+              DomUtils.setFocus("jsonData.logoSize");
               return;
             }
             jsonData.logoSize = logoSize as [number, number];
           }
         }
 
-        if (typeof jsonData.tabLogoSize === 'string') {
-          if (jsonData.tabLogoSize === '') {
+        if (typeof jsonData.tabLogoSize === "string") {
+          if (jsonData.tabLogoSize === "") {
             delete jsonData.tabLogoSize;
           } else {
             const tabLogoSize = Utils.parseJsonArray(jsonData.tabLogoSize, 0);
             if (tabLogoSize == null || tabLogoSize.length < 2) {
-              DomUtils.setFocus('jsonData.tabLogoSize');
+              DomUtils.setFocus("jsonData.tabLogoSize");
               return;
             }
             jsonData.tabLogoSize = tabLogoSize as [number, number];
           }
         }
 
-        if (typeof jsonData.galleryLogoSize === 'string') {
-          if (jsonData.galleryLogoSize === '') {
+        if (typeof jsonData.galleryLogoSize === "string") {
+          if (jsonData.galleryLogoSize === "") {
             delete jsonData.galleryLogoSize;
           } else {
             const galleryLogoSize = Utils.parseJsonArray(
@@ -102,7 +102,7 @@ function Settings() {
               0
             );
             if (galleryLogoSize == null || galleryLogoSize.length < 2) {
-              DomUtils.setFocus('jsonData.galleryLogoSize');
+              DomUtils.setFocus("jsonData.galleryLogoSize");
               return;
             }
             jsonData.galleryLogoSize = galleryLogoSize as [number, number];
@@ -111,8 +111,8 @@ function Settings() {
       }
 
       // Auto append http protocol
-      if (rq.domain && !rq.domain.startsWith('http')) {
-        rq.domain = 'http://' + rq.domain;
+      if (rq.domain && !rq.domain.startsWith("http")) {
+        rq.domain = "http://" + rq.domain;
       }
 
       // Changed fields
@@ -133,7 +133,7 @@ function Settings() {
 
       if (result.ok) {
         app.notifier.succeed(labels.operationSucceeded, undefined, () => {
-          navigate('./../../');
+          navigate("./../../");
         });
         return;
       }
@@ -154,7 +154,7 @@ function Settings() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey('websiteSettings');
+    app.setPageKey("websiteSettings");
 
     return () => {
       app.pageExit();
@@ -199,17 +199,17 @@ function Settings() {
                   const { oldResourceUrl } = DomUtils.dataAs(
                     new FormData(form),
                     {
-                      oldResourceUrl: 'string'
+                      oldResourceUrl: "string"
                     }
                   );
 
                   if (
                     !oldResourceUrl ||
-                    !oldResourceUrl.startsWith('http') ||
-                    !oldResourceUrl.includes('://') ||
+                    !oldResourceUrl.startsWith("http") ||
+                    !oldResourceUrl.includes("://") ||
                     oldResourceUrl.length < 12
                   ) {
-                    DomUtils.setFocus('oldResourceUrl', form);
+                    DomUtils.setFocus("oldResourceUrl", form);
                     return false;
                   }
 
@@ -272,7 +272,7 @@ function Settings() {
           fullWidth
           name="description"
           multiline
-          rows={2}
+          rows={4}
           inputProps={{ maxLength: 1024 }}
           inputRef={refs.description}
           label={labels.websiteDescription}
@@ -287,7 +287,6 @@ function Settings() {
           inputProps={{ maxLength: 512 }}
           inputRef={refs.keywords}
           label={labels.websiteKeywords}
-          value={formik.values.keywords ?? ''}
         />
       </Grid>
       <Grid item xs={12} md={4}>
@@ -296,6 +295,7 @@ function Settings() {
           name="jsonData.logoSize"
           inputRef={refs.logoSize}
           label={labels.articleLogoSize}
+          helperText={`${labels.example}: 800, 600`}
         />
       </Grid>
       <Grid item xs={12} md={4}>
@@ -304,6 +304,7 @@ function Settings() {
           name="jsonData.tabLogoSize"
           inputRef={refs.tabLogoSize}
           label={labels.tabLogoSize}
+          helperText={`${labels.example}: 1600, 600`}
         />
       </Grid>
       <Grid item xs={12} md={4}>
@@ -312,6 +313,7 @@ function Settings() {
           name="jsonData.galleryLogoSize"
           inputRef={refs.galleryLogoSize}
           label={labels.slideshowLogoSize}
+          helperText={`${labels.example}: 800, 0`}
         />
       </Grid>
     </EditPage>

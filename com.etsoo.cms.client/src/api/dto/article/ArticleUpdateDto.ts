@@ -1,4 +1,4 @@
-import { EntityStatus } from '@etsoo/appscript';
+import { EntityStatus } from "@etsoo/appscript";
 
 export type ArticleUpdateDto = {
   /**
@@ -60,4 +60,9 @@ export type ArticleUpdateDto = {
    * Status
    */
   status: EntityStatus;
+
+  /**
+   * JSON data
+   */
+  jsonData?: unknown;
 };

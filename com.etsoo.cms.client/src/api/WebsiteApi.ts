@@ -1,13 +1,13 @@
-import { EntityApi, IApiPayload, ResultPayload } from '@etsoo/appscript';
-import { ReactAppType } from '@etsoo/materialui';
-import { DataTypes } from '@etsoo/shared';
-import { DashboardDto } from './dto/website/DashboardDto';
-import { PluginDto } from './dto/website/PluginDto';
-import { PluginUpdateDto } from './dto/website/PluginUpdateDto';
-import { PluginViewDto } from './dto/website/PluginViewDto';
-import { ResourceDto } from './dto/website/ResourceDto';
-import { SettingsUpdateDto } from './dto/website/SettingsUpdateDto';
-import { WebsiteJsonData } from './dto/website/WebsiteJsonData';
+import { EntityApi, IApiPayload, ResultPayload } from "@etsoo/appscript";
+import { ReactAppType } from "@etsoo/materialui";
+import { DataTypes } from "@etsoo/shared";
+import { DashboardDto } from "./dto/website/DashboardDto";
+import { PluginDto } from "./dto/website/PluginDto";
+import { PluginUpdateDto } from "./dto/website/PluginUpdateDto";
+import { PluginViewDto } from "./dto/website/PluginViewDto";
+import { ResourceDto } from "./dto/website/ResourceDto";
+import { SettingsUpdateDto } from "./dto/website/SettingsUpdateDto";
+import { WebsiteJsonData } from "./dto/website/WebsiteJsonData";
 
 /**
  * Website API
@@ -18,7 +18,7 @@ export class WebsiteApi extends EntityApi {
    * @param app Application
    */
   constructor(app: ReactAppType) {
-    super('Website', app);
+    super("Website", app);
   }
 
   /**
@@ -30,7 +30,7 @@ export class WebsiteApi extends EntityApi {
    */
   createOrUpdateResource(id: string, value: string, payload?: ResultPayload) {
     return this.api.put(
-      'Website/CreateOrUpdateResource',
+      "Website/CreateOrUpdateResource",
       { id, value },
       payload
     );
@@ -46,7 +46,7 @@ export class WebsiteApi extends EntityApi {
     rq: DataTypes.AddOrEditType<PluginUpdateDto, false>,
     payload?: ResultPayload
   ) {
-    return this.api.put('Website/CreateService', rq, payload);
+    return this.api.put("Website/CreateService", rq, payload);
   }
 
   /**
@@ -55,7 +55,7 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   dashboard(payload?: IApiPayload<DashboardDto>) {
-    return this.api.get<DashboardDto>('Website/Dashboard', undefined, payload);
+    return this.api.get<DashboardDto>("Website/Dashboard", undefined, payload);
   }
 
   /**
@@ -63,7 +63,7 @@ export class WebsiteApi extends EntityApi {
    * @param payload Payload
    */
   qrCode(payload?: IApiPayload<string>) {
-    return this.api.get('Website/QRCode', undefined, payload);
+    return this.api.get("Website/QRCode", undefined, payload);
   }
 
   /**
@@ -72,7 +72,29 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   queryResources(payload?: IApiPayload<ResourceDto[]>) {
-    return this.api.post('Website/QueryResources', undefined, payload);
+    return this.api.post("Website/QueryResources", undefined, payload);
+  }
+
+  /**
+   * Query article JSON data schema
+   * @param payload Payload
+   * @returns Result
+   */
+  queryArticleJsonDataSchema(payload?: IApiPayload<string>) {
+    return this.api.get(
+      "Website/QueryArticleJsonDataSchema",
+      undefined,
+      payload
+    );
+  }
+
+  /**
+   * Query tab JSON data schema
+   * @param payload Payload
+   * @returns Result
+   */
+  queryTabJsonDataSchema(payload?: IApiPayload<string>) {
+    return this.api.get("Website/QueryTabJsonDataSchema", undefined, payload);
   }
 
   /**
@@ -81,7 +103,7 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   queryServices(payload?: IApiPayload<PluginDto[]>) {
-    return this.api.post('Website/QueryServices', undefined, payload);
+    return this.api.post("Website/QueryServices", undefined, payload);
   }
 
   /**
@@ -91,7 +113,7 @@ export class WebsiteApi extends EntityApi {
    */
   async readJsonData(payload?: IApiPayload<{ jsonData?: WebsiteJsonData }>) {
     const result = await this.api.get(
-      'Website/readJsonData',
+      "Website/readJsonData",
       undefined,
       payload
     );
@@ -115,7 +137,7 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   regenerateTabUrls(payload?: ResultPayload) {
-    return this.api.put('Website/RegenerateTabUrls', undefined, payload);
+    return this.api.put("Website/RegenerateTabUrls", undefined, payload);
   }
 
   /**
@@ -125,7 +147,7 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   regenerateUrls(urls: string[], payload?: ResultPayload) {
-    return this.api.post('Website/RegenerateUrl', urls, {
+    return this.api.post("Website/RegenerateUrl", urls, {
       contentType: this.api.jsonContentType,
       ...payload
     });
@@ -137,7 +159,7 @@ export class WebsiteApi extends EntityApi {
    * @returns Result
    */
   readSettings(payload?: IApiPayload<SettingsUpdateDto>) {
-    return this.api.get('Website/ReadSettings', undefined, payload);
+    return this.api.get("Website/ReadSettings", undefined, payload);
   }
 
   /**
@@ -148,7 +170,7 @@ export class WebsiteApi extends EntityApi {
    */
   updateResourceUrl(oldResourceUrl: string, payload?: ResultPayload) {
     return this.api.put(
-      'Website/UpdateResourceUrl',
+      "Website/UpdateResourceUrl",
       { oldResourceUrl },
       payload
     );
@@ -164,7 +186,7 @@ export class WebsiteApi extends EntityApi {
     rq: DataTypes.AddOrEditType<PluginUpdateDto, true>,
     payload?: ResultPayload
   ) {
-    return this.api.put('Website/UpdateService', rq, payload);
+    return this.api.put("Website/UpdateService", rq, payload);
   }
 
   /**
@@ -177,6 +199,6 @@ export class WebsiteApi extends EntityApi {
     rq: DataTypes.AddOrEditType<SettingsUpdateDto, true, never>,
     payload?: ResultPayload
   ) {
-    return this.api.put('Website/UpdateSettings', rq, payload);
+    return this.api.put("Website/UpdateSettings", rq, payload);
   }
 }

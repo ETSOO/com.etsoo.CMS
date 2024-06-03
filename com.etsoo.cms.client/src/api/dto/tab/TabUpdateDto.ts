@@ -48,4 +48,9 @@ export type TabUpdateDto = {
    * Icon
    */
   icon?: string;
+
+  /**
+   * JSON data
+   */
+  jsonData?: unknown;
 };

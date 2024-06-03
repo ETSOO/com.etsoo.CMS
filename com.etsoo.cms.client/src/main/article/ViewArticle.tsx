@@ -1,4 +1,9 @@
-import { ButtonLink, DnDItemStyle, ViewPage } from "@etsoo/materialui";
+import {
+  ButtonLink,
+  CustomFieldViewer,
+  DnDItemStyle,
+  ViewPage
+} from "@etsoo/materialui";
 import { GridDataType, useParamsEx } from "@etsoo/react";
 import { DateUtils } from "@etsoo/shared";
 import {
@@ -7,6 +12,7 @@ import {
   CardActions,
   CardContent,
   Grid,
+  Paper,
   Typography,
   useTheme
 } from "@mui/material";
@@ -22,6 +28,7 @@ import PhotoIcon from "@mui/icons-material/Photo";
 import MoreIcon from "@mui/icons-material/More";
 import { LocalUtils } from "../../app/LocalUtils";
 import { useNavigate } from "react-router-dom";
+import { CustomFieldData } from "@etsoo/appscript";
 
 function ViewArticle() {
   // Route
@@ -46,6 +53,7 @@ function ViewArticle() {
 
   // View data
   const [audits, setAudits] = React.useState<ArticleViewHistoryDto[]>();
+  const [customFields, setCustomField] = React.useState<CustomFieldData[]>([]);
 
   React.useEffect(() => {
     // Page title
@@ -88,6 +96,14 @@ function ViewArticle() {
       loadData={async () => {
         const result = await app.articleApi.viewRead(id);
         setAudits(result?.audits);
+
+        if (result?.data.jsonData) {
+          app.websiteApi.queryArticleJsonDataSchema().then((schema) => {
+            if (schema == null) return;
+            setCustomField(JSON.parse(schema) as CustomFieldData[]);
+          });
+        }
+
         return result?.data;
       }}
       actions={(data, refresh) => {
@@ -129,6 +145,14 @@ function ViewArticle() {
             height="480px"
             title={labels.articleView}
           />
+          {customFields.length > 0 && data.jsonData != null && (
+            <Paper sx={{ padding: 3 }}>
+              <CustomFieldViewer
+                fields={customFields}
+                jsonData={data.jsonData}
+              />
+            </Paper>
+          )}
           <Card sx={{ marginTop: 2 }}>
             <CardActions
               sx={{

@@ -1,5 +1,10 @@
-import { ComboBox, EditPage, InputField } from "@etsoo/materialui";
-import { FormControlLabel, Grid, Switch } from "@mui/material";
+import {
+  ComboBox,
+  CustomFieldWindow,
+  EditPage,
+  InputField
+} from "@etsoo/materialui";
+import { Badge, Button, FormControlLabel, Grid, Switch } from "@mui/material";
 import React from "react";
 import { useFormik } from "formik";
 import { DataTypes, IdActionResult, Utils } from "@etsoo/shared";
@@ -14,6 +19,8 @@ import {
 } from "@etsoo/react";
 import { TabDto } from "../../api/dto/tab/TabDto";
 import { TabUpdateDto } from "../../api/dto/tab/TabUpdateDto";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { CustomFieldData } from "@etsoo/appscript";
 
 function AddTab() {
   // Route
@@ -23,6 +30,8 @@ function AddTab() {
   const { parent } = useSearchParamsEx({ parent: "number" });
   const [parents, setParents] = React.useState<number[]>();
   const currentTab = React.useRef<TabDto>();
+
+  const [customFields, setCustomField] = React.useState<CustomFieldData[]>([]);
 
   // Is editing
   const isEditing = id != null;
@@ -42,7 +51,8 @@ function AddTab() {
     "articleDescription",
     "tabLogo",
     "tabIcon",
-    "noChildTab"
+    "noChildTab",
+    "jsonData"
   );
 
   // Edit data
@@ -58,7 +68,14 @@ function AddTab() {
   const layouts = app.getTabLayouts();
 
   // Input refs
-  const refFields = ["name", "url", "logo", "description", "icon"] as const;
+  const refFields = [
+    "name",
+    "url",
+    "logo",
+    "description",
+    "icon",
+    "jsonData"
+  ] as const;
   const refs = useRefs(refFields);
 
   // Formik
@@ -154,6 +171,11 @@ function AddTab() {
     // Page title
     app.setPageKey(isEditing ? "editTab" : "addTab");
 
+    app.websiteApi.queryTabJsonDataSchema().then((schema) => {
+      if (schema == null) return;
+      setCustomField(JSON.parse(schema) as CustomFieldData[]);
+    });
+
     return () => {
       app.pageExit();
     };
@@ -226,7 +248,7 @@ function AddTab() {
           disabled={currentTab.current?.url === "/"}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={5}>
         <ComboBox
           options={layouts}
           name="layout"
@@ -236,7 +258,7 @@ function AddTab() {
           inputOnChange={(event) => formik.handleChange(event)}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={3}>
         <FormControlLabel
           control={
             <Switch
@@ -248,6 +270,36 @@ function AddTab() {
           label={labels.enabled}
         />
       </Grid>
+      {customFields.length > 0 && (
+        <Grid item xs={6} sm={4}>
+          <CustomFieldWindow
+            label={labels.jsonData}
+            jsonData={data.jsonData}
+            inputRef={refs.jsonData}
+          >
+            {(open, label, pc) => (
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => {
+                  open(customFields);
+                }}
+                endIcon={
+                  pc > 0 ? (
+                    <Badge color="secondary" badgeContent={pc}>
+                      <SettingsIcon />
+                    </Badge>
+                  ) : (
+                    <SettingsIcon />
+                  )
+                }
+              >
+                {label}
+              </Button>
+            )}
+          </CustomFieldWindow>
+        </Grid>
+      )}
       <Grid item xs={12} sm={12}>
         <InputField
           fullWidth

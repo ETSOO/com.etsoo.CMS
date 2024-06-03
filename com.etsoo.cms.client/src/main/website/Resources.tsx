@@ -120,7 +120,7 @@ function Resources() {
           return;
         }
 
-        app.alertResult(result);
+        return app.formatResult(result, true);
       }
     });
   };

@@ -15,6 +15,7 @@ export type ArticleViewDto = ArticleLink & {
   tabName2?: string;
   tabName3?: string;
   logo?: string;
+  jsonData?: unknown;
 };
 
 export type ArticleViewHistoryDto = {

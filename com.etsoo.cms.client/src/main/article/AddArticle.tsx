@@ -1,29 +1,37 @@
-import { ComboBox, EditPage, InputField } from '@etsoo/materialui';
-import { Grid } from '@mui/material';
-import React from 'react';
-import { useFormik } from 'formik';
-import { DataTypes, IdActionResult, Utils } from '@etsoo/shared';
-import { EntityStatus, UserRole } from '@etsoo/appscript';
-import { useNavigate } from 'react-router-dom';
-import { app } from '../../app/MyApp';
-import { TabSelector } from '../../components/TabSelector';
+import {
+  ComboBox,
+  CustomFieldWindow,
+  EditPage,
+  InputField
+} from "@etsoo/materialui";
+import { Badge, Button, Grid } from "@mui/material";
+import React from "react";
+import { useFormik } from "formik";
+import { DataTypes, IdActionResult, Utils } from "@etsoo/shared";
+import { CustomFieldData, EntityStatus, UserRole } from "@etsoo/appscript";
+import { useNavigate } from "react-router-dom";
+import { app } from "../../app/MyApp";
+import { TabSelector } from "../../components/TabSelector";
 import {
   ReactUtils,
   useParamsEx,
   useRefs,
   useSearchParamsEx
-} from '@etsoo/react';
-import { ArticleUpdateDto } from '../../api/dto/article/ArticleUpdateDto';
-import { EOEditorElement, EOEditorEx } from '@etsoo/reacteditor';
+} from "@etsoo/react";
+import { ArticleUpdateDto } from "../../api/dto/article/ArticleUpdateDto";
+import { EOEditorElement, EOEditorEx } from "@etsoo/reacteditor";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 function AddTab() {
   // Route
   const navigate = useNavigate();
-  const { id } = useParamsEx({ id: 'number' });
+  const { id } = useParamsEx({ id: "number" });
 
-  const { tab } = useSearchParamsEx({ tab: 'number' });
+  const { tab } = useSearchParamsEx({ tab: "number" });
   const [tabs, setTabs] = React.useState<number[]>();
   const editorRef = React.useRef<EOEditorElement>(null);
+
+  const [customFields, setCustomField] = React.useState<CustomFieldData[]>([]);
 
   // Is editing
   const isEditing = id != null;
@@ -34,41 +42,43 @@ function AddTab() {
 
   // Labels
   const labels = app.getLabels(
-    'noChanges',
-    'enabled',
-    'id',
-    'tab',
-    'articleTitle',
-    'articleSubtitle',
-    'articleKeywords',
-    'articleDescription',
-    'articleUrl',
-    'articleRelease',
-    'articleLogo',
-    'slideshowLogo',
-    'entityStatus',
-    'deleteConfirm',
-    'article'
+    "noChanges",
+    "enabled",
+    "id",
+    "tab",
+    "articleTitle",
+    "articleSubtitle",
+    "articleKeywords",
+    "articleDescription",
+    "articleUrl",
+    "articleRelease",
+    "articleLogo",
+    "slideshowLogo",
+    "entityStatus",
+    "deleteConfirm",
+    "article",
+    "jsonData"
   );
 
   // Edit data
   const [data, setData] = React.useState<DataType>({
     tab1: 0,
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     status: 0,
     release: new Date()
   });
 
   // Input refs
   const refFields = [
-    'title',
-    'subtitle',
-    'url',
-    'logo',
-    'description',
-    'keywords',
-    'release'
+    "title",
+    "subtitle",
+    "url",
+    "logo",
+    "description",
+    "keywords",
+    "release",
+    "jsonData"
   ] as const;
   const refs = useRefs(refFields);
 
@@ -89,7 +99,7 @@ function AddTab() {
 
       ReactUtils.updateRefValues(refs, rq);
 
-      Utils.correctTypes(rq, { status: 'number' });
+      Utils.correctTypes(rq, { status: "number" });
 
       let result: IdActionResult | undefined;
       if (rq.id != null) {
@@ -110,7 +120,7 @@ function AddTab() {
 
       if (result.ok) {
         editorRef.current?.clearBackup();
-        navigate(isEditing ? './../../all' : './../all');
+        navigate(isEditing ? "./../../all" : "./../all");
         return;
       }
 
@@ -121,7 +131,7 @@ function AddTab() {
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const urlInput = refs.url.current;
     if (urlInput == null) return;
-    if (!isEditing || urlInput.value === '') {
+    if (!isEditing || urlInput.value === "") {
       const title = event.target.value;
       app.formatUrl(title).then((url) => {
         if (url != null) urlInput.value = url;
@@ -137,7 +147,7 @@ function AddTab() {
     }
 
     const read = await app.articleApi.updateRead(id, {
-      dateFields: ['release']
+      dateFields: ["release"]
     });
 
     if (read == null) return;
@@ -165,7 +175,12 @@ function AddTab() {
 
   React.useEffect(() => {
     // Page title
-    app.setPageKey(isEditing ? 'editArticle' : 'addArticle');
+    app.setPageKey(isEditing ? "editArticle" : "addArticle");
+
+    app.websiteApi.queryArticleJsonDataSchema().then((schema) => {
+      if (schema == null) return;
+      setCustomField(JSON.parse(schema) as CustomFieldData[]);
+    });
 
     return () => {
       app.pageExit();
@@ -192,7 +207,7 @@ function AddTab() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    navigate('./../../all');
+                    navigate("./../../all");
                     return;
                   }
 
@@ -208,7 +223,7 @@ function AddTab() {
           name="tab1"
           label={labels.tab}
           values={tabs}
-          onChange={(value) => formik.setFieldValue('tab1', value)}
+          onChange={(value) => formik.setFieldValue("tab1", value)}
           required
           error={formik.touched.tab1 && Boolean(formik.errors.tab1)}
           helperText={formik.touched.tab1 && formik.errors.tab1}
@@ -247,7 +262,7 @@ function AddTab() {
       <Grid item xs={12} sm={12}>
         <EOEditorEx
           ref={editorRef}
-          content={formik.values.content ?? ''}
+          content={formik.values.content ?? ""}
           backupKey={`article-${isEditing}`}
         />
       </Grid>
@@ -280,7 +295,7 @@ function AddTab() {
           label={labels.articleKeywords}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={6} sm={4}>
         <ComboBox
           name="status"
           options={app.getStatusList()}
@@ -289,7 +304,7 @@ function AddTab() {
           inputOnChange={formik.handleChange}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={6} sm={4}>
         <InputField
           fullWidth
           required
@@ -299,6 +314,36 @@ function AddTab() {
           inputRef={refs.release}
         />
       </Grid>
+      {customFields.length > 0 && (
+        <Grid item xs={6} sm={4}>
+          <CustomFieldWindow
+            label={labels.jsonData}
+            jsonData={data.jsonData}
+            inputRef={refs.jsonData}
+          >
+            {(open, label, pc) => (
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => {
+                  open(customFields);
+                }}
+                endIcon={
+                  pc > 0 ? (
+                    <Badge color="secondary" badgeContent={pc}>
+                      <SettingsIcon />
+                    </Badge>
+                  ) : (
+                    <SettingsIcon />
+                  )
+                }
+              >
+                {label}
+              </Button>
+            )}
+          </CustomFieldWindow>
+        </Grid>
+      )}
     </EditPage>
   );
 }

@@ -1,9 +1,9 @@
-import { UserAvatarEditorProps } from '@etsoo/materialui';
-import { ArticleLogoDto } from '../api/dto/article/ArticleLogoDto';
-import { ArticleQueryDto } from '../api/dto/article/ArticleQueryDto';
-import { ArticleViewDto } from '../api/dto/article/ArticleViewDto';
-import { TabDto } from '../api/dto/tab/TabDto';
-import { TabLogoDto } from '../api/dto/tab/TabLogoDto';
+import { UserAvatarEditorProps } from "@etsoo/materialui";
+import { ArticleLogoDto } from "../api/dto/article/ArticleLogoDto";
+import { ArticleQueryDto } from "../api/dto/article/ArticleQueryDto";
+import { ArticleViewDto } from "../api/dto/article/ArticleViewDto";
+import { TabDto } from "../api/dto/tab/TabDto";
+import { TabLogoDto } from "../api/dto/tab/TabLogoDto";
 
 /**
  * Local utilities

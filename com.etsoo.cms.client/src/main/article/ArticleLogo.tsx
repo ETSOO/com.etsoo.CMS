@@ -1,30 +1,30 @@
-import React from 'react';
+import React from "react";
 import {
   CommonPage,
   UserAvatarEditor,
   UserAvatarEditorToBlob
-} from '@etsoo/materialui';
-import { app } from '../../app/MyApp';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useParamsEx } from '@etsoo/react';
-import { Button, LinearProgress, Stack, Typography } from '@mui/material';
-import { LocalUtils } from '../../app/LocalUtils';
-import CollectionsIcon from '@mui/icons-material/Collections';
-import { ArticleLogoDto } from '../../api/dto/article/ArticleLogoDto';
+} from "@etsoo/materialui";
+import { app } from "../../app/MyApp";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useParamsEx } from "@etsoo/react";
+import { Button, LinearProgress, Stack, Typography } from "@mui/material";
+import { LocalUtils } from "../../app/LocalUtils";
+import CollectionsIcon from "@mui/icons-material/Collections";
+import { ArticleLogoDto } from "../../api/dto/article/ArticleLogoDto";
 
 function ArticleLogo() {
   // Route
   const navigate = useNavigate();
-  const { id = 0 } = useParamsEx({ id: 'number' });
+  const { id = 0 } = useParamsEx({ id: "number" });
 
   const location = useLocation();
   const state = location.state as ArticleLogoDto;
 
   // Labels
   const { articleTitle, articleLogo, slideshowLogo } = app.getLabels(
-    'articleTitle',
-    'articleLogo',
-    'slideshowLogo'
+    "articleTitle",
+    "articleLogo",
+    "slideshowLogo"
   );
 
   // State
@@ -40,7 +40,7 @@ function ArticleLogo() {
 
     // Form data
     const form = new FormData();
-    form.append('logo', blob);
+    form.append("logo", blob);
 
     var result = await app.articleApi.uploadLogo(id, form);
     if (result == null) return;
