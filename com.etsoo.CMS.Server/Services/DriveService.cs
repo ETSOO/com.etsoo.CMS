@@ -2,6 +2,8 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Drive;
+using com.etsoo.CMS.Server;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
@@ -39,6 +41,7 @@ namespace com.etsoo.CMS.Services
 
         readonly IPAddress ip;
         readonly IStorage storage;
+        readonly IPublicCommonService publicService;
         private static readonly string[] updatableFields = ["name", "shared"];
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
         /// <param name="storage">Storage</param>
-        public DriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<DriveService> logger, IStorage storage)
+        public DriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<DriveService> logger, IStorage storage, IPublicCommonService publicService)
             : base(app, userAccessor.UserSafe, "drive", logger)
         {
             ip = userAccessor.Ip;
@@ -58,6 +61,7 @@ namespace com.etsoo.CMS.Services
             // IEnumerable<IStorage> storages
             // storage = storages.FirstOrDefault();
             this.storage = storage;
+            this.publicService = publicService;
         }
 
         /// <summary>
@@ -120,7 +124,8 @@ namespace com.etsoo.CMS.Services
             var result = recordsAffected > 0 ? ActionResult.Success : ApplicationErrors.NoId.AsResult();
 
             // Audit
-            await AddAuditAsync(AuditKind.OnlineDrive, id, $"Delete file {file.Name}", ip, result, id, null, cancellationToken);
+            var auditTitle = Resources.DeleteFile.Replace("{0}", file.Name);
+            await AddAuditAsync(AuditKind.OnlineDrive, id, auditTitle, ip, result, id, null, cancellationToken);
 
             return result;
         }
@@ -150,14 +155,9 @@ namespace com.etsoo.CMS.Services
         /// <param name="id">File id</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<DriveFile?> ReadAsync(string id, CancellationToken cancellationToken = default)
+        public Task<DriveFile?> ReadAsync(string id, CancellationToken cancellationToken = default)
         {
-            var parameters = new DbParameters();
-            parameters.Add(nameof(id), id.ToDbString(true, 30));
-
-            var command = CreateCommand($"SELECT id, name, path, contentType, shared FROM files WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
-
-            return await QueryAsAsync<DriveFile>(command);
+            return publicService.ReadDriveAsync(id, cancellationToken);
         }
 
         /// <summary>
@@ -226,7 +226,8 @@ namespace com.etsoo.CMS.Services
                 result.Data.Add("Id", storage.GetUrl($"/OnlineDrive/{rq.Id}?key={HttpUtility.UrlEncode(cipher)}"));
             }
 
-            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Share file {file.Name}", ip, result, rq, MyJsonSerializerContext.Default.DriveShareFileRQ, cancellationToken);
+            var auditTitle = Resources.ShareFile.Replace("{0}", file.Name);
+            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.DriveShareFileRQ, cancellationToken);
 
             return result;
         }
@@ -256,7 +257,8 @@ namespace com.etsoo.CMS.Services
                 var extension = MimeTypeMap.TryGetExtension(contentType);
                 if (string.IsNullOrEmpty(extension))
                 {
-                    throw new InvalidDataException($"No extension found for file {fileName}");
+                    var errorMessage = Resources.UploadFileError.Replace("{0}", fileName);
+                    throw new InvalidDataException(errorMessage);
                 }
 
                 // File path
@@ -299,7 +301,8 @@ namespace com.etsoo.CMS.Services
                 // Hide sensitive file path data
                 rq.Path = StringUtils.HideData(rq.Path);
 
-                await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Upload file {fileName}", ip, result, rq, MyJsonSerializerContext.Default.DriveCreateRQ, CancellationToken);
+                var auditTitle = Resources.UploadFile.Replace("{0}", fileName);
+                await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.DriveCreateRQ, CancellationToken);
 
                 results.Enqueue((fileName, result));
             });
@@ -367,7 +370,8 @@ namespace com.etsoo.CMS.Services
                 actionResult = await RemoveShareAsync(rq.Id, cancellationToken);
             }
 
-            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, $"Update file {rq.Id}", ip, actionResult, rq, MyJsonSerializerContext.Default.DriveUpdateRQ, cancellationToken);
+            var auditTitle = Resources.UpdateFile.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.OnlineDrive, rq.Id, auditTitle, ip, actionResult, rq, MyJsonSerializerContext.Default.DriveUpdateRQ, cancellationToken);
 
             return actionResult;
         }

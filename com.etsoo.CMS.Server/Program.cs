@@ -20,13 +20,24 @@ using com.etsoo.Web;
 using com.etsoo.WebUtils;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.IO.Compression;
+using System.Security.Authentication;
 using System.Text.Json.Serialization.Metadata;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
+
+builder.WebHost.ConfigureKestrel((context, options) =>
+{
+    options.ConfigureHttpsDefaults(httpsOptions =>
+    {
+        httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+        httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+    });
+});
 
 // Custom settings
 var configuration = builder.Configuration;
@@ -106,7 +117,7 @@ services.AddScoped<IUserService, UserService>();
 services.AddScoped<IWebsiteService, WebsiteService>();
 services.AddScoped<IPublicService, PublicService>();
 services.AddScoped<IDriveService, DriveService>();
-services.AddScoped<IPublicDriveService, PublicDriveService>();
+services.AddScoped<IPublicCommonService, PublicCommonService>();
 
 services.AddControllers().AddJsonOptions(configure =>
 {
@@ -232,9 +243,7 @@ else
 {
     if (Environment.GetEnvironmentVariable("SSLOnly") != "false")
     {
-        // https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-2.1&tabs=visual-studio
         app.UseHsts();
-
         app.UseHttpsRedirection();
     }
 

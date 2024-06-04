@@ -194,6 +194,28 @@ namespace com.etsoo.CMS.Controllers
         }
 
         /// <summary>
+        /// Query article JSON data schema
+        /// 查询文章JSON数据模式
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("QueryArticleJsonDataSchema")]
+        public async Task QueryArticleJsonDataSchema()
+        {
+            await service.QueryArticleJsonDataSchemaAsync(Response, CancellationToken);
+        }
+
+        /// <summary>
+        /// Query tab JSON data schema
+        /// 查询栏目JSON数据模式
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("QueryTabJsonDataSchema")]
+        public async Task QueryTabJsonDataSchema()
+        {
+            await service.QueryTabJsonDataSchemaAsync(Response, CancellationToken);
+        }
+
+        /// <summary>
         /// Query plugin services
         /// 查询插件服务
         /// </summary>
@@ -214,7 +236,7 @@ namespace com.etsoo.CMS.Controllers
         [HttpPut("UpdateResourceUrl")]
         public async Task UpdateResourceUrl(WebsiteUpdateResurceUrlRQ rq)
         {
-            var result = await service.UpdateResurceUrlAsync(rq, CancellationToken);
+            var result = await service.UpdateResourceUrlAsync(rq, CancellationToken);
             await WriteResultAsync(result);
         }
 

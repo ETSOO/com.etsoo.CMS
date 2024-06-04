@@ -3,6 +3,7 @@ using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
+using com.etsoo.CMS.Server;
 using com.etsoo.CMS.Server.RQ.Article;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
@@ -111,7 +112,8 @@ namespace com.etsoo.CMS.Services
 
             var result = new ActionDataResult<int>(ActionResult.Success, id);
 
-            await AddAuditAsync(AuditKind.CreateArticle, id.ToString(), $"Create article {id} - {rq.Title}", ip, result.Result, rq, MyJsonSerializerContext.Default.ArticleCreateRQ, cancellationToken);
+            var auditTitle = Resources.CreateArticle.Replace("{0}", $"{id} - {rq.Title}");
+            await AddAuditAsync(AuditKind.CreateArticle, id.ToString(), auditTitle, ip, result.Result, rq, MyJsonSerializerContext.Default.ArticleCreateRQ, cancellationToken);
 
             await OnDemandRevalidateAsync(id, cancellationToken);
 
@@ -148,7 +150,8 @@ namespace com.etsoo.CMS.Services
                 await OnDemandRevalidateAsync(link, cancellationToken);
             }
 
-            await AddAuditAsync<string?>(AuditKind.DeleteArticle, id.ToString(), $"Delete article {id}", ip, result, cancellationToken: cancellationToken);
+            var auditTitle = Resources.DeleteArticle.Replace("{0}", $"{id}");
+            await AddAuditAsync<string?>(AuditKind.DeleteArticle, id.ToString(), auditTitle, ip, result, cancellationToken: cancellationToken);
 
             return result;
         }
@@ -193,7 +196,8 @@ namespace com.etsoo.CMS.Services
                 await OnDemandRevalidateAsync(rq.Id, cancellationToken);
             }
 
-            await AddAuditAsync(AuditKind.DeleteGalleryPhoto, rq.Id.ToString(), $"Delete article {rq.Id} photo", ip, result, rq, MyJsonSerializerContext.Default.ArticleDeletePhotoRQ, cancellationToken);
+            var auditTitle = Resources.DeleteArticlePhoto.Replace("{0}", $"{id}");
+            await AddAuditAsync(AuditKind.DeleteGalleryPhoto, rq.Id.ToString(), auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ArticleDeletePhotoRQ, cancellationToken);
             return result;
         }
 
@@ -433,7 +437,8 @@ namespace com.etsoo.CMS.Services
                 result = ApplicationErrors.NoId.AsResult();
             }
 
-            await AddAuditAsync(AuditKind.SortGalleryPhoto, rq.Id.ToString(), $"Sort article {rq.Id} photos", ip, result, rq, MyJsonSerializerContext.Default.ArticleSortPhotosRQ, cancellationToken);
+            var auditTitle = Resources.SortArticlePhotos.Replace("{0}", $"{rq.Id}");
+            await AddAuditAsync(AuditKind.SortGalleryPhoto, rq.Id.ToString(), auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ArticleSortPhotosRQ, cancellationToken);
 
             return result;
         }
@@ -502,7 +507,8 @@ namespace com.etsoo.CMS.Services
             }, $"refreshTime = @{nameof(refreshTime)}", parameters,
             cancellationToken);
 
-            await AddAuditAsync(AuditKind.UpdateArticle, rq.Id.ToString(), $"Update article {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.ArticleUpdateRQ, cancellationToken);
+            var auditTitle = Resources.UpdateArticle.Replace("{0}", $"{rq.Id}");
+            await AddAuditAsync(AuditKind.UpdateArticle, rq.Id.ToString(), auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ArticleUpdateRQ, cancellationToken);
 
             await OnDemandRevalidateAsync(rq.Id, cancellationToken);
 
@@ -568,7 +574,8 @@ namespace com.etsoo.CMS.Services
                 await OnDemandRevalidateAsync(rq.Id, cancellationToken);
             }
 
-            await AddAuditAsync(AuditKind.UpdateGalleryItem, rq.Id.ToString(), $"Update article {rq.Id} gallery photo item", ip, result, rq, MyJsonSerializerContext.Default.ArticleUpdatePhotoRQ, cancellationToken);
+            var auditTitle = Resources.UpdateArticleGalleryItem.Replace("{0}", $"{rq.Id}");
+            await AddAuditAsync(AuditKind.UpdateGalleryItem, rq.Id.ToString(), auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ArticleUpdatePhotoRQ, cancellationToken);
 
             return result;
         }
@@ -607,6 +614,8 @@ namespace com.etsoo.CMS.Services
             // Save the stream to file directly
             var saveResult = await storage.WriteAsync(path, logoStream, WriteCase.CreateNew, cancellationToken);
 
+            var auditTitle = Resources.UpdateArticleLogo.Replace("{0}", $"{id}");
+
             if (saveResult)
             {
                 // New avatar URL
@@ -616,7 +625,7 @@ namespace com.etsoo.CMS.Services
                 if (await UpdateLogoAsync(id, url, cancellationToken) > 0)
                 {
                     // Audit
-                    await AddAuditAsync(AuditKind.UpdateArticleLogo, id.ToString(), $"Update article {id} logo", new Dictionary<string, object> { ["Logo"] = logo, ["NewLogo"] = url }, null, ip, cancellationToken: cancellationToken);
+                    await AddAuditAsync(AuditKind.UpdateArticleLogo, id.ToString(), auditTitle, new Dictionary<string, object> { ["Logo"] = logo, ["NewLogo"] = url }, null, ip, cancellationToken: cancellationToken);
 
                     await OnDemandRevalidateAsync(id, cancellationToken);
 
@@ -627,7 +636,7 @@ namespace com.etsoo.CMS.Services
 
             Logger.LogError("Storage writing logo failed, the write path is {path}", path);
 
-            await AddAuditAsync(AuditKind.UpdateArticleLogo, id.ToString(), $"Update article {id} logo", ip, new ActionResult(), path, null, cancellationToken);
+            await AddAuditAsync(AuditKind.UpdateArticleLogo, id.ToString(), auditTitle, ip, new ActionResult(), path, null, cancellationToken);
 
             return null;
         }
@@ -701,7 +710,8 @@ namespace com.etsoo.CMS.Services
                     }
                     else
                     {
-                        exceptions.Enqueue(new Exception($"Failed to save photo file {file.FileName}"));
+                        var errorMessage = Resources.UpdateArticleGalleryError.Replace("{0}", file.FileName);
+                        exceptions.Enqueue(new Exception(errorMessage));
                     }
                 }
                 catch (Exception ex)
@@ -727,7 +737,8 @@ namespace com.etsoo.CMS.Services
                 result = ActionResult.Success;
             }
 
-            await AddAuditAsync(AuditKind.UpdateGallery, id.ToString(), $"Update article {id} gallery", ip, result, photoItems, MyJsonSerializerContext.Default.IEnumerableGalleryPhotoDto, cancellationToken);
+            var auditTitle = Resources.UpdateArticleGallery.Replace("{0}", $"{id}");
+            await AddAuditAsync(AuditKind.UpdateGallery, id.ToString(), auditTitle, ip, result, photoItems, MyJsonSerializerContext.Default.IEnumerableGalleryPhotoDto, cancellationToken);
 
             return result;
         }
@@ -820,7 +831,7 @@ namespace com.etsoo.CMS.Services
             parameters.Add(nameof(tab2), tab2);
             parameters.Add(nameof(tab3), tab3);
 
-            var basic = $"a.id, a.title, a.subtitle, a.keywords, a.description, a.url, a.logo, a.creation, a.weight, a.author, a.release, a.status, a.slideshow, a.year, t.layout AS tabLayout, t.url AS tabUrl".ToJsonCommand(true);
+            var basic = $"a.id, a.title, a.subtitle, a.keywords, a.description, a.url, a.logo, a.creation, a.weight, a.author, a.release, a.status, a.slideshow, a.year, a.jsonData, t.layout AS tabLayout, t.url AS tabUrl".ToJsonCommand(true);
             basic = basic.Trim(')') + ", 'tabName1', @tab1, 'tabName2', @tab2, 'tabName3', @tab3)";
 
             var audits = $"rowid, title, creation, author".ToJsonCommand();

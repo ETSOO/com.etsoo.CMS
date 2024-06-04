@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Tab;
+using com.etsoo.CMS.Server;
 using com.etsoo.CMS.Server.RQ.Tab;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
@@ -39,6 +40,17 @@ namespace com.etsoo.CMS.Services
             this.storage = storage;
         }
 
+        private string FormatUrl(string url)
+        {
+            // Reserve the 'home' URL
+            if (url.Equals("home", StringComparison.OrdinalIgnoreCase))
+                return "/";
+            else if (url != "/")
+                return url.TrimEnd('/');
+            else
+                return url;
+        }
+
         /// <summary>
         /// Create tab
         /// 创建栏目
@@ -48,8 +60,8 @@ namespace com.etsoo.CMS.Services
         /// <returns>Result</returns>
         public async Task<IActionResult> CreateAsync(TabCreateRQ rq, CancellationToken cancellationToken = default)
         {
-            if (rq.Url != "/")
-                rq.Url = rq.Url.TrimEnd('/');
+            // Format the URL
+            rq.Url = FormatUrl(rq.Url);
 
             /*
             var parameters = FormatParameters(rq);
@@ -65,7 +77,8 @@ namespace com.etsoo.CMS.Services
             var result = new ActionDataResult<int>(ActionResult.Success, tabId);
 
             var id = result.Data;
-            await AddAuditAsync(AuditKind.CreateTab, id.ToString(), $"Create tab {id}", ip, result.Result, rq, MyJsonSerializerContext.Default.TabCreateRQ, cancellationToken);
+            var auditTitle = Resources.CreateTab.Replace("{0}", $"{id}");
+            await AddAuditAsync(AuditKind.CreateTab, id.ToString(), auditTitle, ip, result.Result, rq, MyJsonSerializerContext.Default.TabCreateRQ, cancellationToken);
             return result.MergeData("id");
         }
 
@@ -83,12 +96,14 @@ namespace com.etsoo.CMS.Services
 
             var command = CreateCommand($"DELETE FROM tabs WHERE id = @{nameof(id)} AND articles = 0", parameters, cancellationToken: cancellationToken);
 
-            var result = await ExecuteAsync(command);
+            var affected = await ExecuteAsync(command);
 
-            if (result > 0)
-                return ActionResult.Success;
-            else
-                return ApplicationErrors.NoId.AsResult();
+            var result = affected > 0 ? ActionResult.Success : ApplicationErrors.NoId.AsResult();
+
+            var auditTitle = Resources.DeleteTab.Replace("{0}", $"{id}");
+            await AddAuditAsync(AuditKind.DeleteTab, id.ToString(), auditTitle, ip, result, affected, null, cancellationToken: cancellationToken);
+
+            return result;
         }
 
         /// <summary>
@@ -216,7 +231,7 @@ namespace com.etsoo.CMS.Services
         {
             if (!string.IsNullOrEmpty(rq.Url))
             {
-                rq.Url = rq.Url.TrimEnd('/');
+                rq.Url = FormatUrl(rq.Url);
             }
 
             var refreshTime = DateTime.UtcNow.ToString("u");
@@ -234,7 +249,9 @@ namespace com.etsoo.CMS.Services
                 },
                 $"refreshTime = @{nameof(refreshTime)}", parameters, cancellationToken
              );
-            await AddAuditAsync(AuditKind.UpdateTab, rq.Id.ToString(), $"Update tab {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.TabUpdateRQ, cancellationToken);
+
+            var auditTitle = Resources.UpdateTab.Replace("{0}", $"{rq.Id}");
+            await AddAuditAsync(AuditKind.UpdateTab, rq.Id.ToString(), auditTitle, ip, result, rq, MyJsonSerializerContext.Default.TabUpdateRQ, cancellationToken);
             return result;
         }
 
@@ -267,6 +284,8 @@ namespace com.etsoo.CMS.Services
             // Save the stream to file directly
             var saveResult = await storage.WriteAsync(path, logoStream, WriteCase.CreateNew, cancellationToken);
 
+            var auditTitle = Resources.UpdateTabLogo.Replace("{0}", $"{id}");
+
             if (saveResult)
             {
                 // New avatar URL
@@ -276,7 +295,7 @@ namespace com.etsoo.CMS.Services
                 if (await UpdateLogoAsync(id, url, cancellationToken) > 0)
                 {
                     // Audit
-                    await AddAuditAsync(AuditKind.UpdateTabLogo, id.ToString(), $"Update tab {id} logo", new Dictionary<string, object> { ["Logo"] = logo, ["NewLogo"] = url }, null, ip, cancellationToken: cancellationToken);
+                    await AddAuditAsync(AuditKind.UpdateTabLogo, id.ToString(), auditTitle, new Dictionary<string, object> { ["Logo"] = logo, ["NewLogo"] = url }, null, ip, cancellationToken: cancellationToken);
 
                     // Return
                     return url;
@@ -285,7 +304,7 @@ namespace com.etsoo.CMS.Services
 
             Logger.LogError("Logo write path is {path}", path);
 
-            await AddAuditAsync(AuditKind.UpdateTabLogo, id.ToString(), $"Update tab {id} logo", ip, new ActionResult(), path, null, cancellationToken);
+            await AddAuditAsync(AuditKind.UpdateTabLogo, id.ToString(), auditTitle, ip, new ActionResult(), path, null, cancellationToken);
 
             return null;
         }

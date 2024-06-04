@@ -18,7 +18,7 @@ namespace com.etsoo.CMS.RQ.Website
         [Property(Length = 50)]
         [StringLength(50)]
         [Required]
-        public required string Id { get; init; }
+        public required string Id { get; set; }
 
         /// <summary>
         /// Value

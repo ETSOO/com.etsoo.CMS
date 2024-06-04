@@ -1,12 +1,12 @@
-import { Switch, TextFieldEx, VBox } from '@etsoo/materialui';
-import { DomUtils } from '@etsoo/shared';
-import { app } from '../app/MyApp';
+import { Switch, TextFieldEx, VBox } from "@etsoo/materialui";
+import { DomUtils } from "@etsoo/shared";
+import { app } from "../app/MyApp";
 import {
   checkSecret,
   loadPluginSecret,
   PluginItem,
   PluginProps
-} from './PluginItem';
+} from "./PluginItem";
 
 /**
  * reCAPTCHAPlugin plugin
@@ -14,16 +14,16 @@ import {
  * @returns Component
  */
 export function ReCAPTCHAPlugin(props: PluginProps) {
-  const name = 'RECAP';
-  const secret = '******';
+  const name = "RECAP";
+  const secret = "******";
   const { initData, disabled } = props;
   const item = initData?.find((d) => d.id === name);
   const json = `{"baseAddress": "R", "secret": ""}`;
 
   const labels = app.getLabels(
-    'serviceRECAPApp',
-    'serviceRECAPSecret',
-    'enabled'
+    "serviceRECAPApp",
+    "serviceRECAPSecret",
+    "enabled"
   );
 
   return (
@@ -38,7 +38,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
             name="app"
             label={labels.serviceRECAPApp}
             autoCorrect="off"
-            defaultValue={data?.app ?? ''}
+            defaultValue={data?.app ?? ""}
             showClear
             required
           />
@@ -46,7 +46,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
             name="secret"
             label={labels.serviceRECAPSecret}
             multiline
-            rows={2}
+            rows={5}
             autoCorrect="off"
             defaultValue={data?.app ? secret : json}
             onDoubleClick={() => navigator.clipboard.writeText(json)}
@@ -65,7 +65,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
       )}
       validator={(form, data, editing) => {
         if (data.app.length < 16) {
-          DomUtils.setFocus('app', form);
+          DomUtils.setFocus("app", form);
           return false;
         }
 
@@ -74,7 +74,7 @@ export function ReCAPTCHAPlugin(props: PluginProps) {
           (!editing && data.secret === secret) ||
           (data.secret !== secret && !checkSecret(data.secret))
         ) {
-          DomUtils.setFocus('secret', form);
+          DomUtils.setFocus("secret", form);
           return false;
         }
 

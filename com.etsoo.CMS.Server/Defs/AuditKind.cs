@@ -26,9 +26,11 @@
         UpdateGallery = 17,
         DeleteGalleryPhoto = 18,
         SortGalleryPhoto = 19,
-        UpdateResurceUrl = 20,
+        UpdateResourceUrl = 20,
         UpdateGalleryItem = 21,
         OnlineDrive = 22,
-        DeleteArticle = 23
+        DeleteArticle = 23,
+        DeleteTab = 24,
+        DeleteUser = 25
     }
 }

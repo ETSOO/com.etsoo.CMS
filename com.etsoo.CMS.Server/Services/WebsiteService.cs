@@ -4,8 +4,11 @@ using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Website;
+using com.etsoo.CMS.Server;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
+using com.etsoo.CoreFramework.Json;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.Database;
 using com.etsoo.DI;
@@ -17,6 +20,7 @@ using com.etsoo.Utils.String;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 
 namespace com.etsoo.CMS.Services
@@ -30,6 +34,10 @@ namespace com.etsoo.CMS.Services
         readonly IPAddress ip;
         readonly IFireAndForgetService fireService;
         readonly IStorage storage;
+        readonly IPublicCommonService publicService;
+
+        const string TabJsonData = "ETSOO_CMS_TAB_JSON_DATA";
+        const string ArticleJsonData = "ETSOO_CMS_ARTICLE_JSON_DATA";
 
         /// <summary>
         /// Constructor
@@ -39,12 +47,13 @@ namespace com.etsoo.CMS.Services
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
         /// <param name="storage">Storage</param>
-        public WebsiteService(IMyApp app, IMyUserAccessor userAccessor, ILogger<WebsiteService> logger, IStorage storage, IFireAndForgetService fireService)
+        public WebsiteService(IMyApp app, IMyUserAccessor userAccessor, ILogger<WebsiteService> logger, IStorage storage, IFireAndForgetService fireService, IPublicCommonService publicService)
             : base(app, userAccessor.UserSafe, "website", logger)
         {
             ip = userAccessor.Ip;
             this.storage = storage;
             this.fireService = fireService;
+            this.publicService = publicService;
         }
 
         /// <summary>
@@ -56,6 +65,17 @@ namespace com.etsoo.CMS.Services
         /// <returns>Action result</returns>
         public async Task<IActionResult> CreateOrUpdateResourceAsync(ResourceCreateRQ rq, CancellationToken cancellationToken = default)
         {
+            // JSON Schema validation
+            if (rq.Id.Equals(TabJsonData, StringComparison.OrdinalIgnoreCase) || rq.Id.Equals(ArticleJsonData, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!CustomFieldSchema.Create().Evaluate(JsonNode.Parse(rq.Value)).IsValid)
+                {
+                    return ApplicationErrors.SchemaValidationError.AsResult("CustomFieldSchema");
+                }
+
+                rq.Id = rq.Id.ToUpper();
+            }
+
             var parameters = FormatParameters(rq);
 
             AddSystemParameters(parameters);
@@ -66,7 +86,8 @@ namespace com.etsoo.CMS.Services
 
             var result = ActionResult.Success;
 
-            await AddAuditAsync(AuditKind.CreateResource, rq.Id, $"Create or update resource {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.ResourceCreateRQ, cancellationToken);
+            var auditTitle = Resources.CreateResource.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.CreateResource, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ResourceCreateRQ, cancellationToken);
 
             return result;
         }
@@ -97,7 +118,8 @@ namespace com.etsoo.CMS.Services
             var result = ActionResult.Success;
 
             rq.Secret = secret;
-            await AddAuditAsync(AuditKind.CreateService, rq.Id, $"Create service {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.ServiceCreateRQ, cancellationToken);
+            var auditTitle = Resources.CreateService.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.CreateService, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ServiceCreateRQ, cancellationToken);
 
             return result;
         }
@@ -286,14 +308,9 @@ namespace com.etsoo.CMS.Services
         /// <param name="id">Id</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<DbService> ReadServiceAsync(string id, CancellationToken cancellationToken = default)
+        public Task<DbService> ReadServiceAsync(string id, CancellationToken cancellationToken = default)
         {
-            var parameters = new DbParameters();
-            parameters.Add(nameof(id), id);
-            var command = CreateCommand($"SELECT app, secret FROM services WHERE id = @{nameof(id)} AND status < 200", parameters, cancellationToken: cancellationToken);
-            var result = await QueryAsAsync<DbService>(command);
-            if (result == null) return new DbService(id, string.Empty);
-            return result with { Secret = App.DecriptData(result.Secret) };
+            return publicService.ReadServiceAsync(id, cancellationToken);
         }
 
         /// <summary>
@@ -370,6 +387,50 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Query resource by id
+        /// 通过ID查询资源
+        /// </summary>
+        /// <param name="Id">Resource id</param>
+        /// <param name="response">Response</param
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Task</returns>
+        public async Task QueryResourceAsync(string Id, HttpResponse response, CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(Id), Id.ToDbString());
+
+            var command = CreateCommand($"SELECT value FROM resources WHERE id = @{nameof(Id)}", parameters, cancellationToken: cancellationToken);
+
+            var value = await ExecuteScalarAsync<string>(command);
+
+            await response.WriteAsync(value ?? "", cancellationToken);
+        }
+
+        /// <summary>
+        /// Query article JSON data schema
+        /// 查询文章JSON数据模式
+        /// </summary>
+        /// <param name="response">Response</param
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        public async Task QueryArticleJsonDataSchemaAsync(HttpResponse response, CancellationToken cancellationToken = default)
+        {
+            await QueryResourceAsync(ArticleJsonData, response, cancellationToken);
+        }
+
+        /// <summary>
+        /// Query tab JSON data schema
+        /// 查询栏目JSON数据模式
+        /// </summary>
+        /// <param name="response">Response</param
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        public async Task QueryTabJsonDataSchemaAsync(HttpResponse response, CancellationToken cancellationToken = default)
+        {
+            await QueryResourceAsync(TabJsonData, response, cancellationToken);
+        }
+
+        /// <summary>
         /// Query available tabs
         /// 查询可用栏目
         /// </summary>
@@ -403,7 +464,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="rq">Request data</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task</returns>
-        public async Task<IActionResult> UpdateResurceUrlAsync(WebsiteUpdateResurceUrlRQ rq, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> UpdateResourceUrlAsync(WebsiteUpdateResurceUrlRQ rq, CancellationToken cancellationToken = default)
         {
             var oldField = nameof(rq.OldResourceUrl);
             var newField = nameof(rq.ResourceUrl);
@@ -419,7 +480,8 @@ namespace com.etsoo.CMS.Services
 
             await ExecuteAsync(command);
 
-            await AddAuditAsync(AuditKind.UpdateResurceUrl, "website", $"Update website resource URL", rq, MyJsonSerializerContext.Default.WebsiteUpdateResurceUrlRQ, ip, cancellationToken: cancellationToken);
+            var auditTitle = Resources.UpdateResourceUrl;
+            await AddAuditAsync(AuditKind.UpdateResourceUrl, "website", auditTitle, rq, MyJsonSerializerContext.Default.WebsiteUpdateResurceUrlRQ, ip, cancellationToken: cancellationToken);
 
             return ActionResult.Success;
         }
@@ -448,7 +510,7 @@ namespace com.etsoo.CMS.Services
             if (data == null)
             {
                 var result = await CreateSettingsAsync(rq, cancellationToken);
-                await AddAuditAsync(AuditKind.UpdateWebsiteSettings, rq.Id.ToString(), $"Create Website Settings", ip, result, rq, cancellationToken: cancellationToken);
+                await AddAuditAsync(AuditKind.UpdateWebsiteSettings, rq.Id.ToString(), Resources.CreateWebsiteSettings, ip, result, rq, cancellationToken: cancellationToken);
                 return result;
             }
             else
@@ -474,7 +536,7 @@ namespace com.etsoo.CMS.Services
                 // Audit Json
                 var json = result.Ok && rq.ChangedFields != null ? await SharedUtils.JoinAsAuditJsonAsync(data, newRQ, rq.ChangedFields) : null;
 
-                await AddAuditAsync(AuditKind.UpdateWebsiteSettings, newRQ.Id.ToString(), $"Update Website Settings", ip, result, json, cancellationToken: cancellationToken);
+                await AddAuditAsync(AuditKind.UpdateWebsiteSettings, newRQ.Id.ToString(), Resources.UpdateWebsiteSettings, ip, result, json, cancellationToken: cancellationToken);
 
                 return result;
             }
@@ -507,7 +569,8 @@ namespace com.etsoo.CMS.Services
             }, "refreshTime = @RefreshTime", parameters, cancellationToken);
 
             rq.Secret = secret;
-            await AddAuditAsync(AuditKind.UpdateService, rq.Id, $"Update service {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.ServiceUpdateRQ, cancellationToken);
+            var auditTitle = Resources.UpdateService.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.UpdateService, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.ServiceUpdateRQ, cancellationToken);
 
             return result;
         }

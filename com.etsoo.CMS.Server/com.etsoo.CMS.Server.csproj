@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <NeutralLanguage>en</NeutralLanguage>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>b88de755-eede-4fa6-ab0b-00cb8e3c07b5</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -22,17 +23,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
-      <Version>8.0.5</Version>
+      <Version>8.0.6</Version>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="com.etsoo.DI" Version="1.0.14" />
-    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.28" />
+    <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.30" />
     <PackageReference Include="com.etsoo.Logs" Version="1.0.4" />
-    <PackageReference Include="com.etsoo.ServiceApp" Version="1.2.2" />
-    <PackageReference Include="com.etsoo.SMTP" Version="1.0.46" />
+    <PackageReference Include="com.etsoo.ServiceApp" Version="1.2.7" />
+    <PackageReference Include="com.etsoo.SMTP" Version="1.0.47" />
     <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.87" />
-    <PackageReference Include="com.etsoo.Web" Version="1.1.78" />
+    <PackageReference Include="com.etsoo.Web" Version="1.1.83" />
     <PackageReference Include="com.etsoo.WeiXin" Version="1.0.30" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
@@ -46,6 +47,33 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.zh-Hans.resx">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.zh-Hant.resx">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

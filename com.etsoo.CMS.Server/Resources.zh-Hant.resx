@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ChangeSelfPassword" xml:space="preserve">
+    <value>修改自己的密碼</value>
+  </data>
+  <data name="CreateArticleLog" xml:space="preserve">
+    <value>新增文章 {0}</value>
+  </data>
+  <data name="CreateResource" xml:space="preserve">
+    <value>新增或更新資源 {0}</value>
+  </data>
+  <data name="CreateService" xml:space="preserve">
+    <value>新增服務 {0}</value>
+  </data>
+  <data name="CreateTab" xml:space="preserve">
+    <value>新增欄位 {0}</value>
+  </data>
+  <data name="CreateUser" xml:space="preserve">
+    <value>新增用戶 {0}</value>
+  </data>
+  <data name="CreateWebsiteSettings" xml:space="preserve">
+    <value>建立網站設定</value>
+  </data>
+  <data name="DeleteArticle" xml:space="preserve">
+    <value>刪除文章 {0}</value>
+  </data>
+  <data name="DeleteArticlePhoto" xml:space="preserve">
+    <value>刪除文章 {0} 的照片</value>
+  </data>
+  <data name="DeleteFile" xml:space="preserve">
+    <value>刪除檔案 {0}</value>
+  </data>
+  <data name="DeleteTab" xml:space="preserve">
+    <value>刪除欄位 {0}</value>
+  </data>
+  <data name="DeleteUser" xml:space="preserve">
+    <value>刪除用戶 {0}</value>
+  </data>
+  <data name="LoginFailed" xml:space="preserve">
+    <value>登入失敗</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>登入成功</value>
+  </data>
+  <data name="ResetUserPassword" xml:space="preserve">
+    <value>重置用戶 {0} 的密碼</value>
+  </data>
+  <data name="ShareFile" xml:space="preserve">
+    <value>共享檔案 {0}</value>
+  </data>
+  <data name="SortArticlePhotos" xml:space="preserve">
+    <value>文章 {0} 的照片進行排序</value>
+  </data>
+  <data name="TokenLogin" xml:space="preserve">
+    <value>令牌登入</value>
+  </data>
+  <data name="UpdateArticle" xml:space="preserve">
+    <value>更新文章 {0}</value>
+  </data>
+  <data name="UpdateArticleGallery" xml:space="preserve">
+    <value>更新文章 {0} 的圖庫</value>
+  </data>
+  <data name="UpdateArticleGalleryError" xml:space="preserve">
+    <value>無法儲存照片檔案 {0}</value>
+  </data>
+  <data name="UpdateArticleGalleryItem" xml:space="preserve">
+    <value>更新文章 {0} 的圖庫照片項</value>
+  </data>
+  <data name="UpdateArticleLogo" xml:space="preserve">
+    <value>更新文章 {0} 的圖標</value>
+  </data>
+  <data name="UpdateFile" xml:space="preserve">
+    <value>更新檔案{0}</value>
+  </data>
+  <data name="UpdateResurceUrl" xml:space="preserve">
+    <value>更新網站資源URL</value>
+  </data>
+  <data name="UpdateService" xml:space="preserve">
+    <value>更新服務 {0}</value>
+  </data>
+  <data name="UpdateTab" xml:space="preserve">
+    <value>更新欄位 {0}</value>
+  </data>
+  <data name="UpdateTabLogo" xml:space="preserve">
+    <value>更新栏目 {0} 图标</value>
+  </data>
+  <data name="UpdateUser" xml:space="preserve">
+    <value>更新用戶 {0}</value>
+  </data>
+  <data name="UpdateWebsiteSettings" xml:space="preserve">
+    <value>更新網站設定</value>
+  </data>
+  <data name="UploadFile" xml:space="preserve">
+    <value>上傳檔案 {0}</value>
+  </data>
+  <data name="UploadFileError" xml:space="preserve">
+    <value>找不到檔案 {0} 的副檔名</value>
+  </data>
+</root>

@@ -2,6 +2,7 @@
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.User;
+using com.etsoo.CMS.Server;
 using com.etsoo.CMS.Server.Services;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
@@ -66,7 +67,8 @@ namespace com.etsoo.CMS.Services
             await UpdatePasswordAsync(password, cancellationToken);
 
             // Add audit
-            await AddAuditAsync<string?>(AuditKind.ChangePassword, user.Id, "Change self password", null, null, ip, cancellationToken: cancellationToken);
+            var auditTitle = Resources.ChangeSelfPassword;
+            await AddAuditAsync<string?>(AuditKind.ChangePassword, user.Id, auditTitle, null, null, ip, cancellationToken: cancellationToken);
 
             // Return
             return ActionResult.Success;
@@ -100,7 +102,8 @@ namespace com.etsoo.CMS.Services
 
             var result = string.IsNullOrEmpty(id) ? ApplicationErrors.ItemExists.AsResult() : ActionResult.Success;
 
-            await AddAuditAsync(AuditKind.CreateUser, rq.Id, $"Create user {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.UserCreateRQ, cancellationToken);
+            var auditTitle = Resources.CreateUser.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.CreateUser, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.UserCreateRQ, cancellationToken);
 
             return result;
         }
@@ -119,12 +122,14 @@ namespace com.etsoo.CMS.Services
 
             var command = CreateCommand($"DELETE FROM users WHERE id = @{nameof(id)} AND refreshTime IS NULL", parameters, cancellationToken: cancellationToken);
 
-            var result = await ExecuteAsync(command);
+            var affected = await ExecuteAsync(command);
 
-            if (result > 0)
-                return ActionResult.Success;
-            else
-                return ApplicationErrors.NoId.AsResult();
+            var result = affected > 0 ? ActionResult.Success : ApplicationErrors.NoId.AsResult();
+
+            var auditTitle = Resources.DeleteUser.Replace("{0}", id);
+            await AddAuditAsync(AuditKind.DeleteUser, id, auditTitle, ip, result, id, null, cancellationToken: cancellationToken);
+
+            return result;
         }
 
         /// <summary>
@@ -248,7 +253,8 @@ namespace com.etsoo.CMS.Services
             result.Data["password"] = EncryptWeb(password, passphrase);
 
             // Log
-            await AddAuditAsync<string?>(AuditKind.ResetUserPassword, id, $"Reset user {id} password", ip, result, cancellationToken: cancellationToken);
+            var auditTitle = Resources.ResetUserPassword.Replace("{0}", id);
+            await AddAuditAsync<string?>(AuditKind.ResetUserPassword, id, auditTitle, ip, result, cancellationToken: cancellationToken);
 
             return result;
         }
@@ -286,7 +292,8 @@ namespace com.etsoo.CMS.Services
                 TableName = "users",
                 IdField = "id"
             }, cancellationToken: cancellationToken);
-            await AddAuditAsync(AuditKind.UpdateUser, rq.Id, $"Update user {rq.Id}", ip, result, rq, MyJsonSerializerContext.Default.UserUpdateRQ, cancellationToken);
+            var auditTitle = Resources.UpdateUser.Replace("{0}", rq.Id);
+            await AddAuditAsync(AuditKind.UpdateUser, rq.Id, auditTitle, ip, result, rq, MyJsonSerializerContext.Default.UserUpdateRQ, cancellationToken);
             return result;
         }
 

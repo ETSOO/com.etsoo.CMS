@@ -1,7 +1,7 @@
-import { Switch, TextFieldEx, VBox } from '@etsoo/materialui';
-import { DomUtils } from '@etsoo/shared';
-import { app } from '../app/MyApp';
-import { checkSecret, PluginItem, PluginProps } from './PluginItem';
+import { Switch, TextFieldEx, VBox } from "@etsoo/materialui";
+import { DomUtils } from "@etsoo/shared";
+import { app } from "../app/MyApp";
+import { checkSecret, PluginItem, PluginProps } from "./PluginItem";
 
 /**
  * Next.js on-demand revalidation plugin
@@ -9,15 +9,15 @@ import { checkSecret, PluginItem, PluginProps } from './PluginItem';
  * @returns Component
  */
 export function NextJsPlugin(props: PluginProps) {
-  const name = 'NextJs';
-  const secret = '******';
+  const name = "NextJs";
+  const secret = "******";
   const { initData, disabled } = props;
   const item = initData?.find((d) => d.id === name);
 
   const labels = app.getLabels(
-    'serviceNextJsApp',
-    'serviceNextJsToken',
-    'enabled'
+    "serviceNextJsApp",
+    "serviceNextJsToken",
+    "enabled"
   );
 
   return (
@@ -32,7 +32,7 @@ export function NextJsPlugin(props: PluginProps) {
             name="app"
             label={labels.serviceNextJsApp}
             autoCorrect="off"
-            defaultValue={data?.app ?? ''}
+            defaultValue={data?.app ?? ""}
             type="url"
             showClear
             required
@@ -41,7 +41,7 @@ export function NextJsPlugin(props: PluginProps) {
             name="secret"
             label={labels.serviceNextJsToken}
             autoCorrect="off"
-            defaultValue={data?.app ? secret : ''}
+            defaultValue={data?.app ? secret : ""}
             showClear
             showPassword
             required
@@ -55,7 +55,7 @@ export function NextJsPlugin(props: PluginProps) {
       )}
       validator={(form, data, editing) => {
         if (data.app.length < 16) {
-          DomUtils.setFocus('app', form);
+          DomUtils.setFocus("app", form);
           return false;
         }
 
@@ -64,7 +64,7 @@ export function NextJsPlugin(props: PluginProps) {
           (!editing && data.secret === secret) ||
           (data.secret !== secret && !checkSecret(data.secret))
         ) {
-          DomUtils.setFocus('secret', form);
+          DomUtils.setFocus("secret", form);
           return false;
         }
 

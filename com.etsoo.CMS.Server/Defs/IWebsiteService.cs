@@ -34,11 +34,17 @@ namespace com.etsoo.CMS.Defs
 
         ValueTask<IActionResult> RegenerateTabUrlsAsync(CancellationToken cancellationToken = default);
 
+        Task QueryResourceAsync(string Id, HttpResponse response, CancellationToken cancellationToken = default);
+
         Task QueryResourcesAsync(HttpResponse response, CancellationToken cancellationToken = default);
+
+        Task QueryArticleJsonDataSchemaAsync(HttpResponse response, CancellationToken cancellationToken = default);
+
+        Task QueryTabJsonDataSchemaAsync(HttpResponse response, CancellationToken cancellationToken = default);
 
         Task QueryServicesAsync(HttpResponse response, CancellationToken cancellationToken = default);
 
-        Task<IActionResult> UpdateResurceUrlAsync(WebsiteUpdateResurceUrlRQ rq, CancellationToken cancellationToken = default);
+        Task<IActionResult> UpdateResourceUrlAsync(WebsiteUpdateResurceUrlRQ rq, CancellationToken cancellationToken = default);
 
         Task<IActionResult> UpdateSettingsAsync(WebsiteUpdateSettingsRQ rq, CancellationToken cancellationToken = default);
 

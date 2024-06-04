@@ -20,7 +20,7 @@ namespace com.etsoo.CMS.Controllers
     {
         readonly IMyApp app;
         readonly IStorage storage;
-        readonly IPublicDriveService driveService;
+        readonly IPublicCommonService publicService;
 
         /// <summary>
         /// Constructor
@@ -29,12 +29,12 @@ namespace com.etsoo.CMS.Controllers
         /// <param name="app">Application</param>
         /// <param name="httpContextAccessor">Accessor</param>
         /// <param name="storage">Storage</param>
-        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, IPublicDriveService driveService)
+        public StorageController(IMyApp app, IHttpContextAccessor httpContextAccessor, IStorage storage, IPublicCommonService publicService)
             : base(app, httpContextAccessor)
         {
             this.app = app;
             this.storage = storage;
-            this.driveService = driveService;
+            this.publicService = publicService;
         }
 
         /// <summary>
@@ -47,13 +47,13 @@ namespace com.etsoo.CMS.Controllers
         public async Task OnlineDrive([StringLength(32, MinimumLength = 12)] string id, [FromQuery] string? key = null)
         {
             // Validate key first to avoid massive requests for the db to check the file
-            if (!PublicDriveService.ValidateAccessKey(app, id, key))
+            if (!PublicCommonService.ValidateAccessKey(app, id, key))
             {
                 await Response.WriteAsync("Not passing the correct access key (没有传递正确的访问密匙)");
                 return;
             }
 
-            var file = await driveService.ReadAsync(id, CancellationToken);
+            var file = await publicService.ReadDriveAsync(id, CancellationToken);
             if (file == null)
             {
                 await Response.WriteAsync("No file matched (没有找到匹配的文件)");

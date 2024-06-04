@@ -3,6 +3,7 @@ using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.RQ.Public;
+using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.DI;
 using com.etsoo.SMTP;
@@ -30,7 +31,7 @@ namespace com.etsoo.CMS.Services
         readonly IHttpClientFactory clientFactory;
         readonly IFireAndForgetService fireService;
         readonly IPAddress ip;
-        readonly IWebsiteService websiteService;
+        readonly IPublicCommonService publicService;
 
         /// <summary>
         /// Constructor
@@ -42,7 +43,7 @@ namespace com.etsoo.CMS.Services
         /// <param name="fireService">Fire service</param>
         /// <param name="httpContextAccessor">Http context accessor</param>
         /// <param name="websiteService">Website service</param>
-        public PublicService(IMyApp app, ILogger<ExternalService> logger, IHttpClientFactory clientFactory, IFireAndForgetService fireService, IHttpContextAccessor httpContextAccessor, IWebsiteService websiteService)
+        public PublicService(IMyApp app, ILogger<ExternalService> logger, IHttpClientFactory clientFactory, IFireAndForgetService fireService, IHttpContextAccessor httpContextAccessor, IPublicCommonService publicService)
         {
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
             if (ip == null)
@@ -55,7 +56,7 @@ namespace com.etsoo.CMS.Services
             this.logger = logger;
             this.clientFactory = clientFactory;
             this.fireService = fireService;
-            this.websiteService = websiteService;
+            this.publicService = publicService;
         }
 
         /// <summary>
@@ -68,10 +69,10 @@ namespace com.etsoo.CMS.Services
         public async Task<WXJsApiSignatureResult> CreateJsApiSignatureAsync(CreateJsApiSignatureRQ rq, CancellationToken cancellationToken = default)
         {
             // Plugin
-            var wx = await websiteService.ReadServiceAsync(WXClientOptions.Name, cancellationToken) ?? throw new NotSupportedException("WeiXin Client Not Supported");
+            var wx = await publicService.ReadServiceAsync(WXClientOptions.Name, cancellationToken) ?? throw new NotSupportedException("WeiXin Client Not Supported");
 
             // Options
-            var secret = app.DecriptData(wx.Secret);
+            var secret = wx.Secret;
             var options = ServiceUtils.ParseOptions<WXClientOptions>(secret) ?? new WXClientOptions
             {
                 AppId = wx.App,
@@ -95,13 +96,13 @@ namespace com.etsoo.CMS.Services
         public async Task<IActionResult> SendEmailAsync(SendEmailRQ rq, CancellationToken cancellationToken = default)
         {
             // Plugin
-            var recap = await websiteService.ReadServiceAsync(RecaptchaOptions.Name, cancellationToken);
+            var recap = await publicService.ReadServiceAsync(RecaptchaOptions.Name, cancellationToken);
 
             // Valid token
             if (recap != null)
             {
                 string? baseAddress = null;
-                var secret = app.DecriptData(recap.Secret);
+                var secret = recap.Secret;
                 var options = ServiceUtils.ParseOptions<RecaptchaOptions>(secret);
                 if (options != null)
                 {
@@ -135,13 +136,13 @@ namespace com.etsoo.CMS.Services
                 return ApplicationErrors.InvalidEmail.AsResult("Recipient");
             }
 
-            var smtp = await websiteService.ReadServiceAsync("SMTP", cancellationToken);
+            var smtp = await publicService.ReadServiceAsync("SMTP", cancellationToken);
             if (smtp == null)
             {
                 return ApplicationErrors.NoValidData.AsResult("SMTP");
             }
 
-            var smtpJSON = app.DecriptData(smtp.Secret);
+            var smtpJSON = smtp.Secret;
             var smtpOptions = ServiceUtils.ParseOptions<SMTPClientOptions>(smtpJSON);
             if (smtpOptions == null)
             {
@@ -166,7 +167,7 @@ namespace com.etsoo.CMS.Services
             // Message
             var message = new MimeMessage
             {
-                Subject = HttpUtility.HtmlDecode(rq.Subject)
+                Subject = "OK" // HttpUtility.HtmlDecode(rq.Subject)
             };
 
             // Configure "Bcc" to make sure the email is received by somebody else

@@ -1,28 +1,28 @@
-import { Switch, TextFieldEx, VBox } from '@etsoo/materialui';
-import { DomUtils } from '@etsoo/shared';
-import { app } from '../app/MyApp';
+import { Switch, TextFieldEx, VBox } from "@etsoo/materialui";
+import { DomUtils } from "@etsoo/shared";
+import { app } from "../app/MyApp";
 import {
   checkSecret,
   loadPluginSecret,
   PluginItem,
   PluginProps
-} from './PluginItem';
+} from "./PluginItem";
 
 /**
  * SMTPPlugin plugin
  * @returns Component
  */
 export function SMTPPlugin(props: PluginProps) {
-  const name = 'SMTP';
-  const secret = '******';
+  const name = "SMTP";
+  const secret = "******";
   const { initData, disabled } = props;
   const item = initData?.find((d) => d.id === name);
 
   const json = `{"host": "email-smtp.ap-southeast-1.amazonaws.com", "port": 465, "useSsl": true, "sender": "", "userName": "", "password": "", "to": null, "cc": null, "bcc": []}`;
   const labels = app.getLabels(
-    'serviceSMTPApp',
-    'serviceSMTPSecret',
-    'enabled'
+    "serviceSMTPApp",
+    "serviceSMTPSecret",
+    "enabled"
   );
 
   return (
@@ -37,7 +37,7 @@ export function SMTPPlugin(props: PluginProps) {
             name="app"
             label={labels.serviceSMTPApp}
             autoCorrect="off"
-            defaultValue={data?.app ?? 'SES'}
+            defaultValue={data?.app ?? "SES"}
             showClear
             required
           />
@@ -45,7 +45,7 @@ export function SMTPPlugin(props: PluginProps) {
             name="secret"
             label={labels.serviceSMTPSecret}
             multiline
-            rows={3}
+            rows={5}
             autoCorrect="off"
             defaultValue={data?.app ? secret : json}
             onDoubleClick={() => navigator.clipboard.writeText(json)}
@@ -64,7 +64,7 @@ export function SMTPPlugin(props: PluginProps) {
       )}
       validator={(form, data, editing) => {
         if (data.app.length < 3) {
-          DomUtils.setFocus('app', form);
+          DomUtils.setFocus("app", form);
           return false;
         }
 
@@ -73,7 +73,7 @@ export function SMTPPlugin(props: PluginProps) {
           (!editing && data.secret === secret) ||
           (data.secret !== secret && !checkSecret(data.secret))
         ) {
-          DomUtils.setFocus('secret', form);
+          DomUtils.setFocus("secret", form);
           return false;
         }
 

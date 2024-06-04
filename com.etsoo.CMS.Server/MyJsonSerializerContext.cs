@@ -37,6 +37,7 @@ namespace com.etsoo.CMS
 
     [JsonSerializable(typeof(CreateJsApiSignatureRQ))]
     [JsonSerializable(typeof(DbArticleQuery[]))]
+    [JsonSerializable(typeof(DbService))]
     [JsonSerializable(typeof(DriveCreateRQ))]
     [JsonSerializable(typeof(DriveQueryRQ))]
     [JsonSerializable(typeof(DriveShareFileRQ))]
@@ -68,6 +69,7 @@ namespace com.etsoo.CMS
     // Framework models
     [JsonSerializable(typeof(ProblemDetails))]
     [JsonSerializable(typeof(ValidationProblemDetails))]
+
     public partial class MyJsonSerializerContext : JsonSerializerContext
     {
     }

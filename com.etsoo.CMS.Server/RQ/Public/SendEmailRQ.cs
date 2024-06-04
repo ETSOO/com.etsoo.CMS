@@ -1,6 +1,5 @@
 ﻿using com.etsoo.WebUtils.Attributes;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace com.etsoo.CMS.RQ.Public
 {
@@ -16,16 +15,7 @@ namespace com.etsoo.CMS.RQ.Public
         /// </summary>
         [EmailAddress]
         [Required]
-        [JsonIgnore]
         public required string Recipient { get; init; }
-
-        /// <summary>
-        /// Subject
-        /// 主题
-        /// </summary>
-        [Required]
-        [MaxLength(256)]
-        public required string Subject { get; init; }
 
         /// <summary>
         /// Template name
@@ -39,7 +29,7 @@ namespace com.etsoo.CMS.RQ.Public
         /// 令牌
         /// </summary>
         [Required]
-        [MaxLength(1024)]
+        [MaxLength(2048)]
         public required string Token { get; init; }
 
         /// <summary>

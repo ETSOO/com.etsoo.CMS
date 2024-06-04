@@ -1,6 +1,7 @@
 ﻿using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
 using com.etsoo.CMS.Models;
+using com.etsoo.CMS.Server;
 using com.etsoo.CoreFramework.Application;
 using com.etsoo.CoreFramework.Models;
 using com.etsoo.CoreFramework.User;
@@ -215,7 +216,8 @@ namespace com.etsoo.CMS.Services
             }
 
             // Add audit
-            await AddAuditAsync(AuditKind.Login, user.Id, success ? "Login" : "Login Failed", new Dictionary<string, object> { ["Device"] = data.Device, ["Success"] = success }, null, data.Ip, success ? AuditFlag.Normal : AuditFlag.Warning, cancellationToken: cancellationToken);
+            var auditTitle = success ? Resources.LoginSuccess : Resources.LoginFailed;
+            await AddAuditAsync(AuditKind.Login, user.Id, auditTitle, new Dictionary<string, object> { ["Device"] = data.Device, ["Success"] = success }, null, data.Ip, success ? AuditFlag.Normal : AuditFlag.Warning, cancellationToken: cancellationToken);
 
             if (success)
             {
@@ -286,6 +288,9 @@ namespace com.etsoo.CMS.Services
                     return (ApplicationErrors.NoDeviceMatch.AsResult(), null);
                 }
 
+                // Audit title
+                var auditTitle = Resources.TokenLogin;
+
                 // Has password or not
                 if (!string.IsNullOrEmpty(model.Pwd))
                 {
@@ -298,7 +303,7 @@ namespace com.etsoo.CMS.Services
                         await AddLoginFailureAsync(user.Id, user.Failure, cancellationToken);
 
                         // Add audit
-                        await AddAuditAsync(AuditKind.TokenLogin, user.Id, "Token Login", new Dictionary<string, object> { ["Device"] = model.Device, ["Success"] = false }, null, model.Ip, AuditFlag.Warning, cancellationToken: cancellationToken);
+                        await AddAuditAsync(AuditKind.TokenLogin, user.Id, auditTitle, new Dictionary<string, object> { ["Device"] = model.Device, ["Success"] = false }, null, model.Ip, AuditFlag.Warning, cancellationToken: cancellationToken);
 
                         return (ApplicationErrors.NoPasswordMatch.AsResult(), null);
                     }
@@ -324,7 +329,7 @@ namespace com.etsoo.CMS.Services
                 var serviceUser = new ServiceUser(user.Role, userId, model.Ip, ci, refreshToken.Region, refreshToken.Organization, null, refreshToken.DeviceId);
 
                 // Add audit
-                await AddAuditAsync(AuditKind.TokenLogin, userId, "Token Login", new Dictionary<string, object> { ["Device"] = model.Device, ["Success"] = true }, null, model.Ip, AuditFlag.Normal, cancellationToken: cancellationToken);
+                await AddAuditAsync(AuditKind.TokenLogin, userId, auditTitle, new Dictionary<string, object> { ["Device"] = model.Device, ["Success"] = true }, null, model.Ip, AuditFlag.Normal, cancellationToken: cancellationToken);
 
                 // Success result
                 var result = ActionResult.Success;

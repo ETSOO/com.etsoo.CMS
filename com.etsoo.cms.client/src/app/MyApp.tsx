@@ -11,6 +11,7 @@ import {
 import {
   CommonApp,
   IServiceAppSettings,
+  ItemList,
   MUGlobal,
   TextFieldEx,
   TextFieldExMethods,
@@ -33,6 +34,8 @@ import { TabApi } from "../api/TabApi";
 import { WebsiteApi } from "../api/WebsiteApi";
 import { NavigateFunction } from "react-router-dom";
 import { DriveApi } from "../api/DriveApi";
+import { Grid, Typography } from "@mui/material";
+import LanguageIcon from "@mui/icons-material/Language";
 
 /**
  * Service App
@@ -181,7 +184,8 @@ class MyServiceApp extends CommonApp {
       "login",
       "password",
       "unknownError",
-      "user"
+      "user",
+      "languages"
     );
 
     const loginRef = React.createRef<HTMLInputElement>();
@@ -284,7 +288,32 @@ class MyServiceApp extends CommonApp {
 
     this.loginDialog = this.showInputDialog({
       title: labels.login,
-      message: `${labels.etsooCMS} (${import.meta.env.VITE_APP_VERSION})`,
+      message: (
+        <Grid container spacing={1} alignItems="center">
+          <Grid item xs={12} sm={9}>
+            <Typography>{`${labels.etsooCMS} (${
+              import.meta.env.VITE_APP_VERSION
+            })`}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={3} textAlign="end">
+            <ItemList
+              items={app.settings.cultures}
+              idField="name"
+              size="small"
+              title={labels.languages}
+              onClose={(item, changed) => {
+                if (changed && item) {
+                  app.changeCulture(item);
+                  globalThis.location.reload();
+                }
+              }}
+              selectedValue={app.culture}
+              className="noneTransformButton"
+              icon={<LanguageIcon />}
+            />
+          </Grid>
+        </Grid>
+      ),
       fullScreen: this.smDown,
       cancelButton: false,
       callback: async (form) => await loginCallback(form),

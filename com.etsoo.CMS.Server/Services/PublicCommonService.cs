@@ -6,10 +6,10 @@ using com.etsoo.Database;
 namespace com.etsoo.CMS.Services
 {
     /// <summary>
-    /// Public online drive service
-    /// 公开的在线驱动服务
+    /// Public common service
+    /// 公共的通用服务
     /// </summary>
-    public class PublicDriveService : CommonService, IPublicDriveService
+    public class PublicCommonService : CommonService, IPublicCommonService
     {
         /// <summary>
         /// Validate access key
@@ -45,19 +45,19 @@ namespace com.etsoo.CMS.Services
         /// <param name="userAccessor">User accessor</param>
         /// <param name="logger">Logger</param>
         /// <param name="storage">Storage</param>
-        public PublicDriveService(IMyApp app, IMyUserAccessor userAccessor, ILogger<PublicDriveService> logger)
-            : base(app, userAccessor.User, "drive", logger)
+        public PublicCommonService(IMyApp app, IMyUserAccessor userAccessor, ILogger<PublicCommonService> logger)
+            : base(app, userAccessor.User, "public", logger)
         {
         }
 
         /// <summary>
-        /// Read file
-        /// 读取文件
+        /// Read drive file
+        /// 读取网络硬盘文件
         /// </summary>
         /// <param name="id">File id</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result</returns>
-        public async Task<DriveFile?> ReadAsync(string id, CancellationToken cancellationToken = default)
+        public async Task<DriveFile?> ReadDriveAsync(string id, CancellationToken cancellationToken = default)
         {
             var parameters = new DbParameters();
             parameters.Add(nameof(id), id.ToDbString(true, 30));
@@ -65,6 +65,23 @@ namespace com.etsoo.CMS.Services
             var command = CreateCommand($"SELECT id, name, path, contentType, shared FROM files WHERE id = @{nameof(id)}", parameters, cancellationToken: cancellationToken);
 
             return await QueryAsAsync<DriveFile>(command);
+        }
+
+        /// <summary>
+        /// Read service (plugin)
+        /// 读取服务（插件）
+        /// </summary>
+        /// <param name="id">Id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Result</returns>
+        public async Task<DbService> ReadServiceAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(id), id);
+            var command = CreateCommand($"SELECT app, secret FROM services WHERE id = @{nameof(id)} AND status < 200", parameters, cancellationToken: cancellationToken);
+            var result = await QueryAsAsync<DbService>(command);
+            if (result == null) return new DbService(id, string.Empty);
+            return result with { Secret = App.DecriptData(result.Secret) };
         }
     }
 }
