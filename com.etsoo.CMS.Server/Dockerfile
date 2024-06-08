@@ -1,9 +1,8 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 EXPOSE 8080
 EXPOSE 8081
 
@@ -12,7 +11,6 @@ RUN apt-get update
 RUN apt-get install curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
 RUN apt-get -y install nodejs
-
 
 FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
