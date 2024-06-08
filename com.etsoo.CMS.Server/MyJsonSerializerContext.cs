@@ -1,7 +1,6 @@
 ﻿using com.etsoo.CMS.Models;
 using com.etsoo.CMS.RQ.Article;
 using com.etsoo.CMS.RQ.Drive;
-using com.etsoo.CMS.RQ.Public;
 using com.etsoo.CMS.RQ.Service;
 using com.etsoo.CMS.RQ.Tab;
 using com.etsoo.CMS.RQ.User;
@@ -51,7 +50,6 @@ namespace com.etsoo.CMS
     [JsonSerializable(typeof(ResourceCreateRQ))]
     [JsonSerializable(typeof(ServiceCreateRQ))]
     [JsonSerializable(typeof(ServiceUpdateRQ))]
-    [JsonSerializable(typeof(SendEmailRQ))]
     [JsonSerializable(typeof(TabCreateRQ))]
     [JsonSerializable(typeof(TabQueryRQ))]
     [JsonSerializable(typeof(TabTiplistRQ))]

@@ -68,6 +68,25 @@ namespace com.etsoo.CMS.Services
         }
 
         /// <summary>
+        /// Query resource by id
+        /// 通过ID查询资源
+        /// </summary>
+        /// <param name="Id">Resource id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Task</returns>
+        public async Task<string?> QueryResourceAsync(string Id, CancellationToken cancellationToken = default)
+        {
+            var parameters = new DbParameters();
+            parameters.Add(nameof(Id), Id.ToDbString());
+
+            var command = CreateCommand($"SELECT value FROM resources WHERE id = @{nameof(Id)}", parameters, cancellationToken: cancellationToken);
+
+            var value = await ExecuteScalarAsync<string>(command);
+
+            return value;
+        }
+
+        /// <summary>
         /// Read service (plugin)
         /// 读取服务（插件）
         /// </summary>

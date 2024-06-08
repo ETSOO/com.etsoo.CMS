@@ -30,10 +30,10 @@
     <PackageReference Include="com.etsoo.DI" Version="1.0.14" />
     <PackageReference Include="com.etsoo.HtmlIO" Version="1.0.30" />
     <PackageReference Include="com.etsoo.Logs" Version="1.0.4" />
-    <PackageReference Include="com.etsoo.ServiceApp" Version="1.2.7" />
-    <PackageReference Include="com.etsoo.SMTP" Version="1.0.47" />
+    <PackageReference Include="com.etsoo.ServiceApp" Version="1.2.8" />
+    <PackageReference Include="com.etsoo.SMTP" Version="1.0.48" />
     <PackageReference Include="com.etsoo.SourceGenerators" Version="1.0.87" />
-    <PackageReference Include="com.etsoo.Web" Version="1.1.83" />
+    <PackageReference Include="com.etsoo.Web" Version="1.1.84" />
     <PackageReference Include="com.etsoo.WeiXin" Version="1.0.30" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />

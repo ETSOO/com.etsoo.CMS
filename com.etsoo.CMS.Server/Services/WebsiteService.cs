@@ -75,6 +75,14 @@ namespace com.etsoo.CMS.Services
 
                 rq.Id = rq.Id.ToUpper();
             }
+            else if (rq.Id.EndsWith("_EMAIL_TEMPLATE"))
+            {
+                // Email template schema validataion
+                if (!EmailTemplateSchema.Create().Evaluate(JsonNode.Parse(rq.Value)).IsValid)
+                {
+                    return ApplicationErrors.SchemaValidationError.AsResult("EmailTemplateSchema");
+                }
+            }
 
             var parameters = FormatParameters(rq);
 
@@ -396,13 +404,7 @@ namespace com.etsoo.CMS.Services
         /// <returns>Task</returns>
         public async Task QueryResourceAsync(string Id, HttpResponse response, CancellationToken cancellationToken = default)
         {
-            var parameters = new DbParameters();
-            parameters.Add(nameof(Id), Id.ToDbString());
-
-            var command = CreateCommand($"SELECT value FROM resources WHERE id = @{nameof(Id)}", parameters, cancellationToken: cancellationToken);
-
-            var value = await ExecuteScalarAsync<string>(command);
-
+            var value = await publicService.QueryResourceAsync(Id, cancellationToken);
             await response.WriteAsync(value ?? "", cancellationToken);
         }
 

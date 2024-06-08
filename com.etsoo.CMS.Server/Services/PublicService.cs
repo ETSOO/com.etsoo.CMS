@@ -2,13 +2,14 @@
 using com.etsoo.ApiProxy.Proxy;
 using com.etsoo.CMS.Application;
 using com.etsoo.CMS.Defs;
-using com.etsoo.CMS.RQ.Public;
 using com.etsoo.CMS.Server.Defs;
 using com.etsoo.CoreFramework.Application;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.DI;
 using com.etsoo.SMTP;
 using com.etsoo.Utils.Actions;
 using com.etsoo.Utils.Serialization;
+using com.etsoo.Web;
 using com.etsoo.WeiXin;
 using com.etsoo.WeiXin.Dto;
 using com.etsoo.WeiXin.RQ;
@@ -117,15 +118,15 @@ namespace com.etsoo.CMS.Services
                     Secret = secret
                 });
 
-                var result = await recapApi.SiteVerifyAsync(new()
+                var verifyResult = await recapApi.SiteVerifyAsync(new()
                 {
                     Response = rq.Token,
                     RemoteIp = ip.ToString()
                 }, cancellationToken);
 
-                if (!result.Success)
+                if (!verifyResult.Success)
                 {
-                    logger.LogDebug("SiteVerifyAsync {@result}", result);
+                    logger.LogDebug("SiteVerifyAsync {@result}", verifyResult);
                     return ApplicationErrors.AccessDenied.AsResult("Token");
                 }
             }
@@ -142,6 +143,7 @@ namespace com.etsoo.CMS.Services
                 return ApplicationErrors.NoValidData.AsResult("SMTP");
             }
 
+            // SMTP options
             var smtpJSON = smtp.Secret;
             var smtpOptions = ServiceUtils.ParseOptions<SMTPClientOptions>(smtpJSON);
             if (smtpOptions == null)
@@ -150,33 +152,27 @@ namespace com.etsoo.CMS.Services
             }
 
             // Template
-            using var jsonDoc = JsonDocument.Parse(smtpJSON);
-            var template = jsonDoc.RootElement.GetPropertyCaseInsensitive(rq.Template)?.GetString();
-            if (string.IsNullOrEmpty(template))
+            var templateText = await publicService.QueryResourceAsync(rq.Template, cancellationToken);
+            if (string.IsNullOrEmpty(templateText))
+            {
+                return ApplicationErrors.NoValidData.AsResult("Template");
+            }
+
+            var template = JsonSerializer.Deserialize(templateText, ModelJsonSerializerContext.Default.EmailTemplateDto);
+            if (template == null)
             {
                 return ApplicationErrors.NoValidData.AsResult("Template");
             }
 
             // Parse data
-            using var doc = JsonDocument.Parse(rq.Data);
-            foreach (var item in doc.RootElement.EnumerateObject())
+            string html;
+            if (template.IsRazor is true)
             {
-                template = template.Replace($"{{{item.Name}}}", HttpUtility.HtmlDecode(item.Value.ToString()));
+                html = await RazorUtils.RenderAsync(rq.Template, template.Template, rq.Data);
             }
-
-            // Message
-            var message = new MimeMessage
+            else
             {
-                Subject = "OK" // HttpUtility.HtmlDecode(rq.Subject)
-            };
-
-            // Configure "Bcc" to make sure the email is received by somebody else
-            message.To.Add(to);
-
-            // HTML
-            var builder = new BodyBuilder();
-
-            var html = new StringBuilder("""
+                var sb = new StringBuilder("""
                 <!doctype html>
                 <html>
                     <head>
@@ -190,13 +186,32 @@ namespace com.etsoo.CMS.Services
                     </head>
                     <body>
                 """);
-            html.Append(template);
-            html.Append("""
+                sb.Append(template.Template.FormatTemplateWithJson(rq.Data, "(empty)"));
+                sb.Append("""
                     </body>
                 </html>
-            """);
+                """);
+                html = sb.ToString();
+            }
 
-            builder.HtmlBody = html.ToString();
+            // Message
+            var message = new MimeMessage
+            {
+                Subject = HttpUtility.HtmlDecode(template.Subject)
+            };
+
+            // Recipient
+            message.To.Add(to);
+
+            // Configure "Cc", "Bcc" with the template or SMTP options to make sure the email is received by somebody else
+            message.Cc.AddRange(template.Cc);
+            message.Bcc.AddRange(template.Bcc);
+
+            // HTML
+            var builder = new BodyBuilder
+            {
+                HtmlBody = html.ToString()
+            };
 
             message.Body = builder.ToMessageBody();
 
@@ -217,7 +232,12 @@ namespace com.etsoo.CMS.Services
                 }
             });
 
-            return ActionResult.Success;
+            var result = ActionResult.Success;
+
+            if (!string.IsNullOrEmpty(template.SuccessMessage))
+                result.Data["SuccessMessage"] = template.SuccessMessage;
+
+            return result;
         }
     }
 }

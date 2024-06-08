@@ -1,5 +1,5 @@
 ﻿using com.etsoo.CMS.Defs;
-using com.etsoo.CMS.RQ.Public;
+using com.etsoo.CoreFramework.Models;
 using com.etsoo.WeiXin.RQ;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

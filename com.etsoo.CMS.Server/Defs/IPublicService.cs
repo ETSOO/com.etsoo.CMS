@@ -1,4 +1,4 @@
-﻿using com.etsoo.CMS.RQ.Public;
+﻿using com.etsoo.CoreFramework.Models;
 using com.etsoo.Utils.Actions;
 using com.etsoo.WeiXin.Dto;
 using com.etsoo.WeiXin.RQ;
