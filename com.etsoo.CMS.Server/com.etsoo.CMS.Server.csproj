@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <NeutralLanguage>en</NeutralLanguage>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>b88de755-eede-4fa6-ab0b-00cb8e3c07b5</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -13,6 +12,7 @@
     <Description>ETSOO Website Content Management System (CMS)
 亿速思维网站内容管理系统 (CMS)</Description>
     <AssemblyVersion>1.0.4</AssemblyVersion>
+    <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en;zh-Hans;zh-Hant</SatelliteResourceLanguages>
     <Version>1.0.6</Version>
     <SpaRoot>..\com.etsoo.cms.client</SpaRoot>
