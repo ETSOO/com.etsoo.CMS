@@ -173,7 +173,7 @@ namespace com.etsoo.CMS.Services
             await ReadJsonToStreamAsync(command, response);
             */
 
-            await SqlSelectJsonAsync(rq, ["id", "parent", "name", "url", "logo", "articles"], response, conditionDelegate: (conditions) =>
+            await SqlSelectJsonAsync(rq, ["id", "parent", "name", "layout", "url", "logo", "articles"], response, conditionDelegate: (conditions) =>
             {
                 if (rq.Enabled.HasValue)
                 {

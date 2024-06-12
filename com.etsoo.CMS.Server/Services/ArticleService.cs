@@ -75,6 +75,19 @@ namespace com.etsoo.CMS.Services
                 rq.Keywords = ServiceUtils.FormatKeywords(rq.Keywords);
             }
             rq.Url = rq.Url.Trim('/');
+
+            // URL should be unique under the tab
+            var parameters = new DbParameters();
+            parameters.Add(nameof(rq.Tab1), rq.Tab1);
+            parameters.Add(nameof(rq.Url), rq.Url);
+            var command = CreateCommand($"SELECT COUNT(*) FROM articles WHERE tab1 = @{nameof(rq.Tab1)} AND url = @{nameof(rq.Url)}", parameters, cancellationToken: cancellationToken);
+
+            var count = await ExecuteScalarAsync<int>(command);
+            if (count > 0)
+            {
+                return ApplicationErrors.ItemExists.AsResult("url");
+            }
+
             rq.Content = await FormatContentAsync(rq.Content, cancellationToken);
             rq.Author = User.Id;
 
@@ -480,6 +493,30 @@ namespace com.etsoo.CMS.Services
             if (!string.IsNullOrEmpty(rq.Url))
             {
                 rq.Url = rq.Url.Trim('/');
+
+                // Tab
+                var tabId = rq.Tab1;
+                if (!tabId.HasValue)
+                {
+                    var tabCommand = CreateCommand($"SELECT tab1 FROM articles WHERE id = {rq.Id}", cancellationToken: cancellationToken);
+                    tabId = await ExecuteScalarAsync<int>(tabCommand);
+                }
+
+                if (tabId.HasValue)
+                {
+                    // URL should be unique under the tab
+                    var urlParameters = new DbParameters();
+                    urlParameters.Add(nameof(rq.Id), rq.Id);
+                    urlParameters.Add(nameof(rq.Tab1), tabId);
+                    urlParameters.Add(nameof(rq.Url), rq.Url);
+                    var command = CreateCommand($"SELECT COUNT(*) FROM articles WHERE tab1 = @{nameof(rq.Tab1)} AND id <> @{nameof(rq.Id)} AND url = @{nameof(rq.Url)}", urlParameters, cancellationToken: cancellationToken);
+
+                    var count = await ExecuteScalarAsync<int>(command);
+                    if (count > 0)
+                    {
+                        return ApplicationErrors.ItemExists.AsResult("url");
+                    }
+                }
             }
 
             if (!string.IsNullOrEmpty(rq.Content)

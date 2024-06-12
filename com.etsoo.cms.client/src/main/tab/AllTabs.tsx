@@ -4,6 +4,7 @@ import {
   DnDItemStyle,
   DnDList,
   DnDListRef,
+  HBox,
   IconButtonLink,
   SelectEx
 } from "@etsoo/materialui";
@@ -14,6 +15,7 @@ import {
   CardContent,
   Grid,
   IconButton,
+  Stack,
   Typography,
   useTheme
 } from "@mui/material";
@@ -25,6 +27,8 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import PhotoIcon from "@mui/icons-material/Photo";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { TabQueryRQ } from "../../api/rq/tab/TabQueryRQ";
 import { Utils } from "@etsoo/shared";
 import { useSearchParamsEx } from "@etsoo/react";
@@ -40,8 +44,10 @@ function AllTabs() {
   const [parent, setParent] = React.useState<number>();
   const [tabs, setTabs] = React.useState<TabDto[]>([]);
   const [items, setItems] = React.useState<TabDto[]>([]);
+  const [currentTab, setTab] = React.useState<TabDto>();
 
   const tabsRef = React.useRef<TabDto[]>();
+  const parentRef = React.useRef<number | undefined>(0);
 
   // Labels
   const labels = app.getLabels(
@@ -51,7 +57,10 @@ function AllTabs() {
     "dragIndicator",
     "edit",
     "delete",
-    "tabLogo"
+    "tabLogo",
+    "sortTipTab",
+    "confirmAction",
+    "regenerateLink"
   );
 
   // Permissions
@@ -109,11 +118,6 @@ function AllTabs() {
   }, [defaultParent]);
 
   React.useEffect(() => {
-    // First level
-    queryTabs();
-  }, [queryTabs]);
-
-  React.useEffect(() => {
     // Page title
     app.setPageKey("tabs");
 
@@ -124,13 +128,15 @@ function AllTabs() {
 
   React.useEffect(() => {
     // Add tabs as dependency to check updates
-    if (defaultParent != null) {
-      if (tabs.some((tab) => tab.id === defaultParent)) {
+    if (parentRef.current === parent) return;
+    parentRef.current = parent;
+    if (parent != null) {
+      if (tabs.some((tab) => tab.id === parent)) {
         // Only one level
-        queryTabs(defaultParent);
+        queryTabs(parent);
       } else {
         // Multiple levels
-        app.tabApi.ancestorRead(defaultParent).then((data) => {
+        app.tabApi.ancestorRead(parent).then((data) => {
           if (data == null || data.length === 0 || !isMounted.current) return;
           data.reverse();
           Promise.all(
@@ -149,30 +155,47 @@ function AllTabs() {
           });
         });
       }
+    } else {
+      queryTabs();
     }
-  }, [defaultParent, queryTabs, tabs]);
+  }, [parent, queryTabs, tabs]);
 
   return (
     <CommonPage>
-      <SelectEx<TabDto>
-        label={labels.parentTab}
-        labelField="name"
-        name="parent"
-        search
-        fullWidth
-        options={tabs}
-        onChange={(event) => {
-          const p = event.target.value;
-          const parent = p === "" ? undefined : (p as number);
-          setParent(parent);
-          queryTabs(parent);
-        }}
-        itemStyle={(option) => {
-          if (option.level == null || option.level === 0) return {};
-          return { paddingLeft: `${option.level * 30}px` };
-        }}
-        value={defaultParent}
-      />
+      <HBox gap={1}>
+        <Stack flexGrow={2}>
+          <SelectEx<TabDto>
+            label={labels.parentTab}
+            labelField="name"
+            name="parent"
+            search
+            fullWidth
+            options={tabs}
+            onChange={(event) => {
+              const p = event.target.value;
+              const parent = p === "" ? undefined : (p as number);
+              setParent(parent);
+            }}
+            onItemChange={(item) => setTab(item)}
+            itemStyle={(option) => {
+              if (option.level == null || option.level === 0) return {};
+              return { paddingLeft: `${option.level * 30}px` };
+            }}
+            value={parent}
+          />
+        </Stack>
+        {currentTab &&
+          (currentTab.parent != null ||
+            (currentTab.parent == null && currentTab.url != null)) && (
+            <IconButton
+              onClick={() => {
+                setParent(currentTab.parent);
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+      </HBox>
       <Card sx={{ marginTop: 1 }}>
         {adminPermission ? (
           <Typography
@@ -180,7 +203,7 @@ function AllTabs() {
             display="block"
             sx={{ paddingLeft: 2, paddingTop: 2, paddingRight: 2 }}
           >
-            * {labels.sortTip}
+            * {labels.sortTipTab}
           </Typography>
         ) : undefined}
         <CardContent>
@@ -193,7 +216,7 @@ function AllTabs() {
                 onDragEnd={(items) =>
                   app.tabApi.sort(items, { showLoading: false })
                 }
-                itemRenderer={(item, index, nodeRef, actionNodeRef) => (
+                itemRenderer={(item, _index, nodeRef, actionNodeRef) => (
                   <Grid container item spacing={0} {...nodeRef}>
                     <Grid
                       item
@@ -210,7 +233,13 @@ function AllTabs() {
                       >
                         <DragIndicatorIcon />
                       </IconButton>
-                      <Typography>{item.name}</Typography>
+                      <Button
+                        onClick={() => {
+                          setParent(item.id);
+                        }}
+                      >
+                        {item.name}
+                      </Button>
                     </Grid>
                     <Grid
                       item
@@ -266,7 +295,13 @@ function AllTabs() {
           </Grid>
         </CardContent>
         {adminPermission ? (
-          <CardActions>
+          <CardActions
+            sx={{
+              justifyContent: "space-between",
+              paddingLeft: 2,
+              paddingRight: 2
+            }}
+          >
             <Button
               color="primary"
               variant="outlined"
@@ -274,6 +309,30 @@ function AllTabs() {
               startIcon={<AddIcon />}
             >
               {labels.add}
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<SyncAltIcon />}
+              onClick={() => {
+                app.notifier.confirm(
+                  labels.confirmAction.format(labels.regenerateLink),
+                  undefined,
+                  async (confirmed) => {
+                    if (!confirmed) return;
+                    const result = await app.websiteApi.regenerateTabUrls({
+                      showLoading: false
+                    });
+                    if (result == null) return;
+                    if (!result.ok) {
+                      app.alertResult(result);
+                    } else {
+                      app.ok();
+                    }
+                  }
+                );
+              }}
+            >
+              {labels.regenerateLink}
             </Button>
           </CardActions>
         ) : undefined}

@@ -21,6 +21,8 @@ import {
 import { ArticleUpdateDto } from "../../api/dto/article/ArticleUpdateDto";
 import { EOEditorElement, EOEditorEx } from "@etsoo/reacteditor";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { TabDto } from "../../api/dto/tab/TabDto";
+import { TabLayout } from "../../api/dto/tab/TabLayout";
 
 function AddTab() {
   // Route
@@ -30,6 +32,7 @@ function AddTab() {
   const { tab } = useSearchParamsEx({ tab: "number" });
   const [tabs, setTabs] = React.useState<number[]>();
   const editorRef = React.useRef<EOEditorElement>(null);
+  const tabRef = React.useRef<TabDto>();
 
   const [customFields, setCustomField] = React.useState<CustomFieldData[]>([]);
 
@@ -124,7 +127,9 @@ function AddTab() {
         return;
       }
 
-      app.alertResult(result);
+      app.alertResult(result, undefined, ({ field }) =>
+        field === "url" ? labels.articleUrl : undefined
+      );
     }
   });
 
@@ -132,10 +137,17 @@ function AddTab() {
     const urlInput = refs.url.current;
     if (urlInput == null) return;
     if (!isEditing || urlInput.value === "") {
-      const title = event.target.value;
-      app.formatUrl(title).then((url) => {
-        if (url != null) urlInput.value = url;
-      });
+      if (
+        tabRef.current?.layout === TabLayout.Article &&
+        tabRef.current.url != "/"
+      ) {
+        urlInput.value = tabRef.current.url;
+      } else {
+        const title = event.target.value;
+        app.formatUrl(title).then((url) => {
+          if (url != null) urlInput.value = url;
+        });
+      }
     }
   };
 
@@ -224,6 +236,7 @@ function AddTab() {
           label={labels.tab}
           values={tabs}
           onChange={(value) => formik.setFieldValue("tab1", value)}
+          onItemChange={(item) => (tabRef.current = item)}
           required
           error={formik.touched.tab1 && Boolean(formik.errors.tab1)}
           helperText={formik.touched.tab1 && formik.errors.tab1}

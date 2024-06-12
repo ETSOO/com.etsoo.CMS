@@ -15,7 +15,6 @@ function Settings() {
 
   // Labels
   const labels = app.getLabels(
-    "operationSucceeded",
     "noChanges",
     "websiteDomain",
     "websiteTitle",
@@ -132,7 +131,7 @@ function Settings() {
       if (result == null) return;
 
       if (result.ok) {
-        app.notifier.succeed(labels.operationSucceeded, undefined, () => {
+        app.ok(() => {
           navigate("./../../");
         });
         return;
@@ -220,7 +219,7 @@ function Settings() {
                   if (result == null) return;
 
                   if (result.ok) {
-                    app.notifier.succeed(labels.operationSucceeded);
+                    app.ok();
                     return;
                   }
 

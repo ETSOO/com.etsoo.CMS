@@ -1,3 +1,5 @@
+import { TabLayout } from "./TabLayout";
+
 export type TabDto = {
   /**
    * Id
@@ -13,6 +15,11 @@ export type TabDto = {
    * Url
    */
   url: string;
+
+  /**
+   * Layout
+   */
+  layout: TabLayout;
 
   /**
    * Logo

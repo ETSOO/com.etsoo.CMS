@@ -82,6 +82,7 @@
   "shareHours": "分享有效时间（小时数）",
   "slideshowLogo": "照片库",
   "slideshowLogoSize": "照片库尺寸",
+  "sortTipTab": "拖拽项目进行排序。栏目的全部操作完成后，点击右下角的 '重新生成链接' 更新网站。",
   "tab": "栏目",
   "tabIcon": "栏目小图标",
   "tabLayout": "栏目布局",

@@ -7,6 +7,7 @@ import {
   Grid,
   IconButton,
   TextField,
+  Typography,
   useTheme
 } from "@mui/material";
 import React from "react";
@@ -15,7 +16,6 @@ import { ResourceDto } from "../../api/dto/website/ResourceDto";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import AddToDriveIcon from "@mui/icons-material/AddToDrive";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { UserRole } from "@etsoo/appscript";
 import { DomUtils } from "@etsoo/shared";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,6 @@ function Resources() {
     "id",
     "resourceValue",
     "onlineDrive",
-    "regenerateLink",
     "confirmAction"
   );
 
@@ -159,13 +158,13 @@ function Resources() {
             </Button>
           </CardActions>
         ) : undefined}
-        <CardContent sx={{ paddingTop: 0 }}>
+        <CardContent sx={{ paddingTop: 0, paddingLeft: 3 }}>
           {items.map((item, index) => (
             <Grid
               container
               item
               key={item.id}
-              spacing={0}
+              spacing={1}
               style={DnDItemStyle(index, false, theme)}
               alignItems="center"
             >
@@ -178,7 +177,9 @@ function Resources() {
                 >
                   <EditIcon />
                 </IconButton>
-                {item.id}
+                <Typography noWrap title={item.id}>
+                  {item.id}
+                </Typography>
               </Grid>
               <Grid item xs={6} sm={9}>
                 {item.value}
@@ -186,36 +187,6 @@ function Resources() {
             </Grid>
           ))}
         </CardContent>
-        <CardActions
-          sx={{
-            justifyContent: "space-between",
-            paddingLeft: 2,
-            paddingRight: 2
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<SyncAltIcon />}
-            onClick={() => {
-              app.notifier.confirm(
-                labels.confirmAction.format(labels.regenerateLink),
-                undefined,
-                async (confirmed) => {
-                  if (!confirmed) return;
-                  const result = await app.websiteApi.regenerateTabUrls({
-                    showLoading: false
-                  });
-                  if (result == null) return;
-                  if (!result.ok) {
-                    app.alertResult(result);
-                  }
-                }
-              );
-            }}
-          >
-            {labels.regenerateLink}
-          </Button>
-        </CardActions>
       </Card>
     </CommonPage>
   );

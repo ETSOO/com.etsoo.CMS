@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Divider,
   IconButton,
@@ -7,18 +7,18 @@ import {
   Menu,
   MenuItem,
   Typography
-} from '@mui/material';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { BridgeCloseButton, UserAvatar, VBox } from '@etsoo/materialui';
-import LockIcon from '@mui/icons-material/Lock';
-import UpgradeIcon from '@mui/icons-material/Upgrade';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { app } from '../../app/MyApp';
-import { UserRole } from '@etsoo/appscript';
-import { useNavigate } from 'react-router-dom';
-import { EventWatcher, useAsyncState } from '@etsoo/react';
-import LinearProgress from '@mui/material/LinearProgress';
-import { IActionResult } from '@etsoo/shared';
+} from "@mui/material";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { BridgeCloseButton, UserAvatar, VBox } from "@etsoo/materialui";
+import LockIcon from "@mui/icons-material/Lock";
+import UpgradeIcon from "@mui/icons-material/Upgrade";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import { app } from "../../app/MyApp";
+import { UserRole } from "@etsoo/appscript";
+import { useNavigate } from "react-router-dom";
+import { EventWatcher, useAsyncState } from "@etsoo/react";
+import LinearProgress from "@mui/material/LinearProgress";
+import { IActionResult } from "@etsoo/shared";
 
 interface UserMenuProps {
   name: string;
@@ -40,10 +40,10 @@ function QRCode() {
   return (
     <VBox alignItems="center">
       {qrCode == null ? (
-        <LinearProgress sx={{ width: '100%' }} />
+        <LinearProgress sx={{ width: "100%" }} />
       ) : (
         <React.Fragment>
-          <Typography>{app.get('mobileAccessTip')}</Typography>
+          <Typography>{app.get("mobileAccessTip")}</Typography>
           <img alt="Mobile QRCode" src={qrCode} width="360" />
         </React.Fragment>
       )}
@@ -60,13 +60,12 @@ export function UserMenu(props: UserMenuProps) {
 
   // Labels
   const labels = app.getLabels(
-    'changePassword',
-    'smartERP',
-    'switchOrganization',
-    'signout',
-    'upgradeSystem',
-    'operationSucceeded',
-    'mobileAccess'
+    "changePassword",
+    "smartERP",
+    "switchOrganization",
+    "signout",
+    "upgradeSystem",
+    "mobileAccess"
   );
 
   // Permissions
@@ -93,13 +92,13 @@ export function UserMenu(props: UserMenuProps) {
   const handleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
     await handleMenuClose();
 
-    const item = (event.target as HTMLElement).closest('li[href]');
+    const item = (event.target as HTMLElement).closest("li[href]");
     let href: string | null;
-    if (item && (href = item.getAttribute('href')) != null) {
+    if (item && (href = item.getAttribute("href")) != null) {
       // Even set transitionDuration = 0, still need to wait a little bit
       // We need to create watcher as ref because of rerenderer
       watcher.add({
-        type: 'transitionend',
+        type: "transitionend",
         action: () => {
           navigate(href!);
         },
@@ -116,10 +115,10 @@ export function UserMenu(props: UserMenuProps) {
 
   // Upgrade system
   const upgradeSystem = () => {
-    app.api.put<IActionResult>('Website/UpgradeSystem').then((result) => {
+    app.api.put<IActionResult>("Website/UpgradeSystem").then((result) => {
       if (result == null) return;
       if (result.ok) {
-        app.notifier.succeed(labels.operationSucceeded);
+        app.ok();
         return;
       }
       app.alertResult(result);
@@ -154,25 +153,25 @@ export function UserMenu(props: UserMenuProps) {
         PaperProps={{
           elevation: 0,
           sx: {
-            overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+            overflow: "visible",
+            filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
             mt: -0.4,
-            '& .MuiAvatar-root': {
+            "& .MuiAvatar-root": {
               width: 32,
               height: 32,
               ml: -0.5,
               mr: 1
             },
-            '&:before': {
+            "&:before": {
               content: '""',
-              display: 'block',
-              position: 'absolute',
+              display: "block",
+              position: "absolute",
               top: 0,
               right: 14,
               width: 10,
               height: 10,
-              bgcolor: 'background.paper',
-              transform: 'translateY(-50%) rotate(45deg)',
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
               zIndex: 0
             }
           }
@@ -180,13 +179,13 @@ export function UserMenu(props: UserMenuProps) {
         disableScrollLock
         anchorEl={anchorEl}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
+          vertical: "bottom",
+          horizontal: "right"
         }}
         keepMounted
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
+          vertical: "top",
+          horizontal: "right"
         }}
         open={isMenuOpen}
         transitionDuration={0}
