@@ -28,7 +28,7 @@ namespace com.etsoo.CMS.RQ.Service
         /// 批量请求数量
         /// </summary>
         [Range(1, 1000)]
-        public ushort BatchSize { get; init; } = 16;
+        public ushort? BatchSize { get; init; }
 
         /// <summary>
         /// With content

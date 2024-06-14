@@ -80,7 +80,7 @@ namespace com.etsoo.CMS.Services
                     {(rq.Ids == null ? string.Empty : $" AND a.id IN ({string.Join(", ", rq.Ids)})")}
                     {(rq.LastRelease.HasValue && rq.LastId.HasValue ? $" AND (a.release, a.id) > (@{nameof(rq.LastRelease)}, @{nameof(rq.LastId)})" : string.Empty)}
                 ORDER BY a.release DESC, a.id DESC
-                LIMIT {rq.BatchSize})";
+                LIMIT {rq.BatchSize ?? 16})";
 
             var command = CreateCommand(sql, parameters, cancellationToken: cancellationToken);
 
